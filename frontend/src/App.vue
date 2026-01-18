@@ -7,6 +7,38 @@
         </router-link>
         <nav class="nav-menu">
           <router-link to="/home" class="nav-link">首页</router-link>
+          <div class="nav-group">
+            <span class="nav-link nav-trigger">活动中心</span>
+            <div class="nav-dropdown">
+              <router-link to="/activities" class="nav-dropdown-link">活动列表</router-link>
+              <router-link to="/signups" class="nav-dropdown-link">报名记录</router-link>
+            </div>
+          </div>
+          <div class="nav-group">
+            <span class="nav-link nav-trigger">志愿者中心</span>
+            <div class="nav-dropdown">
+              <router-link to="/profile" class="nav-dropdown-link">个人资料</router-link>
+              <router-link to="/points" class="nav-dropdown-link">积分记录</router-link>
+              <router-link to="/exchange" class="nav-dropdown-link">兑换商城</router-link>
+            </div>
+          </div>
+          <div class="nav-group">
+            <span class="nav-link nav-trigger">数据看板</span>
+            <div class="nav-dropdown">
+              <router-link to="/dashboard" class="nav-dropdown-link">看板总览</router-link>
+              <router-link to="/data-import" class="nav-dropdown-link">数据导入</router-link>
+              <router-link to="/data-export" class="nav-dropdown-link">数据导出</router-link>
+            </div>
+          </div>
+          <div class="nav-group">
+            <span class="nav-link nav-trigger">管理后台</span>
+            <div class="nav-dropdown">
+              <router-link to="/admin/activities" class="nav-dropdown-link">活动管理</router-link>
+              <router-link to="/admin/volunteers" class="nav-dropdown-link">志愿者审核</router-link>
+              <router-link to="/admin/points" class="nav-dropdown-link">积分管理</router-link>
+              <router-link to="/admin/exchange" class="nav-dropdown-link">兑换管理</router-link>
+            </div>
+          </div>
         </nav>
         <div class="user-area" ref="userMenuRef">
           <button class="avatar-btn" @click="toggleUserMenu" aria-label="用户菜单">
@@ -191,6 +223,45 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.nav-group {
+  position: relative;
+}
+
+.nav-trigger {
+  cursor: default;
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  background: #fff;
+  border-radius: 10px;
+  min-width: 160px;
+  padding: 8px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 120;
+}
+
+.nav-group:hover .nav-dropdown {
+  display: flex;
+}
+
+.nav-dropdown-link {
+  color: #111827;
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.nav-dropdown-link:hover {
+  background: #f3f4f6;
 }
 
 .nav-link {
