@@ -3,7 +3,7 @@
     <header class="app-header">
       <div class="header-content">
         <router-link to="/home" class="logo">
-          <h1>社区志愿服务平台</h1>
+          <h1>志愿服务平台</h1>
         </router-link>
         <nav class="nav-menu">
           <router-link to="/home" class="nav-link">首页</router-link>
@@ -45,6 +45,8 @@
       <router-view />
     </main>
 
+    <GlobalToast />
+
     <div v-if="loading" class="global-loading">
       <div class="loading-spinner"></div>
       <p>加载中...</p>
@@ -55,6 +57,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import GlobalToast from './components/GlobalToast.vue'
 
 const router = useRouter()
 
