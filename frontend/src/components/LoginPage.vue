@@ -1,28 +1,44 @@
 <template>
   <div class="login-container">
+    <section class="login-intro">
+      <p class="intro-tag">社区志愿服务平台</p>
+      <h2>欢迎回到志愿服务积分系统</h2>
+      <p class="intro-desc">
+        统一管理志愿活动、积分与数据统计，帮助社区服务更高效。
+      </p>
+      <div class="intro-list">
+        <div class="intro-item">
+          <span>✔</span>
+          <p>活动报名、审核与结算</p>
+        </div>
+        <div class="intro-item">
+          <span>✔</span>
+          <p>积分记录与兑换管理</p>
+        </div>
+        <div class="intro-item">
+          <span>✔</span>
+          <p>数据导入、分析与导出</p>
+        </div>
+      </div>
+    </section>
+
     <div class="login-card">
-      <!-- 标题 -->
       <div class="login-header">
-        <h1>志愿服务积分系统</h1>
-        <p>用户登录</p>
+        <h1>用户登录</h1>
+        <p>选择身份后进入对应模块</p>
       </div>
 
-      <!-- 登录表单 -->
       <form class="login-form" @submit.prevent="handleLogin">
-        <!-- 用户名 -->
         <div class="form-group">
           <label for="username">用户名</label>
           <input id="username" v-model="form.username" type="text" placeholder="请输入用户名" required class="form-input" />
         </div>
 
-        <!-- 密码 -->
         <div class="form-group">
           <label for="password">密码</label>
-          <input id="password" v-model="form.password" type="password" placeholder="请输入密码" required
-            class="form-input" />
+          <input id="password" v-model="form.password" type="password" placeholder="请输入密码" required class="form-input" />
         </div>
 
-        <!-- 角色选择 -->
         <div class="form-group">
           <label>登录身份</label>
           <div class="role-options">
@@ -41,19 +57,16 @@
           </div>
         </div>
 
-        <!-- 登录按钮 -->
         <button type="submit" class="login-btn" :disabled="loading">
           {{ loading ? '登录中...' : '登录' }}
         </button>
 
-        <!-- 注册链接 -->
         <div class="form-footer">
           <span>没有账号？</span>
           <a href="#" @click.prevent="goToRegister" class="register-link">立即注册</a>
         </div>
       </form>
 
-      <!-- 系统信息 -->
       <div class="system-info">
         <p>© 2025 志愿服务平台</p>
       </div>
@@ -67,17 +80,14 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// 表单数据
 const form = reactive({
   username: '',
   password: '',
   role: 'USER'
 })
 
-// 加载状态
 const loading = ref(false)
 
-// 登录处理
 const handleLogin = async () => {
   if (!form.username.trim() || !form.password.trim()) {
     alert('请输入用户名和密码')
@@ -87,22 +97,19 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    // 模拟登录API调用
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    // 模拟登录成功数据
     const mockUserData = {
       id: 1,
       username: form.username,
       role: form.role,
+      points: 128,
       token: 'mock-jwt-token-' + Date.now()
     }
 
-    // 保存到localStorage
     localStorage.setItem('user', JSON.stringify(mockUserData))
     localStorage.setItem('token', mockUserData.token)
 
-    // 根据角色跳转
     switch (form.role) {
       case 'ADMIN':
         await router.push('/admin')
@@ -112,7 +119,7 @@ const handleLogin = async () => {
         break
       case 'USER':
       default:
-        await router.push('/user')
+        await router.push('/home')
     }
 
     alert('登录成功！')
@@ -124,7 +131,6 @@ const handleLogin = async () => {
   }
 }
 
-// 跳转到注册页
 const goToRegister = () => {
   router.push('/register')
 }
@@ -132,32 +138,68 @@ const goToRegister = () => {
 
 <style scoped>
 .login-container {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  padding: 30px 0;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: calc(100vh - 120px);
+}
+
+.login-intro {
+  padding: 20px;
+}
+
+.intro-tag {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.login-intro h2 {
+  font-size: 30px;
+  margin-bottom: 12px;
+  color: #1f2937;
+}
+
+.intro-desc {
+  color: #4b5563;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.intro-list {
+  display: grid;
+  gap: 12px;
+}
+
+.intro-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #1f2937;
 }
 
 .login-card {
-  width: 400px;
+  width: min(420px, 100%);
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
   overflow: hidden;
+  justify-self: center;
 }
 
 .login-header {
-  padding: 30px;
+  padding: 24px;
   text-align: center;
-  background: #2c3e50;
+  background: #1f2937;
   color: white;
 }
 
 .login-header h1 {
-  font-size: 24px;
-  margin-bottom: 10px;
+  font-size: 22px;
+  margin-bottom: 8px;
   font-weight: 600;
 }
 
@@ -167,11 +209,11 @@ const goToRegister = () => {
 }
 
 .login-form {
-  padding: 30px;
+  padding: 24px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .form-group label {
@@ -184,48 +226,45 @@ const goToRegister = () => {
 
 .form-input {
   width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
   transition: border-color 0.3s;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .role-options {
   display: flex;
-  gap: 15px;
-  margin-top: 5px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
 }
 
 .role-option {
   display: flex;
   align-items: center;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .role-option input {
   margin-right: 8px;
 }
 
-.role-option span {
-  font-size: 14px;
-  color: #555;
-}
-
 .login-btn {
   width: 100%;
-  padding: 14px;
-  background: #3498db;
+  padding: 12px;
+  background: #2563eb;
   color: white;
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.3s;
@@ -233,25 +272,25 @@ const goToRegister = () => {
 }
 
 .login-btn:hover {
-  background: #2980b9;
+  background: #1d4ed8;
 }
 
 .login-btn:disabled {
-  background: #95a5a6;
+  background: #9ca3af;
   cursor: not-allowed;
 }
 
 .form-footer {
   text-align: center;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-  color: #666;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+  color: #6b7280;
   font-size: 14px;
 }
 
 .register-link {
-  color: #3498db;
+  color: #2563eb;
   text-decoration: none;
   margin-left: 5px;
   font-weight: 500;
@@ -263,10 +302,10 @@ const goToRegister = () => {
 
 .system-info {
   text-align: center;
-  padding: 15px;
-  background: #f8f9fa;
-  color: #777;
+  padding: 14px;
+  background: #f8fafc;
+  color: #6b7280;
   font-size: 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #e5e7eb;
 }
 </style>
