@@ -1,19 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
-import LoginPage from "../components/LoginPage.vue";
-import HomePage from "../components/HomePage.vue";
-import RegisterPage from "../components/RegisterPage.vue";
-import ActivityListPage from "../components/ActivityListPage.vue";
-import SignupRecordsPage from "../components/SignupRecordsPage.vue";
-import ProfilePage from "../components/ProfilePage.vue";
-import PointsPage from "../components/PointsPage.vue";
+import Login from "../components/Login.vue";
+import Home from "../components/Home.vue";
+import Register from "../components/Register.vue";
+import ActivityList from "../components/ActivityList.vue";
+import SignupRecord from "../components/SignupRecord.vue";
+import UserProfile from "../components/UserProfile.vue";
+import PointRecord from "../components/PointRecord.vue";
 import ExchangePage from "../components/ExchangePage.vue";
-import DashboardPage from "../components/DashboardPage.vue";
-import DataImportPage from "../components/DataImportPage.vue";
-import DataExportPage from "../components/DataExportPage.vue";
-import AdminActivityPage from "../components/AdminActivityPage.vue";
-import AdminVolunteerPage from "../components/AdminVolunteerPage.vue";
-import AdminPointsPage from "../components/AdminPointsPage.vue";
-import AdminExchangePage from "../components/AdminExchangePage.vue";
+import Dashboard from "../components/Dashboard.vue";
+import ImportData from "../components/ImportData.vue";
+import ExportData from "../components/ExportData.vue";
+import AdminActivity from "../components/AdminActivity.vue";
+import AdminVolunteer from "../components/AdminVolunteer.vue";
+import AdminPoints from "../components/AdminPoints.vue";
+import AdminExchange from "../components/AdminExchange.vue";
 
 const routes = [
   {
@@ -23,37 +23,37 @@ const routes = [
   {
     path: "/home",
     name: "Home",
-    component: HomePage,
+    component: Home,
   },
   {
     path: "/login",
     name: "Login",
-    component: LoginPage,
+    component: Login,
   },
   {
     path: "/register",
     name: "Register",
-    component: RegisterPage,
+    component: Register,
   },
   {
     path: "/activities",
     name: "Activities",
-    component: ActivityListPage,
+    component: ActivityList,
   },
   {
     path: "/signups",
     name: "Signups",
-    component: SignupRecordsPage,
+    component: SignupRecord,
   },
   {
     path: "/profile",
     name: "Profile",
-    component: ProfilePage,
+    component: UserProfile,
   },
   {
     path: "/points",
     name: "Points",
-    component: PointsPage,
+    component: PointRecord,
   },
   {
     path: "/exchange",
@@ -63,37 +63,37 @@ const routes = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    component: DashboardPage,
+    component: Dashboard,
   },
   {
     path: "/data-import",
     name: "DataImport",
-    component: DataImportPage,
+    component: ImportData,
   },
   {
     path: "/data-export",
     name: "DataExport",
-    component: DataExportPage,
+    component: ExportData,
   },
   {
     path: "/admin/activities",
     name: "AdminActivities",
-    component: AdminActivityPage,
+    component: AdminActivity,
   },
   {
     path: "/admin/volunteers",
     name: "AdminVolunteers",
-    component: AdminVolunteerPage,
+    component: AdminVolunteer,
   },
   {
     path: "/admin/points",
     name: "AdminPoints",
-    component: AdminPointsPage,
+    component: AdminPoints,
   },
   {
     path: "/admin/exchange",
     name: "AdminExchange",
-    component: AdminExchangePage,
+    component: AdminExchange,
   },
 ];
 
