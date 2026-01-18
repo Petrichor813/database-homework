@@ -2,7 +2,6 @@ package com.volunteer.backend.service;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.volunteer.backend.dto.LoginRequest;
@@ -16,7 +15,6 @@ import com.volunteer.backend.utils.UserRole;
 public class AuthService {
     private final UserRepository userRepository;
 
-    @Autowired
     public AuthService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
