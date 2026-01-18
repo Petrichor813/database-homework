@@ -36,7 +36,8 @@
 
         <div class="form-group">
           <label for="password">密码</label>
-          <input id="password" v-model="form.password" type="password" placeholder="请输入密码" required class="form-input" />
+          <input id="password" v-model="form.password" type="password" placeholder="请输入密码" required
+            class="form-input" />
         </div>
 
         <div class="form-group">

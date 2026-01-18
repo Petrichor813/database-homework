@@ -8,14 +8,9 @@
         <nav class="nav-menu">
           <router-link to="/home" class="nav-link">首页</router-link>
           <div class="nav-group">
-            <button
-              type="button"
-              class="nav-link nav-trigger"
-              aria-controls="nav-activities"
-              :aria-expanded="activeMenu === 'activities'"
-              @click="toggleMenu('activities')"
-              @keydown="event => handleTriggerKeydown(event, 'activities')"
-            >
+            <button type="button" class="nav-link nav-trigger" aria-controls="nav-activities"
+              :aria-expanded="activeMenu === 'activities'" @click="toggleMenu('activities')"
+              @keydown="event => handleTriggerKeydown(event, 'activities')">
               活动中心
             </button>
             <div id="nav-activities" v-show="activeMenu === 'activities'" class="nav-dropdown">
@@ -24,14 +19,9 @@
             </div>
           </div>
           <div class="nav-group">
-            <button
-              type="button"
-              class="nav-link nav-trigger"
-              aria-controls="nav-volunteer"
-              :aria-expanded="activeMenu === 'volunteer'"
-              @click="toggleMenu('volunteer')"
-              @keydown="event => handleTriggerKeydown(event, 'volunteer')"
-            >
+            <button type="button" class="nav-link nav-trigger" aria-controls="nav-volunteer"
+              :aria-expanded="activeMenu === 'volunteer'" @click="toggleMenu('volunteer')"
+              @keydown="event => handleTriggerKeydown(event, 'volunteer')">
               志愿者中心
             </button>
             <div id="nav-volunteer" v-show="activeMenu === 'volunteer'" class="nav-dropdown">
@@ -41,14 +31,9 @@
             </div>
           </div>
           <div class="nav-group">
-            <button
-              type="button"
-              class="nav-link nav-trigger"
-              aria-controls="nav-dashboard"
-              :aria-expanded="activeMenu === 'dashboard'"
-              @click="toggleMenu('dashboard')"
-              @keydown="event => handleTriggerKeydown(event, 'dashboard')"
-            >
+            <button type="button" class="nav-link nav-trigger" aria-controls="nav-dashboard"
+              :aria-expanded="activeMenu === 'dashboard'" @click="toggleMenu('dashboard')"
+              @keydown="event => handleTriggerKeydown(event, 'dashboard')">
               数据看板
             </button>
             <div id="nav-dashboard" v-show="activeMenu === 'dashboard'" class="nav-dropdown">
@@ -58,14 +43,9 @@
             </div>
           </div>
           <div class="nav-group">
-            <button
-              type="button"
-              class="nav-link nav-trigger"
-              aria-controls="nav-admin"
-              :aria-expanded="activeMenu === 'admin'"
-              @click="toggleMenu('admin')"
-              @keydown="event => handleTriggerKeydown(event, 'admin')"
-            >
+            <button type="button" class="nav-link nav-trigger" aria-controls="nav-admin"
+              :aria-expanded="activeMenu === 'admin'" @click="toggleMenu('admin')"
+              @keydown="event => handleTriggerKeydown(event, 'admin')">
               管理后台
             </button>
             <div id="nav-admin" v-show="activeMenu === 'admin'" class="nav-dropdown">
@@ -310,6 +290,12 @@ body {
 
 .nav-dropdown-link:hover {
   background: #f3f4f6;
+}
+
+.nav-dropdown-link + .nav-dropdown-link {
+  border-top: 1px solid #aaa;
+  margin-top: 4px;
+  padding-top: 8px;
 }
 
 .nav-link {

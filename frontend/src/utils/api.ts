@@ -1,20 +1,24 @@
-export const API_BASE_URL = 'http://localhost:8080'
+export const API_BASE_URL = "http://localhost:8080";
 
-export const postJson = async <T>(path: string, payload: unknown): Promise<T> => {
+export const postJson = async <T>(
+  path: string,
+  payload: unknown,
+): Promise<T> => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload)
-  })
+    body: JSON.stringify(payload),
+  });
 
-  const data = await response.json().catch(() => ({}))
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message = typeof data?.message === 'string' ? data.message : '请求失败'
-    throw new Error(message)
+    const message =
+      typeof data?.message === "string" ? data.message : "请求失败";
+    throw new Error(message);
   }
 
-  return data as T
-}
+  return data as T;
+};
