@@ -3,7 +3,7 @@
     <header class="app-header">
       <div class="header-content">
         <router-link to="/home" class="logo">
-          <h1>志愿服务平台</h1>
+          <h1>社区志愿服务平台</h1>
         </router-link>
         <nav class="nav-menu">
           <router-link to="/home" class="nav-link">首页</router-link>
