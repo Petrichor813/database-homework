@@ -4,15 +4,15 @@ import com.volunteer.backend.utils.UserRole;
 
 public class LoginRequest {
     private String username;
-    private String passwd;
+    private String password;
     private UserRole role;
     
     public LoginRequest() {
     }
 
-    public LoginRequest(String username, String passwd, UserRole role) {
+    public LoginRequest(String username, String password, UserRole role) {
         this.username = username;
-        this.passwd = passwd;
+        this.password = password;
         this.role = role;
     }
 
@@ -24,12 +24,12 @@ public class LoginRequest {
         this.username = username;
     }
 
-    public String getPasswd() {
-        return passwd;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswd(String passwd) {
-        this.passwd = passwd;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public UserRole getRole() {
