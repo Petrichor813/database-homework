@@ -77,8 +77,11 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { postJson } from '../utils/api'
+import { useToast } from '../utils/toast'
 
 const router = useRouter()
+const { success, error } = useToast()
 
 const form = reactive({
   username: '',
@@ -90,42 +93,34 @@ const loading = ref(false)
 
 const handleLogin = async () => {
   if (!form.username.trim() || !form.password.trim()) {
-    alert('请输入用户名和密码')
+    error('登录失败', '请输入用户名和密码')
     return
   }
 
   loading.value = true
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    const mockUserData = {
-      id: 1,
+    const response = await postJson('/api/auth/login', {
       username: form.username,
-      role: form.role,
-      points: 128,
-      token: 'mock-jwt-token-' + Date.now()
+      password: form.password,
+      role: form.role
+    })
+
+    const userData = {
+      id: response.id,
+      username: response.username,
+      role: response.role,
+      token: response.token
     }
 
-    localStorage.setItem('user', JSON.stringify(mockUserData))
-    localStorage.setItem('token', mockUserData.token)
+    localStorage.setItem('user', JSON.stringify(userData))
+    localStorage.setItem('token', response.token)
 
-    switch (form.role) {
-      case 'ADMIN':
-        await router.push('/admin')
-        break
-      case 'VOLUNTEER':
-        await router.push('/volunteer')
-        break
-      case 'USER':
-      default:
-        await router.push('/home')
-    }
-
-    alert('登录成功！')
-  } catch (error) {
-    console.error('登录失败:', error)
-    alert('登录失败，请检查用户名和密码')
+    await router.push('/home')
+    success('登录成功')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : '登录失败，请检查用户名或密码'
+    error('登录失败', message)
   } finally {
     loading.value = false
   }

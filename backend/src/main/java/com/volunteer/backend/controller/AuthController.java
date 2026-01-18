@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.volunteer.backend.dto.LoginRequest;
 import com.volunteer.backend.dto.LoginResponse;
 import com.volunteer.backend.dto.RegisterRequest;
-import com.volunteer.backend.entity.User;
+import com.volunteer.backend.dto.RegisterResponse;
 import com.volunteer.backend.service.AuthService;
 
 @RestController
@@ -28,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public User register(@RequestBody RegisterRequest request) {
+    public RegisterResponse register(@RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 
