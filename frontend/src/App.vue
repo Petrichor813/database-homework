@@ -8,31 +8,67 @@
         <nav class="nav-menu">
           <router-link to="/home" class="nav-link">首页</router-link>
           <div class="nav-group">
-            <span class="nav-link nav-trigger">活动中心</span>
-            <div class="nav-dropdown">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-activities"
+              :aria-expanded="activeMenu === 'activities'"
+              @click="toggleMenu('activities')"
+              @keydown="event => handleTriggerKeydown(event, 'activities')"
+            >
+              活动中心
+            </button>
+            <div id="nav-activities" v-show="activeMenu === 'activities'" class="nav-dropdown">
               <router-link to="/activities" class="nav-dropdown-link">活动列表</router-link>
               <router-link to="/signups" class="nav-dropdown-link">报名记录</router-link>
             </div>
           </div>
           <div class="nav-group">
-            <span class="nav-link nav-trigger">志愿者中心</span>
-            <div class="nav-dropdown">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-volunteer"
+              :aria-expanded="activeMenu === 'volunteer'"
+              @click="toggleMenu('volunteer')"
+              @keydown="event => handleTriggerKeydown(event, 'volunteer')"
+            >
+              志愿者中心
+            </button>
+            <div id="nav-volunteer" v-show="activeMenu === 'volunteer'" class="nav-dropdown">
               <router-link to="/profile" class="nav-dropdown-link">个人资料</router-link>
               <router-link to="/points" class="nav-dropdown-link">积分记录</router-link>
               <router-link to="/exchange" class="nav-dropdown-link">兑换商城</router-link>
             </div>
           </div>
           <div class="nav-group">
-            <span class="nav-link nav-trigger">数据看板</span>
-            <div class="nav-dropdown">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-dashboard"
+              :aria-expanded="activeMenu === 'dashboard'"
+              @click="toggleMenu('dashboard')"
+              @keydown="event => handleTriggerKeydown(event, 'dashboard')"
+            >
+              数据看板
+            </button>
+            <div id="nav-dashboard" v-show="activeMenu === 'dashboard'" class="nav-dropdown">
               <router-link to="/dashboard" class="nav-dropdown-link">看板总览</router-link>
               <router-link to="/data-import" class="nav-dropdown-link">数据导入</router-link>
               <router-link to="/data-export" class="nav-dropdown-link">数据导出</router-link>
             </div>
           </div>
           <div class="nav-group">
-            <span class="nav-link nav-trigger">管理后台</span>
-            <div class="nav-dropdown">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-admin"
+              :aria-expanded="activeMenu === 'admin'"
+              @click="toggleMenu('admin')"
+              @keydown="event => handleTriggerKeydown(event, 'admin')"
+            >
+              管理后台
+            </button>
+            <div id="nav-admin" v-show="activeMenu === 'admin'" class="nav-dropdown">
               <router-link to="/admin/activities" class="nav-dropdown-link">活动管理</router-link>
               <router-link to="/admin/volunteers" class="nav-dropdown-link">志愿者审核</router-link>
               <router-link to="/admin/points" class="nav-dropdown-link">积分管理</router-link>
@@ -97,6 +133,7 @@ const loading = ref(true)
 const currentUser = ref(null)
 const menuOpen = ref(false)
 const userMenuRef = ref(null)
+const activeMenu = ref(null)
 
 const displayName = computed(() => currentUser.value?.username || '游客')
 const displayPoints = computed(() => currentUser.value?.points ?? 0)
@@ -141,6 +178,17 @@ const toggleUserMenu = () => {
   menuOpen.value = !menuOpen.value
 }
 
+const toggleMenu = menuName => {
+  activeMenu.value = activeMenu.value === menuName ? null : menuName
+}
+
+const handleTriggerKeydown = (event, menuName) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    toggleMenu(menuName)
+  }
+}
+
 const handleClickOutside = event => {
   if (!userMenuRef.value) return
   if (!userMenuRef.value.contains(event.target)) {
@@ -166,6 +214,7 @@ const goToLogin = () => {
 router.afterEach(() => {
   checkAuth()
   menuOpen.value = false
+  activeMenu.value = null
 })
 </script>
 
@@ -230,7 +279,10 @@ body {
 }
 
 .nav-trigger {
-  cursor: default;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font: inherit;
 }
 
 .nav-dropdown {
@@ -242,14 +294,10 @@ body {
   min-width: 160px;
   padding: 8px;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 4px;
   z-index: 120;
-}
-
-.nav-group:hover .nav-dropdown {
-  display: flex;
 }
 
 .nav-dropdown-link {
