@@ -67,10 +67,6 @@
           <a href="#" @click.prevent="goToRegister" class="register-link">立即注册</a>
         </div>
       </form>
-
-      <div class="system-info">
-        <p>© 2025 志愿服务平台</p>
-      </div>
     </div>
   </div>
 </template>
@@ -294,14 +290,5 @@ const goToRegister = () => {
 
 .register-link:hover {
   text-decoration: underline;
-}
-
-.system-info {
-  text-align: center;
-  padding: 14px;
-  background: #f8fafc;
-  color: #6b7280;
-  font-size: 12px;
-  border-top: 1px solid #e5e7eb;
 }
 </style>
