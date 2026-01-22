@@ -22,12 +22,10 @@
             <button type="button" class="nav-link nav-trigger" aria-controls="nav-volunteer"
               :aria-expanded="activeMenu === 'volunteer'" @click="toggleMenu('volunteer')"
               @keydown="event => handleTriggerKeydown(event, 'volunteer')">
-              志愿者中心
+              兑换中心
             </button>
             <div id="nav-volunteer" v-show="activeMenu === 'volunteer'" class="nav-dropdown">
-              <router-link to="/profile" class="nav-dropdown-link">个人资料</router-link>
-              <router-link to="/points" class="nav-dropdown-link">积分记录</router-link>
-              <router-link to="/exchange" class="nav-dropdown-link">兑换商城</router-link>
+              <router-link to="/exchange" class="nav-dropdown-link">商品列表</router-link>
             </div>
           </div>
           <div class="nav-group">
@@ -86,6 +84,9 @@
               </div>
               <div class="user-actions">
                 <template v-if="currentUser">
+                  <router-link to="/user-center" class="dropdown-btn primary user-center-btn">
+                    进入个人中心
+                  </router-link>
                   <button class="dropdown-btn" @click="handleLogout">退出登录</button>
                 </template>
                 <template v-else>
@@ -445,6 +446,11 @@ body {
   background: #2563eb;
   color: #fff;
   border: none;
+}
+
+.user-center-btn {
+  text-align: center;
+  text-decoration: none;
 }
 
 .fade-enter-active,

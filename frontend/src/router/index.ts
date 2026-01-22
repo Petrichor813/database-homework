@@ -2,11 +2,13 @@ import { createRouter, createWebHistory } from "vue-router";
 import Login from "../components/Login.vue";
 import Home from "../components/Home.vue";
 import Register from "../components/Register.vue";
+import UserCenter from "../components/UserCenter.vue";
 import ActivityList from "../components/ActivityList.vue";
 import SignupRecord from "../components/SignupRecord.vue";
 import UserProfile from "../components/UserProfile.vue";
 import PointRecord from "../components/PointRecord.vue";
 import ExchangePage from "../components/ExchangePage.vue";
+import ExchangeRecord from "../components/ExchangeRecord.vue";
 import Dashboard from "../components/Dashboard.vue";
 import ImportData from "../components/ImportData.vue";
 import ExportData from "../components/ExportData.vue";
@@ -36,6 +38,11 @@ const routes = [
     component: Register,
   },
   {
+    path: "/user-center",
+    name: "UserCenter",
+    component: UserCenter,
+  },
+  {
     path: "/activities",
     name: "Activities",
     component: ActivityList,
@@ -59,6 +66,11 @@ const routes = [
     path: "/exchange",
     name: "Exchange",
     component: ExchangePage,
+  },
+  {
+    path: "/exchange-records",
+    name: "ExchangeRecord",
+    component: ExchangeRecord,
   },
   {
     path: "/dashboard",

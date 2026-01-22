@@ -1,8 +1,11 @@
 <template>
   <div class="page-shell">
     <header class="page-header">
-      <h2>兑换商城</h2>
-      <p>用积分兑换公益礼包与周边（占位）。</p>
+      <div>
+        <h2>兑换商城</h2>
+        <p>用积分兑换公益礼包与周边（占位）。</p>
+      </div>
+      <router-link to="/exchange-records" class="record-entry">兑换记录</router-link>
     </header>
     <section class="product-grid">
       <article v-for="item in items" :key="item.name" class="product-card">
@@ -35,6 +38,23 @@ const items = [
 
 .page-header p {
   color: #6b7280;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.record-entry {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-decoration: none;
+  font-size: 14px;
 }
 
 .product-grid {
