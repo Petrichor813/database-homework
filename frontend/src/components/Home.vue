@@ -38,8 +38,8 @@
 
     <section class="section">
       <div class="section-header">
-        <h3>热门活动（示例）</h3>
-        <router-link to="/login" class="text-link">查看全部</router-link>
+        <h3>热门活动</h3>
+        <router-link to="/activities" class="text-link">查看全部</router-link>
       </div>
       <div class="activity-grid">
         <article
