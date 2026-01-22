@@ -5,7 +5,7 @@
         <router-link to="/home" class="logo">
           <h1>志愿服务平台</h1>
         </router-link>
-        <nav class="nav-menu">
+        <nav class="nav-menu" ref="navMenuRef">
           <router-link to="/home" class="nav-link">首页</router-link>
           <div class="nav-group">
             <button type="button" class="nav-link nav-trigger" aria-controls="nav-activities"
@@ -123,6 +123,7 @@ const loading = ref(true);
 const currentUser = ref(null);
 const menuOpen = ref(false);
 const userMenuRef = ref(null);
+const navMenuRef = ref(null);
 const activeMenu = ref(null);
 
 const displayName = computed(() => currentUser.value?.username || '游客');
@@ -154,7 +155,7 @@ const checkAuth = () => {
   try {
     const userStr = localStorage.getItem('user');
     if (userStr) {
-      parsedUser.value = JSON.parse(userStr);
+      const parsedUser = JSON.parse(userStr);
       currentUser.value = {
         ...parsedUser,
         volunteerVerified: parsedUser.volunteerVerified ?? parsedUser.isVerified ?? false
@@ -188,6 +189,9 @@ const handleClickOutside = event => {
   if (!userMenuRef.value) return;
   if (!userMenuRef.value.contains(event.target)) {
     menuOpen.value = false;
+  }
+  if (navMenuRef.value && !navMenuRef.value.contains(event.target)) {
+    activeMenu.value = null;
   }
 }
 

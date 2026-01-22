@@ -26,14 +26,22 @@
           <label>注册身份</label>
           <div class="role-options">
             <label class="role-option">
-              <input v-model="form.role" type="radio" name="role" value="USER" checked />
+              <input v-model="form.primaryRole" type="radio" name="primary-role" value="USER" checked />
               <span>普通用户</span>
             </label>
             <label class="role-option">
-              <input v-model="form.role" type="radio" name="role" value="VOLUNTEER" />
-              <span>志愿者</span>
+              <input v-model="form.primaryRole" type="radio" name="primary-role" value="ADMIN" />
+              <span>管理员</span>
             </label>
           </div>
+        </div>
+        <div class="form-row">
+          <label>志愿者身份</label>
+          <label class="volunteer-option">
+            <input v-model="form.isVolunteer" type="checkbox" />
+            <span>申请成为志愿者</span>
+          </label>
+          <p class="form-hint">管理员默认具备志愿者权限，可按需勾选是否进入志愿者流程。</p>
         </div>
         <button type="submit" :disabled="loading">
           {{ loading ? '注册中...' : '提交注册' }}
@@ -48,7 +56,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { postJson } from '../utils/api'
 import { useToast } from '../utils/toast'
@@ -61,10 +69,15 @@ const form = reactive({
   phone: '',
   password: '',
   confirmPassword: '',
-  role: 'USER'
+  primaryRole: 'USER',
+  isVolunteer: false
 })
 
 const loading = ref(false)
+const resolvedRole = computed(() => {
+  if (form.primaryRole === 'ADMIN') return 'ADMIN'
+  return form.isVolunteer ? 'VOLUNTEER' : 'USER'
+})
 
 const handleRegister = async () => {
   if (!form.username.trim() || !form.password.trim()) {
@@ -83,7 +96,7 @@ const handleRegister = async () => {
     await postJson('/api/auth/register', {
       username: form.username,
       password: form.password,
-      role: form.role,
+      role: resolvedRole.value,
       phone: form.phone
     })
 
@@ -161,6 +174,18 @@ const handleRegister = async () => {
   cursor: pointer;
 }
 
+.volunteer-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.volunteer-option input {
+  margin: 0;
+}
+
 .role-option input {
   margin-right: 8px;
 }
@@ -168,6 +193,12 @@ const handleRegister = async () => {
 .role-option span {
   font-size: 14px;
   color: #555;
+}
+
+.form-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #6b7280;
 }
 
 .register-form button {

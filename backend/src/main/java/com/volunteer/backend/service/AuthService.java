@@ -21,9 +21,9 @@ public class AuthService {
     }
 
     public User authenticate(String username, String password, UserRole role) {
-        UserRole queryRole = role == null ? UserRole.USER : role;
-        User user = userRepository.findByUsernameAndRole(username, queryRole)
-                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+        User user = (role == null ? userRepository.findByUsername(username)
+                : userRepository.findByUsernameAndRole(username, role))
+                        .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
         if (!user.getPassword().equals(password)) {
             throw new IllegalArgumentException("密码错误");
         }

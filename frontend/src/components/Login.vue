@@ -25,7 +25,7 @@
     <div class="login-card">
       <div class="login-header">
         <h1>用户登录</h1>
-        <p>选择身份后进入对应模块</p>
+        <p>请输入账号信息继续</p>
       </div>
 
       <form class="login-form" @submit.prevent="handleLogin">
@@ -38,24 +38,6 @@
           <label for="password">密码</label>
           <input id="password" v-model="form.password" type="password" placeholder="请输入密码" required
             class="form-input" />
-        </div>
-
-        <div class="form-group">
-          <label>登录身份</label>
-          <div class="role-options">
-            <label class="role-option">
-              <input v-model="form.role" type="radio" name="role" value="USER" checked />
-              <span>普通用户</span>
-            </label>
-            <label class="role-option">
-              <input v-model="form.role" type="radio" name="role" value="VOLUNTEER" />
-              <span>志愿者</span>
-            </label>
-            <label class="role-option">
-              <input v-model="form.role" type="radio" name="role" value="ADMIN" />
-              <span>管理员</span>
-            </label>
-          </div>
         </div>
 
         <button type="submit" class="login-btn" :disabled="loading">
@@ -82,8 +64,7 @@ const { success, error } = useToast()
 
 const form = reactive({
   username: '',
-  password: '',
-  role: 'USER'
+  password: ''
 })
 
 const loading = ref(false)
@@ -99,8 +80,7 @@ const handleLogin = async () => {
   try {
     const response = await postJson('/api/auth/login', {
       username: form.username,
-      password: form.password,
-      role: form.role
+      password: form.password
     })
 
     const userData = {
@@ -229,24 +209,6 @@ const goToRegister = () => {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-}
-
-.role-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 6px;
-}
-
-.role-option {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.role-option input {
-  margin-right: 8px;
 }
 
 .login-btn {
