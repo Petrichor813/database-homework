@@ -69,10 +69,19 @@
                   <p class="user-role">{{ roleLabel }}</p>
                 </div>
               </div>
-              <div class="user-stats">
+              <div v-if="currentUser" class="user-stats">
                 <div class="stat">
                   <span class="stat-label">积分余额</span>
                   <span class="stat-value">{{ displayPoints }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">志愿者认证</span>
+                  <span class="stat-value status-value">
+                    <span>{{ isVolunteerVerified ? '已认证' : '未认证' }}</span>
+                    <span class="status-badge" :class="{ 'is-verified': isVolunteerVerified }">
+                      {{ isVolunteerVerified ? '已认证' : '未认证' }}
+                    </span>
+                  </span>
                 </div>
               </div>
               <div class="user-actions">
@@ -103,98 +112,103 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
-import GlobalToast from './components/GlobalToast.vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
+import GlobalToast from './components/GlobalToast.vue';
 
-const router = useRouter()
+const router = useRouter();
 
-const loading = ref(true)
-const currentUser = ref(null)
-const menuOpen = ref(false)
-const userMenuRef = ref(null)
-const activeMenu = ref(null)
+const loading = ref(true);
+const currentUser = ref(null);
+const menuOpen = ref(false);
+const userMenuRef = ref(null);
+const activeMenu = ref(null);
 
-const displayName = computed(() => currentUser.value?.username || '游客')
-const displayPoints = computed(() => currentUser.value?.points ?? 0)
-const avatarText = computed(() => (displayName.value ? displayName.value.slice(0, 1) : '游'))
+const displayName = computed(() => currentUser.value?.username || '游客');
+const displayPoints = computed(() => currentUser.value?.points ?? 0);
+const avatarText = computed(() => (displayName.value ? displayName.value.slice(0, 1) : '游'));
+const isVolunteerVerified = computed(() => currentUser.value?.volunteerVerified ?? false);
 const roleLabel = computed(() => {
-  if (!currentUser.value) return '游客'
-  const role = currentUser.value.role
+  if (!currentUser.value) return '游客';
+  const role = currentUser.value.role;
   const roleMap = {
     ADMIN: '管理员',
     VOLUNTEER: '志愿者',
     USER: '普通用户'
-  }
-  return roleMap[role] || role
+  };
+  return roleMap[role] || role;
 })
 
 onMounted(() => {
-  checkAuth()
-  loading.value = false
-  document.addEventListener('click', handleClickOutside)
+  checkAuth();
+  loading.value = false;
+  document.addEventListener('click', handleClickOutside);
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('click', handleClickOutside);
 })
 
 const checkAuth = () => {
   try {
-    const userStr = localStorage.getItem('user')
+    const userStr = localStorage.getItem('user');
     if (userStr) {
-      currentUser.value = JSON.parse(userStr)
-      return
+      parsedUser.value = JSON.parse(userStr);
+      currentUser.value = {
+        ...parsedUser,
+        volunteerVerified: parsedUser.volunteerVerified ?? parsedUser.isVerified ?? false
+      };
+      return;
     }
   } catch (error) {
-    console.error('读取用户信息失败:', error)
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
+    console.error('读取用户信息失败:', error);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
   }
-  currentUser.value = null
+  currentUser.value = null;
 }
 
 const toggleUserMenu = () => {
-  menuOpen.value = !menuOpen.value
+  menuOpen.value = !menuOpen.value;
 }
 
 const toggleMenu = menuName => {
-  activeMenu.value = activeMenu.value === menuName ? null : menuName
+  activeMenu.value = activeMenu.value === menuName ? null : menuName;
 }
 
 const handleTriggerKeydown = (event, menuName) => {
   if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    toggleMenu(menuName)
+    event.preventDefault();
+    toggleMenu(menuName);
   }
 }
 
 const handleClickOutside = event => {
-  if (!userMenuRef.value) return
+  if (!userMenuRef.value) return;
   if (!userMenuRef.value.contains(event.target)) {
-    menuOpen.value = false
+    menuOpen.value = false;
   }
 }
 
 const handleLogout = () => {
   if (confirm('确定要退出登录吗？')) {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    currentUser.value = null
-    menuOpen.value = false
-    router.push('/login')
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    currentUser.value = null;
+    menuOpen.value = false;
+    router.push('/login');
   }
 }
 
 const goToLogin = () => {
-  menuOpen.value = false
-  router.push('/login')
+  menuOpen.value = false;
+  router.push('/login');
 }
 
 router.afterEach(() => {
-  checkAuth()
-  menuOpen.value = false
-  activeMenu.value = null
+  checkAuth();
+  menuOpen.value = false;
+  activeMenu.value = null;
 })
 </script>
 
@@ -292,7 +306,7 @@ body {
   background: #f3f4f6;
 }
 
-.nav-dropdown-link + .nav-dropdown-link {
+.nav-dropdown-link+.nav-dropdown-link {
   border-top: 1px solid #aaa;
   margin-top: 4px;
   padding-top: 8px;
@@ -391,6 +405,27 @@ body {
   justify-content: space-between;
   font-size: 13px;
   color: #374151;
+}
+
+.status-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge {
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.status-badge.is-verified {
+  border-color: #10b981;
+  color: #10b981;
 }
 
 .user-actions {
