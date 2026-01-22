@@ -8,15 +8,39 @@
       <form class="register-form" @submit.prevent="handleRegister">
         <div class="form-row">
           <label>用户名</label>
-          <input
-            v-model="form.username"
-            type="text"
-            placeholder="请输入用户名"
-          />
+          <div class="input-with-action">
+            <input
+              v-model="form.username"
+              type="text"
+              placeholder="请输入用户名"
+            />
+            <button
+              v-if="form.username"
+              type="button"
+              class="clear-button"
+              @click="form.username = ''"
+            >
+              ×
+            </button>
+          </div>
         </div>
         <div class="form-row">
           <label>手机号</label>
-          <input v-model="form.phone" type="text" placeholder="请输入手机号" />
+          <div class="input-with-action">
+            <input
+              v-model="form.phone"
+              type="text"
+              placeholder="请输入手机号"
+            />
+            <button
+              v-if="form.phone"
+              type="button"
+              class="clear-button"
+              @click="form.phone = ''"
+            >
+              ×
+            </button>
+          </div>
         </div>
         <div class="form-row">
           <label>密码</label>
@@ -58,15 +82,32 @@
             </label>
           </div>
         </div>
-        <div class="form-row">
-          <label>志愿者身份</label>
-          <label class="volunteer-option">
-            <input v-model="form.isVolunteer" type="checkbox" />
-            <span>申请成为志愿者</span>
-          </label>
-          <p class="form-hint">
-            管理员默认具备志愿者权限，可按需勾选是否进入志愿者流程。
-          </p>
+        <div v-if="form.primaryRole === 'USER'">
+          <div class="form-row">
+            <label>志愿者身份</label>
+            <label class="volunteer-option">
+              <input v-model="form.isVolunteer" type="checkbox" />
+              <span>申请成为志愿者</span>
+            </label>
+          </div>
+          <div v-if="form.isVolunteer" class="form-row">
+            <label>真实姓名</label>
+            <div class="input-with-action">
+              <input
+                v-model="form.realName"
+                type="text"
+                placeholder="请输入真实姓名"
+              />
+              <button
+                v-if="form.realName"
+                type="button"
+                class="clear-button"
+                @click="form.realName = ''"
+              >
+                ×
+              </button>
+            </div>
+          </div>
         </div>
         <button type="submit" :disabled="loading">
           {{ loading ? "注册中..." : "提交注册" }}
@@ -81,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { postJson } from "../utils/api";
 import { useToast } from "../utils/toast";
@@ -96,13 +137,25 @@ const form = reactive({
   confirmPassword: "",
   primaryRole: "USER",
   isVolunteer: false,
+  realName: "",
 });
 
 const loading = ref(false);
+
 const resolvedRole = computed(() => {
   if (form.primaryRole === "ADMIN") return "ADMIN";
   return "USER";
 });
+
+watch(
+  () => form.primaryRole,
+  (value) => {
+    if (value === "ADMIN") {
+      form.isVolunteer = false;
+      form.realName = "";
+    }
+  }
+);
 
 const handleRegister = async () => {
   if (!form.username.trim() || !form.password.trim()) {
@@ -124,6 +177,7 @@ const handleRegister = async () => {
       role: resolvedRole.value,
       phone: form.phone,
       requestVolunteer: form.isVolunteer,
+      ...(form.isVolunteer ? { realName: form.realName } : {}),
     });
 
     success("注册成功");
@@ -188,6 +242,37 @@ const handleRegister = async () => {
   padding: 10px 12px;
 }
 
+.input-with-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-with-action input {
+  flex: 1;
+}
+
+.clear-button {
+  border: none;
+  background: #e5e7eb;
+  color: #6b7280;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.clear-button:hover {
+  background: #d1d5db;
+  color: #374151;
+}
+
 .role-options {
   display: flex;
   gap: 15px;
@@ -219,12 +304,6 @@ const handleRegister = async () => {
 .role-option span {
   font-size: 14px;
   color: #555;
-}
-
-.form-hint {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: #6b7280;
 }
 
 .register-form button {
