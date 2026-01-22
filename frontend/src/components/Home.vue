@@ -8,8 +8,12 @@
           统一入口、活动管理、积分激励与数据看板，帮助社区更好组织志愿服务。
         </p>
         <div class="hero-actions">
-          <router-link to="/login" class="primary-btn">立即参与</router-link>
-          <router-link to="/login" class="ghost-btn">查看活动</router-link>
+          <button type="button" class="attend-btn" @click="handleJoin">
+            立即参与
+          </button>
+          <button type="button" class="browse-btn" @click="handleBrowse">
+            查看活动
+          </button>
         </div>
       </div>
       <div class="hero-panel">
@@ -49,7 +53,7 @@
             {{ activity.time }} · {{ activity.location }}
           </p>
           <p class="activity-desc">{{ activity.desc }}</p>
-          <button class="ghost-btn">报名参与</button>
+          <button class="browse-btn">报名参与</button>
         </article>
       </div>
     </section>
@@ -78,6 +82,70 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from "vue-router";
+
+import { useToast } from "../utils/toast";
+
+interface StoredUser {
+  role?: string | null;
+  volunteerStatus?: string | null;
+}
+
+const router = useRouter();
+const { info } = useToast();
+
+const getUserStatus = () => {
+  const storedUser = localStorage.getItem("user");
+
+  if (!storedUser) {
+    return { isLoggedIn: false, role: null, volunteerStatus: null };
+  }
+
+  try {
+    const parsedUser = JSON.parse(storedUser) as StoredUser | null;
+
+    return {
+      isLoggedIn: true,
+      role: parsedUser?.role ?? null,
+      volunteerStatus: parsedUser?.volunteerStatus ?? null,
+    };
+  } catch {
+    return { isLoggedIn: false, role: null, volunteerStatus: null };
+  }
+};
+
+const handleJoin = () => {
+  const { isLoggedIn, role, volunteerStatus } = getUserStatus();
+
+  if (!isLoggedIn) {
+    router.push("/login");
+    return;
+  }
+
+  if (role === "ADMIN" || volunteerStatus === "CERTIFIED") {
+    router.push("/activities");
+    return;
+  }
+
+  info("您尚未认证为志愿者，完成认证后即可报名参与活动。");
+};
+
+const handleBrowse = () => {
+  const { isLoggedIn, role, volunteerStatus } = getUserStatus();
+
+  if (!isLoggedIn) {
+    router.push("/login");
+    return;
+  }
+
+  if (role === "ADMIN" || volunteerStatus === "CERTIFIED") {
+    router.push("/activities");
+    return;
+  }
+
+  router.push("/activities");
+};
+
 const stats = [
   { label: "累计志愿时长", value: "12,580 小时" },
   { label: "服务居民人次", value: "8,960 人次" },
@@ -152,7 +220,7 @@ const activities = [
   gap: 12px;
 }
 
-.primary-btn {
+.attend-btn {
   background: #2563eb;
   color: #fff;
   padding: 10px 18px;
@@ -161,7 +229,7 @@ const activities = [
   font-weight: 600;
 }
 
-.ghost-btn {
+.browse-btn {
   background: #fff;
   color: #2563eb;
   padding: 10px 18px;

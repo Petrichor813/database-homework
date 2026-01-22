@@ -3,12 +3,14 @@
     <div v-if="state.visible" class="toast" :class="`toast-${state.type}`">
       <div class="toast-icon">
         <span v-if="state.type === 'success'">✓</span>
+        <span v-else-if="state.type === 'info'">i</span>
         <span v-else>×</span>
       </div>
       <div class="toast-content">
         <p class="toast-title">{{ state.message }}</p>
         <p v-if="state.detail" class="toast-detail">
-          失败原因：{{ state.detail }}
+          <span v-if="state.type === 'error'">失败原因：</span>
+          {{ state.detail }}
         </p>
       </div>
     </div>
@@ -42,6 +44,12 @@ const { state } = useToast();
   background: #ecfdf3;
   color: #166534;
   border: 1px solid #bbf7d0;
+}
+
+.toast-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 
 .toast-error {

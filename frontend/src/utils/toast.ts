@@ -1,6 +1,6 @@
 import { readonly, ref } from "vue";
 
-export type ToastType = "success" | "error";
+export type ToastType = "success" | "info" | "error";
 
 interface ToastState {
   visible: boolean;
@@ -39,6 +39,7 @@ export const useToast = () => {
   return {
     state: readonly(state),
     success: (message: string, detail = "") => show("success", message, detail),
+    info: (message: string, detail = "") => show("info", message, detail),
     error: (message: string, detail = "") => show("error", message, detail),
   };
 };
