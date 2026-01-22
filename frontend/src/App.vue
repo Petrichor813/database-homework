@@ -206,6 +206,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import GlobalToast from "./components/GlobalToast.vue";
 import { getJson } from "./utils/api";
+import { useToast } from "./utils/toast";
 
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
 type VolunteerStatus =
@@ -227,6 +228,7 @@ interface UserProfile {
 
 const route = useRoute();
 const router = useRouter();
+const { info } = useToast();
 
 const loading = ref(true);
 const currentUser = ref<UserProfile | null>(null);
@@ -235,6 +237,7 @@ const showLogoutConfirm = ref(false);
 const userMenuRef = ref<HTMLElement | null>(null);
 const navMenuRef = ref<HTMLElement | null>(null);
 const activeMenu = ref<MenuName | null>(null);
+
 const activeRouteGroup = computed<MenuName | null>(() => {
   const path = route.path;
   if (path.startsWith("/activities") || path.startsWith("/signups")) {
@@ -253,20 +256,25 @@ const activeRouteGroup = computed<MenuName | null>(() => {
 });
 
 const displayName = computed(() => currentUser.value?.username || "游客");
+
 const displayPoints = computed(() => currentUser.value?.points ?? 0);
+
 const avatarText = computed(() =>
   displayName.value ? displayName.value.slice(0, 1) : "游",
 );
+
 const isVolunteerVerified = computed(
   () =>
     currentUser.value?.role === "ADMIN" ||
     currentUser.value?.volunteerStatus === "CERTIFIED",
 );
+
 const isVolunteerPending = computed(
   () =>
     currentUser.value?.role !== "ADMIN" &&
     currentUser.value?.volunteerStatus === "PENDING",
 );
+
 const volunteerStatusLabel = computed(() => {
   if (!currentUser.value) return "未登录";
   if (currentUser.value.role === "ADMIN") return "管理员权限";
@@ -277,11 +285,13 @@ const volunteerStatusLabel = computed(() => {
   if (status === "SUSPENDED") return "已停用";
   return "未申请";
 });
+
 const statusBadgeClass = computed(() => ({
   "is-verified": isVolunteerVerified.value,
   "is-pending": isVolunteerPending.value,
   "is-muted": !isVolunteerVerified.value && !isVolunteerPending.value,
 }));
+
 const roleLabel = computed(() => {
   if (!currentUser.value) return "游客";
   const role = currentUser.value.role;
@@ -358,6 +368,10 @@ const toggleUserMenu = () => {
 };
 
 const toggleMenu = (menuName: MenuName) => {
+  if (menuName === "admin" && currentUser.value?.role !== "ADMIN") {
+    info("您不是管理员，请勿点击后台操作");
+    return;
+  }
   activeMenu.value = activeMenu.value === menuName ? null : menuName;
 };
 

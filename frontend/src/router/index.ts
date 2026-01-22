@@ -85,21 +85,25 @@ const routes = [
     path: "/admin/activities",
     name: "AdminActivities",
     component: AdminActivity,
+    meta: { requiresAdmin: true },
   },
   {
     path: "/admin/volunteers",
     name: "AdminVolunteers",
     component: AdminVolunteer,
+    meta: { requiresAdmin: true },
   },
   {
     path: "/admin/points",
     name: "AdminPoints",
     component: AdminPoints,
+    meta: { requiresAdmin: true },
   },
   {
     path: "/admin/exchange",
     name: "AdminExchange",
     component: AdminExchange,
+    meta: { requiresAdmin: true },
   },
 ];
 
@@ -109,6 +113,30 @@ const router = createRouter({
 });
 
 router.beforeEach((to, _from, next) => {
+  if (to.meta.requiresAdmin) {
+    const userStr = localStorage.getItem("user");
+
+    if (!userStr) {
+      next("/login");
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userStr);
+
+      if (user.role !== "ADMIN") {
+        next("/home");
+        return;
+      }
+    } catch (error) {
+      console.error("解析用户信息失败:", error);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      next("/login");
+      return;
+    }
+  }
+
   if (to.meta.requiresAuth) {
     const userStr = localStorage.getItem("user");
 
