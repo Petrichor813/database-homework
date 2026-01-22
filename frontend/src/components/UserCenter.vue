@@ -126,11 +126,12 @@ const { error } = useToast();
 
 const profile = ref<UserProfile | null>(null);
 const records = ref<PointsRecord[]>([]);
-
 const displayName = computed(() => profile.value?.username || "游客");
+
 const avatarText = computed(() =>
   displayName.value ? displayName.value.slice(0, 1) : "游",
 );
+
 const roleLabel = computed(() => {
   if (!profile.value?.role) return "游客";
   const roleMap: Record<UserRole, string> = {
@@ -142,7 +143,21 @@ const roleLabel = computed(() => {
   if (!role) return "游客";
   return roleMap[role] || role;
 });
-const displayPhone = computed(() => profile.value?.phone || "暂无");
+
+const maskPhone = (phone?: string) => {
+  if (!phone) return "";
+  const trimmed = phone.trim();
+  if (trimmed.length < 7) return trimmed;
+  const prefix = trimmed.slice(0, 3);
+  const suffix = trimmed.slice(-4);
+  return `${prefix}****${suffix}`;
+};
+
+const displayPhone = computed(() => {
+  const phone = maskPhone(profile.value?.phone);
+  return phone || "暂无";
+});
+
 const displayPoints = computed(() => profile.value?.points ?? 0);
 const displayHours = computed(() => profile.value?.serviceHours ?? 0);
 

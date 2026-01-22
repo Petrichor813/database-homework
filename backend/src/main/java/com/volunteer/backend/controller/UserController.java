@@ -58,9 +58,7 @@ public class UserController {
                     .map(record -> toPointsRecordResponse(record)).toList();
         }
 
-        return new UserProfileResponse(user.getId(), user.getUsername(), user.getRole(),
-                volunteer != null ? volunteer.getPhone() : null, volunteer != null ? volunteer.getStatus() : null,
-                points, serviceHours, records);
+        return new UserProfileResponse(user.getId(), user.getUsername(), user.getRole(), user.getPhone(), volunteer != null ? volunteer.getStatus() : null, points, serviceHours, records);
     }
 
     private PointsRecordResponse toPointsRecordResponse(PointsChangeRecord record) {

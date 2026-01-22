@@ -52,11 +52,12 @@ public class User {
         this.createTime = LocalDateTime.now();
     }
 
-    public User(String username, String password, UserRole role) {
+    public User(String username, String password, UserRole role, String phone) {
         this();
         this.username = username;
         this.password = password;
         this.role = role;
+        this.phone = phone;
     }
 
     public Long getId() {

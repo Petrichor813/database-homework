@@ -40,7 +40,7 @@ public class AuthService {
         String token = UUID.randomUUID().toString();
         Volunteer volunteer = volunteerRepository.findByUserId(user.getId()).orElse(null);
         VolunteerStatus volunteerStatus = volunteer != null ? volunteer.getStatus() : null;
-        String phone = volunteer != null ? volunteer.getPhone() : null;
+        String phone = user.getPhone();
         return new LoginResponse(user.getId(), user.getUsername(), user.getRole(), token, volunteerStatus, phone);
     }
 
@@ -49,7 +49,7 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("用户名已存在");
         }
-        User user = new User(request.getUsername(), request.getPassword(), role);
+        User user = new User(request.getUsername(), request.getPassword(), role, request.getPhone());
         User savedUser = userRepository.save(user);
         if (request.isRequestVolunteer() && role == UserRole.USER) {
             Volunteer volunteer = new Volunteer(request.getUsername(), request.getPhone(), savedUser.getId());
