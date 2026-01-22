@@ -7,15 +7,17 @@ public class RegisterRequest {
     private String password;
     private UserRole role;
     private String phone;
+    private boolean requestVolunteer;
 
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String username, String password, UserRole role, String phone) {
+    public RegisterRequest(String username, String password, UserRole role, String phone, boolean requestVolunteer) {
         this.username = username;
         this.password = password;
         this.role = role;
         this.phone = phone;
+        this.requestVolunteer = requestVolunteer;
     }
 
     public String getUsername() {
@@ -48,5 +50,13 @@ public class RegisterRequest {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public boolean isRequestVolunteer() {
+        return requestVolunteer;
+    }
+
+    public void setRequestVolunteer(boolean requestVolunteer) {
+        this.requestVolunteer = requestVolunteer;
     }
 }

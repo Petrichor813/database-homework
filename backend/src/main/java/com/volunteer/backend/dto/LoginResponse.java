@@ -1,22 +1,36 @@
 package com.volunteer.backend.dto;
 
 import com.volunteer.backend.utils.UserRole;
+import com.volunteer.backend.utils.VolunteerStatus;
 
 public class LoginResponse {
     private Long id;
     private String username;
     private UserRole role;
     private String token;
+    private VolunteerStatus volunteerStatus;
+    private String phone;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(Long id, String username, UserRole role, String token) {
+    // @formatter:off
+    public LoginResponse(
+        Long id,
+        String username,
+        UserRole role,
+        String token,
+        VolunteerStatus volunteerStatus,
+        String phone
+    ) {
         this.id = id;
         this.username = username;
         this.role = role;
         this.token = token;
+        this.volunteerStatus = volunteerStatus;
+        this.phone = phone;
     }
+    // @formatter:on
 
     public Long getId() {
         return id;
@@ -48,5 +62,21 @@ public class LoginResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public VolunteerStatus getVolunteerStatus() {
+        return volunteerStatus;
+    }
+
+    public void setVolunteerStatus(VolunteerStatus volunteerStatus) {
+        this.volunteerStatus = volunteerStatus;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }

@@ -7,36 +7,45 @@
 
     <section class="profile-grid">
       <div class="profile-card">
-        <div class="avatar-placeholder">头像占位</div>
+        <div class="avatar-placeholder">{{ avatarText }}</div>
         <div class="info">
-          <p class="name">张三</p>
-          <p class="role">志愿者 · 待审核</p>
+          <p class="name">{{ displayName }}</p>
+          <p class="role">{{ roleLabel }}</p>
           <button class="ghost-btn">编辑资料</button>
         </div>
       </div>
       <div class="profile-card">
         <h3>基础信息</h3>
-        <ul>
-          <li>手机号：138****8888</li>
-          <li>服务时长：120 小时</li>
-          <li>积分余额：260</li>
-        </ul>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">手机号</span>
+            <span class="value">{{ displayPhone }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">服务时长</span>
+            <span class="value">{{ displayHours }} 小时</span>
+          </div>
+          <div class="info-item">
+            <span class="label">积分余额</span>
+            <span class="value">{{ displayPoints }}</span>
+          </div>
+        </div>
       </div>
       <div class="profile-card">
         <h3>认证状态</h3>
-        <div class="status-block">等待管理员审核</div>
-        <button class="ghost-btn">提交补充材料</button>
+        <div class="status-block" :class="statusClass">{{ volunteerStatusLabel }}</div>
+        <button v-if="showSupplement" class="ghost-btn">提交补充材料</button>
       </div>
     </section>
 
     <section class="summary">
       <div class="summary-card">
         <p>当前积分</p>
-        <h3>260</h3>
+        <h3>{{ displayPoints }}</h3>
       </div>
       <div class="summary-card">
         <p>本月新增</p>
-        <h3>+80</h3>
+        <h3>+{{ monthlyEarned }}</h3>
       </div>
       <div class="summary-card">
         <p>兑换记录</p>
@@ -46,31 +55,143 @@
       </div>
     </section>
 
-    <section class="table-card">
+    <section v-if="records.length" class="table-card">
       <div class="table-header">
         <span>时间</span>
         <span>类型</span>
         <span>变动</span>
         <span>备注</span>
       </div>
-      <div v-for="record in records" :key="record.time" class="table-row">
+      <div v-for="record in formattedRecords" :key="record.key" class="table-row">
         <span>{{ record.time }}</span>
-        <span>{{ record.type }}</span>
+        <span>{{ record.typeLabel }}</span>
         <span :class="record.amount.startsWith('+') ? 'positive' : 'negative'">
           {{ record.amount }}
         </span>
         <span>{{ record.note }}</span>
       </div>
     </section>
+    <section v-else class="empty-card">
+      <p>暂无积分变动记录</p>
+    </section>
   </div>
 </template>
 
 <script setup>
-const records = [
-  { time: '2025-04-08', type: '活动结算', amount: '+40', note: '社区清洁行动' },
-  { time: '2025-04-02', type: '积分兑换', amount: '-60', note: '兑换环保礼包' },
-  { time: '2025-03-28', type: '活动结算', amount: '+30', note: '防诈宣传' }
-]
+import { computed, onMounted, ref } from 'vue'
+import { getJson } from '../utils/api'
+import { useToast } from '../utils/toast'
+
+const { error } = useToast()
+
+const profile = ref(null)
+const records = ref([])
+
+const displayName = computed(() => profile.value?.username || '游客')
+const avatarText = computed(() => (displayName.value ? displayName.value.slice(0, 1) : '游'))
+const roleLabel = computed(() => {
+  if (!profile.value?.role) return '游客'
+  const roleMap = {
+    ADMIN: '管理员',
+    VOLUNTEER: '志愿者',
+    USER: '普通用户'
+  }
+  return roleMap[profile.value.role] || profile.value.role
+})
+const displayPhone = computed(() => profile.value?.phone || '暂无')
+const displayPoints = computed(() => profile.value?.points ?? 0)
+const displayHours = computed(() => profile.value?.serviceHours ?? 0)
+
+const volunteerStatusLabel = computed(() => {
+  if (!profile.value) return '未登录'
+  if (profile.value.role === 'ADMIN') return '管理员权限'
+  const status = profile.value.volunteerStatus
+  if (status === 'CERTIFIED') return '已认证'
+  if (status === 'PENDING') return '等待管理员审核'
+  if (status === 'REJECTED') return '未通过审核'
+  if (status === 'SUSPENDED') return '已停用'
+  return '未申请'
+})
+
+const statusClass = computed(() => {
+  if (profile.value?.role === 'ADMIN') return 'status-admin'
+  if (profile.value?.volunteerStatus === 'CERTIFIED') return 'status-certified'
+  if (profile.value?.volunteerStatus === 'PENDING') return 'status-pending'
+  if (profile.value?.volunteerStatus === 'REJECTED') return 'status-rejected'
+  if (profile.value?.volunteerStatus === 'SUSPENDED') return 'status-suspended'
+  return 'status-muted'
+})
+
+const showSupplement = computed(() =>
+  profile.value?.volunteerStatus === 'PENDING' || profile.value?.volunteerStatus === 'REJECTED'
+)
+
+const formattedRecords = computed(() =>
+  records.value.map(record => {
+    const amountValue = Number(record.amount ?? 0)
+    const amountText = amountValue >= 0 ? `+${amountValue}` : `${amountValue}`
+    return {
+      key: `${record.time}-${record.type}-${record.amount}`,
+      time: record.time,
+      typeLabel: resolveRecordType(record.type),
+      amount: amountText,
+      note: record.note || '—'
+    }
+  })
+)
+
+const monthlyEarned = computed(() => {
+  const now = new Date()
+  return formattedRecords.value
+    .filter(record => {
+      const recordDate = new Date(record.time)
+      if (Number.isNaN(recordDate.getTime())) {
+        return false
+      }
+      return (
+        recordDate.getFullYear() === now.getFullYear() &&
+        recordDate.getMonth() === now.getMonth()
+      )
+    })
+    .reduce((sum, record) => {
+      const amount = Number(record.amount.replace('+', ''))
+      return amount > 0 ? sum + amount : sum
+    }, 0)
+})
+
+const resolveRecordType = type => {
+  const map = {
+    ACTIVITY_EARN: '活动结算',
+    EXCHANGE_USE: '积分兑换',
+    ADMIN_ADJUST: '管理员调整',
+    SYSTEM_BONUS: '系统奖励',
+    EXPIRED_DEDUCT: '过期扣除'
+  }
+  return map[type] || '积分变动'
+}
+
+const loadProfile = async () => {
+  const userStr = localStorage.getItem('user')
+  if (!userStr) {
+    return
+  }
+
+  try {
+    const user = JSON.parse(userStr)
+    profile.value = user
+    if (!user.id) return
+    const data = await getJson(`/api/users/${user.id}/profile`)
+    profile.value = data
+    records.value = data.pointsRecords ?? []
+  } catch (err) {
+    const message = err instanceof Error ? err.message : '获取个人信息失败'
+    error('加载失败', message)
+  }
+}
+
+onMounted(() => {
+  loadProfile()
+})
 </script>
 
 <style scoped>
@@ -102,12 +223,14 @@ const records = [
 
 .avatar-placeholder {
   height: 120px;
-  background: #f1f5f9;
+  background: linear-gradient(135deg, #e0e7ff, #f8fafc);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: #1d4ed8;
+  font-size: 32px;
+  font-weight: 600;
 }
 
 .info {
@@ -125,12 +248,66 @@ const records = [
   font-size: 14px;
 }
 
+.info-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.info-item .label {
+  color: #6b7280;
+}
+
+.info-item .value {
+  font-weight: 600;
+  color: #111827;
+}
+
 .status-block {
   background: #fef3c7;
   color: #92400e;
   padding: 8px 12px;
   border-radius: 8px;
   width: fit-content;
+  font-weight: 600;
+}
+
+.status-certified {
+  background: #ecfdf3;
+  color: #065f46;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-suspended {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status-muted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-admin {
+  background: #eef2ff;
+  color: #3730a3;
 }
 
 .ghost-btn {
@@ -203,5 +380,14 @@ const records = [
 .negative {
   color: #dc2626;
   font-weight: 600;
+}
+
+.empty-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px dashed #e5e7eb;
+  padding: 24px;
+  color: #6b7280;
+  text-align: center;
 }
 </style>

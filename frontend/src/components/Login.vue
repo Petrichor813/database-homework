@@ -87,7 +87,9 @@ const handleLogin = async () => {
       id: response.id,
       username: response.username,
       role: response.role,
-      token: response.token
+      token: response.token,
+      volunteerStatus: response.volunteerStatus ?? null,
+      phone: response.phone ?? null
     }
 
     localStorage.setItem('user', JSON.stringify(userData))

@@ -76,7 +76,7 @@ const form = reactive({
 const loading = ref(false)
 const resolvedRole = computed(() => {
   if (form.primaryRole === 'ADMIN') return 'ADMIN'
-  return form.isVolunteer ? 'VOLUNTEER' : 'USER'
+  return 'USER'
 })
 
 const handleRegister = async () => {
@@ -97,7 +97,8 @@ const handleRegister = async () => {
       username: form.username,
       password: form.password,
       role: resolvedRole.value,
-      phone: form.phone
+      phone: form.phone,
+      requestVolunteer: form.isVolunteer
     })
 
     success('注册成功')

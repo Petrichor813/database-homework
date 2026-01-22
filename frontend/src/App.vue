@@ -75,8 +75,8 @@
                 <div class="stat">
                   <span class="stat-label">志愿者认证</span>
                   <span class="stat-value status-value">
-                    <span class="status-badge" :class="{ 'is-verified': isVolunteerVerified }">
-                      {{ isVolunteerVerified ? '已认证' : '未认证' }}
+                    <span class="status-badge" :class="statusBadgeClass">
+                      {{ volunteerStatusLabel }}
                     </span>
                   </span>
                 </div>
@@ -104,6 +104,17 @@
 
     <GlobalToast />
 
+    <div v-if="showLogoutConfirm" class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <h3>确认退出登录</h3>
+        <p>是否真的退出登录？</p>
+        <div class="modal-actions">
+          <button class="modal-btn primary" @click="confirmLogout">确认</button>
+          <button class="modal-btn" @click="cancelLogout">取消</button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="loading" class="global-loading">
       <div class="loading-spinner"></div>
       <p>加载中...</p>
@@ -115,12 +126,14 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import GlobalToast from './components/GlobalToast.vue';
+import { getJson } from "./utils/api";
 
 const router = useRouter();
 
 const loading = ref(true);
 const currentUser = ref(null);
 const menuOpen = ref(false);
+const showLogoutConfirm = ref(false);
 const userMenuRef = ref(null);
 const navMenuRef = ref(null);
 const activeMenu = ref(null);
@@ -128,7 +141,27 @@ const activeMenu = ref(null);
 const displayName = computed(() => currentUser.value?.username || '游客');
 const displayPoints = computed(() => currentUser.value?.points ?? 0);
 const avatarText = computed(() => (displayName.value ? displayName.value.slice(0, 1) : '游'));
-const isVolunteerVerified = computed(() => currentUser.value?.volunteerVerified ?? false);
+const isVolunteerVerified = computed(() =>
+  currentUser.value?.role === 'ADMIN' || currentUser.value?.volunteerStatus === 'CERTIFIED'
+);
+const isVolunteerPending = computed(() =>
+  currentUser.value?.role !== 'ADMIN' && currentUser.value?.volunteerStatus === 'PENDING'
+);
+const volunteerStatusLabel = computed(() => {
+  if (!currentUser.value) return '未登录';
+  if (currentUser.value.role === 'ADMIN') return '管理员权限';
+  const status = currentUser.value.volunteerStatus;
+  if (status === 'CERTIFIED') return '已认证';
+  if (status === 'PENDING') return '待审核';
+  if (status === 'REJECTED') return '未通过';
+  if (status === 'SUSPENDED') return '已停用';
+  return '未申请';
+});
+const statusBadgeClass = computed(() => ({
+  'is-verified': isVolunteerVerified.value,
+  'is-pending': isVolunteerPending.value,
+  'is-muted': !isVolunteerVerified.value && !isVolunteerPending.value
+}));
 const roleLabel = computed(() => {
   if (!currentUser.value) return '游客';
   const role = currentUser.value.role;
@@ -155,10 +188,10 @@ const checkAuth = () => {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       const parsedUser = JSON.parse(userStr);
-      currentUser.value = {
-        ...parsedUser,
-        volunteerVerified: parsedUser.volunteerVerified ?? parsedUser.isVerified ?? false
-      };
+      currentUser.value = parsedUser;
+      if (parsedUser.id) {
+        refreshProfile(parsedUser.id);
+      }
       return;
     }
   } catch (error) {
@@ -167,6 +200,21 @@ const checkAuth = () => {
     localStorage.removeItem('token');
   }
   currentUser.value = null;
+}
+
+const refreshProfile = async userId => {
+  try {
+    const profile = await getJson(`/api/users/${userId}/profile`);
+    const updatedUser = {
+      ...currentUser.value,
+      ...profile,
+      token: currentUser.value?.token
+    };
+    currentUser.value = updatedUser;
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  } catch (error) {
+    console.error('获取用户资料失败:', error);
+  }
 }
 
 const toggleUserMenu = () => {
@@ -195,13 +243,20 @@ const handleClickOutside = event => {
 }
 
 const handleLogout = () => {
-  if (confirm('确定要退出登录吗？')) {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    currentUser.value = null;
-    menuOpen.value = false;
-    router.push('/login');
-  }
+  showLogoutConfirm.value = true;
+  menuOpen.value = false;
+}
+
+const confirmLogout = () => {
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
+  currentUser.value = null;
+  showLogoutConfirm.value = false;
+  router.push('/login');
+}
+
+const cancelLogout = () => {
+  showLogoutConfirm.value = false;
 }
 
 const goToLogin = () => {
@@ -432,6 +487,16 @@ body {
   color: #10b981;
 }
 
+.status-badge.is-pending {
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.status-badge.is-muted {
+  border-color: #9ca3af;
+  color: #6b7280;
+}
+
 .user-actions {
   display: grid;
   gap: 8px;
@@ -443,6 +508,11 @@ body {
   padding: 8px 10px;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dropdown-btn.primary {
@@ -511,5 +581,52 @@ body {
   margin-top: 15px;
   color: #3498db;
   font-weight: 500;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  width: min(360px, 90%);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+  display: grid;
+  gap: 10px;
+  text-align: center;
+}
+
+.modal-card p {
+  color: #4b5563;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.modal-btn {
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-btn.primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
 }
 </style>
