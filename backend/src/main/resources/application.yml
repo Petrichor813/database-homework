@@ -4,7 +4,7 @@ spring:
 
   # datasource configuration
   datasource:
-    url: jdbc:mysql://localhost:3306/knowledgebase?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/volunteer?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: volunteer
     password: volunteer1227
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -12,7 +12,7 @@ spring:
   # JPA configuration
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

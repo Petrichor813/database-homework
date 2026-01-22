@@ -75,7 +75,6 @@
                 <div class="stat">
                   <span class="stat-label">志愿者认证</span>
                   <span class="stat-value status-value">
-                    <span>{{ isVolunteerVerified ? '已认证' : '未认证' }}</span>
                     <span class="status-badge" :class="{ 'is-verified': isVolunteerVerified }">
                       {{ isVolunteerVerified ? '已认证' : '未认证' }}
                     </span>
