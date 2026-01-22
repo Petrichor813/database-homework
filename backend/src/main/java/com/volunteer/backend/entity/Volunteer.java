@@ -148,4 +148,12 @@ public class Volunteer {
         this.reviewNote = note;
         this.reviewTime = LocalDateTime.now();
     }
+
+    public void resetForReapply(String name, String phone) {
+        this.status = VolunteerStatus.PENDING;
+        this.reviewNote = null;
+        this.reviewTime = null;
+        this.name = name;
+        this.phone = phone;
+    }
 }

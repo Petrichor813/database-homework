@@ -23,6 +23,7 @@ import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
 import com.volunteer.backend.utils.UserRole;
+import com.volunteer.backend.utils.VolunteerStatus;
 
 @RestController
 @RequestMapping("/api/users")
@@ -123,6 +124,11 @@ public class UserController {
         }
         Volunteer existing = volunteerRepository.findByUserId(userId).orElse(null);
         if (existing != null) {
+            if (existing.getStatus() == VolunteerStatus.REJECTED) {
+                existing.resetForReapply(user.getUsername(), user.getPhone());
+                volunteerRepository.save(existing);
+                return buildProfileResponse(user);
+            }
             throw new IllegalArgumentException("已提交过志愿者申请");
         }
         Volunteer volunteer = new Volunteer(user.getUsername(), user.getPhone(), userId);

@@ -45,7 +45,7 @@
           :disabled="isApplying"
           @click="applyVolunteer"
         >
-          申请认证为志愿者
+          {{ applyVolunteerLabel }}
         </button>
       </div>
     </section>
@@ -229,14 +229,22 @@ const statusSizeClass = computed(() =>
   profile.value?.volunteerStatus ? "" : "status-empty",
 );
 
-const canApplyVolunteer = computed(
-  () => profile.value?.role === "USER" && !profile.value?.volunteerStatus,
+const canApplyVolunteer = computed(() => {
+  if (profile.value?.role !== "USER") return false;
+  return (
+    !profile.value?.volunteerStatus ||
+    profile.value?.volunteerStatus === "REJECTED"
+  );
+});
+
+const applyVolunteerLabel = computed(() =>
+  profile.value?.volunteerStatus === "REJECTED"
+    ? "重新提交申请"
+    : "申请认证为志愿者",
 );
 
 const showSupplement = computed(
-  () =>
-    profile.value?.volunteerStatus === "PENDING" ||
-    profile.value?.volunteerStatus === "REJECTED",
+  () => profile.value?.volunteerStatus === "PENDING",
 );
 
 const formattedRecords = computed<FormattedRecord[]>(() =>
