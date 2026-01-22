@@ -11,7 +11,7 @@
           <button type="button" class="attend-btn" @click="handleJoin">
             立即参与
           </button>
-          <button type="button" class="browse-btn" @click="handleBrowse">
+          <button type="button" class="browse-btn" @click="gotoActivities">
             查看活动
           </button>
         </div>
@@ -123,26 +123,14 @@ const handleJoin = () => {
   }
 
   if (role === "ADMIN" || volunteerStatus === "CERTIFIED") {
-    router.push("/activities");
+    gotoActivities();
     return;
   }
 
   info("您尚未认证为志愿者，完成认证后即可报名参与活动。");
 };
 
-const handleBrowse = () => {
-  const { isLoggedIn, role, volunteerStatus } = getUserStatus();
-
-  if (!isLoggedIn) {
-    router.push("/login");
-    return;
-  }
-
-  if (role === "ADMIN" || volunteerStatus === "CERTIFIED") {
-    router.push("/activities");
-    return;
-  }
-
+const gotoActivities = () => {
   router.push("/activities");
 };
 
