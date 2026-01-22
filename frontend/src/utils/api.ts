@@ -36,3 +36,26 @@ export const getJson = async <T>(path: string): Promise<T> => {
 
   return data as T;
 };
+
+export const putJson = async <T>(
+  path: string,
+  payload: unknown,
+): Promise<T> => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      typeof data?.message === "string" ? data.message : "请求失败";
+    throw new Error(message);
+  }
+
+  return data as T;
+};

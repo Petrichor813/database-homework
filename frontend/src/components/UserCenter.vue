@@ -11,7 +11,7 @@
         <div class="info">
           <p class="name">{{ displayName }}</p>
           <p class="role">{{ roleLabel }}</p>
-          <button class="ghost-btn">编辑资料</button>
+          <button class="ghost-btn" @click="openEditProfile">编辑资料</button>
         </div>
       </div>
       <div class="profile-card">
@@ -33,10 +33,18 @@
       </div>
       <div class="profile-card">
         <h3>认证状态</h3>
-        <div class="status-block" :class="statusClass">
+        <div class="status-block" :class="[statusClass, statusSizeClass]">
           {{ volunteerStatusLabel }}
         </div>
         <button v-if="showSupplement" class="ghost-btn">提交补充材料</button>
+        <button
+          v-if="canApplyVolunteer"
+          class="primary-btn"
+          :disabled="isApplying"
+          @click="applyVolunteer"
+        >
+          申请认证为志愿者
+        </button>
       </div>
     </section>
 
@@ -80,12 +88,39 @@
     <section v-else class="empty-card">
       <p>暂无积分变动记录</p>
     </section>
+
+    <div v-if="showEditModal" class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <h3>编辑资料</h3>
+        <div class="form-grid">
+          <label class="form-field">
+            <span>用户名</span>
+            <input v-model="editForm.username" type="text" maxlength="20" />
+          </label>
+          <label class="form-field">
+            <span>手机号</span>
+            <input v-model="editForm.phone" type="text" maxlength="20" />
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button
+            class="modal-btn primary"
+            :disabled="isSaving"
+            @click="saveProfile"
+          >
+            保存修改
+          </button>
+          <button class="modal-btn" @click="closeEditProfile">取消</button>
+        </div>
+        <p class="modal-tip">修改手机号后将自动同步到已有志愿者档案。</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { getJson } from "../utils/api";
+import { computed, onMounted, ref, reactive } from "vue";
+import { getJson, postJson, putJson } from "../utils/api";
 import { useToast } from "../utils/toast";
 
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
@@ -122,11 +157,18 @@ interface FormattedRecord {
   note: string;
 }
 
-const { error } = useToast();
+const { success, error } = useToast();
 
 const profile = ref<UserProfile | null>(null);
 const records = ref<PointsRecord[]>([]);
 const displayName = computed(() => profile.value?.username || "游客");
+const showEditModal = ref(false);
+const editForm = reactive({
+  username: "",
+  phone: "",
+});
+const isSaving = ref(false);
+const isApplying = ref(false);
 
 const avatarText = computed(() =>
   displayName.value ? displayName.value.slice(0, 1) : "游",
@@ -180,6 +222,14 @@ const statusClass = computed(() => {
   if (profile.value?.volunteerStatus === "SUSPENDED") return "status-suspended";
   return "status-muted";
 });
+
+const statusSizeClass = computed(() =>
+  profile.value?.volunteerStatus ? "" : "status-empty",
+);
+
+const canApplyVolunteer = computed(
+  () => profile.value?.role === "USER" && !profile.value?.volunteerStatus,
+);
 
 const showSupplement = computed(
   () =>
@@ -253,6 +303,82 @@ const loadProfile = async () => {
 onMounted(() => {
   loadProfile();
 });
+
+const openEditProfile = () => {
+  if (!profile.value) return;
+  editForm.username = profile.value.username ?? "";
+  editForm.phone = profile.value.phone ?? "";
+  showEditModal.value = true;
+};
+
+const closeEditProfile = () => {
+  showEditModal.value = false;
+};
+
+const updateLocalUser = (data: UserProfile) => {
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return;
+  try {
+    const parsedUser = JSON.parse(userStr) as UserProfile;
+    const updatedUser = {
+      ...parsedUser,
+      username: data.username ?? parsedUser.username,
+      phone: data.phone ?? parsedUser.phone,
+      volunteerStatus: data.volunteerStatus ?? parsedUser.volunteerStatus,
+    };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  } catch (storageError) {
+    console.error("更新本地用户信息失败:", storageError);
+  }
+};
+
+const saveProfile = async () => {
+  if (!profile.value?.id || isSaving.value) return;
+  const username = editForm.username.trim();
+  if (!username) {
+    error("保存失败", "用户名不能为空");
+    return;
+  }
+
+  isSaving.value = true;
+  try {
+    const updated = await putJson<UserProfile>(
+      `/api/users/${profile.value.id}/profile`,
+      {
+        username,
+        phone: editForm.phone.trim(),
+      },
+    );
+    profile.value = updated;
+    updateLocalUser(updated);
+    success("保存成功", "资料已更新");
+    showEditModal.value = false;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "保存失败";
+    error("保存失败", message);
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const applyVolunteer = async () => {
+  if (!profile.value?.id || isApplying.value) return;
+  isApplying.value = true;
+  try {
+    const updated = await postJson<UserProfile>(
+      `/api/users/${profile.value.id}/volunteer-apply`,
+      {},
+    );
+    profile.value = updated;
+    updateLocalUser(updated);
+    success("已提交申请", "等待管理员审核");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "申请失败";
+    error("申请失败", message);
+  } finally {
+    isApplying.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -371,12 +497,34 @@ onMounted(() => {
   color: #3730a3;
 }
 
+.status-empty {
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 16px;
+}
+
 .ghost-btn {
   border: 1px solid #e5e7eb;
   background: #fff;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
+}
+
+.primary-btn {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
 }
 
 .summary {
@@ -450,5 +598,77 @@ onMounted(() => {
   padding: 24px;
   color: #6b7280;
   text-align: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 120;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 320px;
+  max-width: 420px;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.form-field input {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.modal-btn.primary {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+.modal-btn:disabled {
+  background: #94a3b8;
+  color: #fff;
+  border: none;
+  cursor: not-allowed;
+}
+
+.modal-tip {
+  font-size: 12px;
+  color: #6b7280;
 }
 </style>

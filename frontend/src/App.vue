@@ -10,7 +10,10 @@
           <div class="nav-group">
             <button
               type="button"
-              class="nav-link nav-trigger"
+              :class="[
+                'nav-link nav-trigger',
+                { 'is-active': activeRouteGroup === 'activities' },
+              ]"
               aria-controls="nav-activities"
               :aria-expanded="activeMenu === 'activities'"
               @click="toggleMenu('activities')"
@@ -34,7 +37,10 @@
           <div class="nav-group">
             <button
               type="button"
-              class="nav-link nav-trigger"
+              :class="[
+                'nav-link nav-trigger',
+                { 'is-active': activeRouteGroup === 'volunteer' },
+              ]"
               aria-controls="nav-volunteer"
               :aria-expanded="activeMenu === 'volunteer'"
               @click="toggleMenu('volunteer')"
@@ -55,7 +61,10 @@
           <div class="nav-group">
             <button
               type="button"
-              class="nav-link nav-trigger"
+              :class="[
+                'nav-link nav-trigger',
+                { 'is-active': activeRouteGroup === 'dashboard' },
+              ]"
               aria-controls="nav-dashboard"
               :aria-expanded="activeMenu === 'dashboard'"
               @click="toggleMenu('dashboard')"
@@ -71,9 +80,6 @@
               <router-link to="/dashboard" class="nav-dropdown-link"
                 >看板总览</router-link
               >
-              <router-link to="/data-import" class="nav-dropdown-link"
-                >数据导入</router-link
-              >
               <router-link to="/data-export" class="nav-dropdown-link"
                 >数据导出</router-link
               >
@@ -82,7 +88,10 @@
           <div class="nav-group">
             <button
               type="button"
-              class="nav-link nav-trigger"
+              :class="[
+                'nav-link nav-trigger',
+                { 'is-active': activeRouteGroup === 'admin' },
+              ]"
               aria-controls="nav-admin"
               :aria-expanded="activeMenu === 'admin'"
               @click="toggleMenu('admin')"
@@ -101,11 +110,14 @@
               <router-link to="/admin/activities" class="nav-dropdown-link"
                 >活动管理</router-link
               >
-              <router-link to="/admin/points" class="nav-dropdown-link"
-                >积分管理</router-link
-              >
-              <router-link to="/admin/exchange" class="nav-dropdown-link"
-                >兑换管理</router-link
+              <router-link to="/admin/points" class="nav-dropdown-link">
+                积分管理
+              </router-link>
+              <router-link to="/admin/exchange" class="nav-dropdown-link">
+                兑换管理
+              </router-link>
+              <router-link to="/data-import" class="nav-dropdown-link"
+                >数据导入</router-link
               >
             </div>
           </div>
@@ -191,7 +203,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import GlobalToast from "./components/GlobalToast.vue";
 import { getJson } from "./utils/api";
 
@@ -213,6 +225,7 @@ interface UserProfile {
   token?: string;
 }
 
+const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
@@ -222,6 +235,22 @@ const showLogoutConfirm = ref(false);
 const userMenuRef = ref<HTMLElement | null>(null);
 const navMenuRef = ref<HTMLElement | null>(null);
 const activeMenu = ref<MenuName | null>(null);
+const activeRouteGroup = computed<MenuName | null>(() => {
+  const path = route.path;
+  if (path.startsWith("/activities") || path.startsWith("/signups")) {
+    return "activities";
+  }
+  if (path.startsWith("/exchange") || path.startsWith("/exchange-records")) {
+    return "volunteer";
+  }
+  if (path.startsWith("/dashboard") || path.startsWith("/data-export")) {
+    return "dashboard";
+  }
+  if (path.startsWith("/admin") || path.startsWith("/data-import")) {
+    return "admin";
+  }
+  return null;
+});
 
 const displayName = computed(() => currentUser.value?.username || "游客");
 const displayPoints = computed(() => currentUser.value?.points ?? 0);
@@ -479,6 +508,11 @@ body {
 
 .nav-link.router-link-active {
   background: #2563eb;
+}
+
+.nav-link.is-active {
+  background: #2563eb;
+  color: #fff;
 }
 
 .user-area {
