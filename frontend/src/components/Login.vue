@@ -31,14 +31,24 @@
       <form class="login-form" @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="username">用户名</label>
-          <input
-            id="username"
-            v-model="form.username"
-            type="text"
-            placeholder="请输入用户名"
-            required
-            class="form-input"
-          />
+          <div class="input-with-action">
+            <input
+              id="username"
+              v-model="form.username"
+              type="text"
+              placeholder="请输入用户名"
+              required
+              class="form-input"
+            />
+            <button
+              v-if="form.username"
+              type="button"
+              class="clear-button"
+              @click="form.username = ''"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -223,6 +233,39 @@ const goToRegister = () => {
   font-weight: 500;
   color: #333;
   font-size: 14px;
+}
+
+.input-with-action {
+  position: relative;
+}
+
+.input-with-action .form-input {
+  padding-right: 40px;
+}
+
+.clear-button {
+  border: none;
+  background: #e5e7eb;
+  color: #6b7280;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.clear-button:hover {
+  background: #d1d5db;
+  color: #374151;
 }
 
 .form-input {

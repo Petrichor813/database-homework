@@ -243,13 +243,14 @@ const handleRegister = async () => {
 }
 
 .input-with-action {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 .input-with-action input {
   flex: 1;
+  padding-right: 40px;
 }
 
 .clear-button {
@@ -266,6 +267,10 @@ const handleRegister = async () => {
   padding: 0;
   line-height: 1;
   transition: background 0.2s ease, color 0.2s ease;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .clear-button:hover {
