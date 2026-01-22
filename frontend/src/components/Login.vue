@@ -59,6 +59,17 @@ import { useRouter } from 'vue-router'
 import { postJson } from '../utils/api'
 import { useToast } from '../utils/toast'
 
+type UserRole = 'ADMIN' | 'VOLUNTEER' | 'USER'
+
+interface LoginResponse {
+  id: number | string
+  username: string
+  role: UserRole
+  token: string
+  volunteerStatus?: string | null
+  phone?: string | null
+}
+
 const router = useRouter()
 const { success, error } = useToast()
 
@@ -78,7 +89,7 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    const response = await postJson('/api/auth/login', {
+    const response = await postJson<LoginResponse>('/api/auth/login', {
       username: form.username,
       password: form.password
     })

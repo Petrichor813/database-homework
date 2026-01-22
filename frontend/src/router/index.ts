@@ -5,7 +5,6 @@ import Register from "../components/Register.vue";
 import UserCenter from "../components/UserCenter.vue";
 import ActivityList from "../components/ActivityList.vue";
 import SignupRecord from "../components/SignupRecord.vue";
-import UserProfile from "../components/UserProfile.vue";
 import PointRecord from "../components/PointRecord.vue";
 import ExchangePage from "../components/ExchangePage.vue";
 import ExchangeRecord from "../components/ExchangeRecord.vue";
@@ -51,11 +50,6 @@ const routes = [
     path: "/signups",
     name: "Signups",
     component: SignupRecord,
-  },
-  {
-    path: "/profile",
-    name: "Profile",
-    component: UserProfile,
   },
   {
     path: "/points",
