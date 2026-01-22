@@ -71,7 +71,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const stats = [
   { label: '累计志愿时长', value: '12,580 小时' },
   { label: '服务居民人次', value: '8,960 人次' },

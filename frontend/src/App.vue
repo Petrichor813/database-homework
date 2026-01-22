@@ -122,21 +122,34 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import GlobalToast from './components/GlobalToast.vue';
 import { getJson } from "./utils/api";
 
+type UserRole = 'ADMIN' | 'VOLUNTEER' | 'USER';
+type VolunteerStatus = 'CERTIFIED' | 'PENDING' | 'REJECTED' | 'SUSPENDED' | null;
+type MenuName = 'activities' | 'volunteer' | 'dashboard' | 'admin';
+
+interface UserProfile {
+  id?: number | string;
+  username?: string;
+  role?: UserRole;
+  points?: number;
+  volunteerStatus?: VolunteerStatus;
+  token?: string;
+}
+
 const router = useRouter();
 
 const loading = ref(true);
-const currentUser = ref(null);
+const currentUser = ref<UserProfile | null>(null);
 const menuOpen = ref(false);
 const showLogoutConfirm = ref(false);
-const userMenuRef = ref(null);
-const navMenuRef = ref(null);
-const activeMenu = ref(null);
+const userMenuRef = ref<HTMLElement | null>(null);
+const navMenuRef = ref<HTMLElement | null>(null);
+const activeMenu = ref<MenuName | null>(null);
 
 const displayName = computed(() => currentUser.value?.username || '游客');
 const displayPoints = computed(() => currentUser.value?.points ?? 0);
@@ -170,6 +183,7 @@ const roleLabel = computed(() => {
     VOLUNTEER: '志愿者',
     USER: '普通用户'
   };
+  if (!role) return '游客';
   return roleMap[role] || role;
 })
 
@@ -202,13 +216,14 @@ const checkAuth = () => {
   currentUser.value = null;
 }
 
-const refreshProfile = async userId => {
+const refreshProfile = async (userId: number | string) => {
   try {
-    const profile = await getJson(`/api/users/${userId}/profile`);
+    const profile = await getJson<UserProfile>(`/api/users/${userId}/profile`);
+    const baseUser = currentUser.value ?? {};
     const updatedUser = {
-      ...currentUser.value,
+      ...baseUser,
       ...profile,
-      token: currentUser.value?.token
+      token: baseUser.token
     };
     currentUser.value = updatedUser;
     localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -221,23 +236,23 @@ const toggleUserMenu = () => {
   menuOpen.value = !menuOpen.value;
 }
 
-const toggleMenu = menuName => {
+const toggleMenu = (menuName: MenuName) => {
   activeMenu.value = activeMenu.value === menuName ? null : menuName;
 }
 
-const handleTriggerKeydown = (event, menuName) => {
+const handleTriggerKeydown = (event: KeyboardEvent, menuName: MenuName) => {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault();
     toggleMenu(menuName);
   }
 }
 
-const handleClickOutside = event => {
+const handleClickOutside = (event: MouseEvent) => {
   if (!userMenuRef.value) return;
-  if (!userMenuRef.value.contains(event.target)) {
+  if (!userMenuRef.value.contains(event.target as Node)) {
     menuOpen.value = false;
   }
-  if (navMenuRef.value && !navMenuRef.value.contains(event.target)) {
+  if (navMenuRef.value && !navMenuRef.value.contains(event.target as Node)) {
     activeMenu.value = null;
   }
 }

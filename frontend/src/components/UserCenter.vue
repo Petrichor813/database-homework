@@ -77,26 +77,57 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { getJson } from '../utils/api'
 import { useToast } from '../utils/toast'
 
+type UserRole = 'ADMIN' | 'VOLUNTEER' | 'USER'
+type VolunteerStatus = 'CERTIFIED' | 'PENDING' | 'REJECTED' | 'SUSPENDED' | null
+
+interface PointsRecord {
+  time: string
+  type: string
+  amount?: number
+  note?: string
+}
+
+interface UserProfile {
+  id?: number | string
+  username?: string
+  role?: UserRole
+  phone?: string
+  points?: number
+  serviceHours?: number
+  volunteerStatus?: VolunteerStatus
+  pointsRecords?: PointsRecord[]
+}
+
+interface FormattedRecord {
+  key: string
+  time: string
+  typeLabel: string
+  amount: string
+  note: string
+}
+
 const { error } = useToast()
 
-const profile = ref(null)
-const records = ref([])
+const profile = ref<UserProfile | null>(null)
+const records = ref<PointsRecord[]>([])
 
 const displayName = computed(() => profile.value?.username || '游客')
 const avatarText = computed(() => (displayName.value ? displayName.value.slice(0, 1) : '游'))
 const roleLabel = computed(() => {
   if (!profile.value?.role) return '游客'
-  const roleMap = {
+  const roleMap: Record<UserRole, string> = {
     ADMIN: '管理员',
     VOLUNTEER: '志愿者',
     USER: '普通用户'
   }
-  return roleMap[profile.value.role] || profile.value.role
+  const role = profile.value.role
+  if (!role) return '游客'
+  return roleMap[role] || role
 })
 const displayPhone = computed(() => profile.value?.phone || '暂无')
 const displayPoints = computed(() => profile.value?.points ?? 0)
@@ -126,8 +157,8 @@ const showSupplement = computed(() =>
   profile.value?.volunteerStatus === 'PENDING' || profile.value?.volunteerStatus === 'REJECTED'
 )
 
-const formattedRecords = computed(() =>
-  records.value.map(record => {
+const formattedRecords = computed<FormattedRecord[]>(() =>
+  records.value.map((record: PointsRecord) => {
     const amountValue = Number(record.amount ?? 0)
     const amountText = amountValue >= 0 ? `+${amountValue}` : `${amountValue}`
     return {
@@ -143,7 +174,7 @@ const formattedRecords = computed(() =>
 const monthlyEarned = computed(() => {
   const now = new Date()
   return formattedRecords.value
-    .filter(record => {
+    .filter((record: FormattedRecord) => {
       const recordDate = new Date(record.time)
       if (Number.isNaN(recordDate.getTime())) {
         return false
@@ -153,14 +184,14 @@ const monthlyEarned = computed(() => {
         recordDate.getMonth() === now.getMonth()
       )
     })
-    .reduce((sum, record) => {
+    .reduce((sum: number, record: FormattedRecord) => {
       const amount = Number(record.amount.replace('+', ''))
       return amount > 0 ? sum + amount : sum
     }, 0)
 })
 
-const resolveRecordType = type => {
-  const map = {
+const resolveRecordType = (type: string) => {
+  const map: Record<string, string> = {
     ACTIVITY_EARN: '活动结算',
     EXCHANGE_USE: '积分兑换',
     ADMIN_ADJUST: '管理员调整',
@@ -177,10 +208,10 @@ const loadProfile = async () => {
   }
 
   try {
-    const user = JSON.parse(userStr)
+    const user = JSON.parse(userStr) as UserProfile
     profile.value = user
     if (!user.id) return
-    const data = await getJson(`/api/users/${user.id}/profile`)
+    const data = await getJson<UserProfile>(`/api/users/${user.id}/profile`)
     profile.value = data
     records.value = data.pointsRecords ?? []
   } catch (err) {

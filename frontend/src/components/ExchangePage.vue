@@ -21,7 +21,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const items = [
   { name: '环保礼包', points: 120, desc: '可循环水杯 + 帆布袋' },
   { name: '志愿徽章', points: 80, desc: '纪念徽章套装' },

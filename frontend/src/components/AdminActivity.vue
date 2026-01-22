@@ -28,7 +28,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const activities = [
   { title: '社区环境清洁行动', time: '2025-04-12', status: '报名中' },
   { title: '银龄陪伴计划', time: '2025-04-20', status: '进行中' }

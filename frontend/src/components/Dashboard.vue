@@ -27,7 +27,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const kpis = [
   { label: '累计服务时长', value: '12,580 小时' },
   { label: '累计活动场次', value: '320 场' },

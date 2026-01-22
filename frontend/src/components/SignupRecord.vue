@@ -21,7 +21,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const records = [
   { title: '社区环境清洁行动', time: '2025-04-12', status: '已报名', statusClass: 'pending' },
   { title: '银龄陪伴计划', time: '2025-04-20', status: '进行中', statusClass: 'active' },

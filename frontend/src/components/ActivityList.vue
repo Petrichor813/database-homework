@@ -35,7 +35,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const activities = [
   {
     title: '社区环境清洁行动',
