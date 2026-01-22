@@ -40,7 +40,7 @@ public class AdminVolunteerController {
         default -> throw new IllegalArgumentException("未知的状态筛选");
         };
 
-        return volunteers.stream().map(this::toResponse).toList();
+        return volunteers.stream().map(this::buildAdminVolunteerResponse).toList();
     }
 
     @PostMapping("/{id}/review")
@@ -70,10 +70,10 @@ public class AdminVolunteerController {
         }
 
         Volunteer saved = volunteerRepository.save(volunteer);
-        return toResponse(saved);
+        return buildAdminVolunteerResponse(saved);
     }
 
-    private AdminVolunteerResponse toResponse(Volunteer volunteer) {
+    private AdminVolunteerResponse buildAdminVolunteerResponse(Volunteer volunteer) {
         // @formatter:off
         return new AdminVolunteerResponse(
             volunteer.getId(),

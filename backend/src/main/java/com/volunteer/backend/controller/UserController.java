@@ -49,9 +49,9 @@ public class UserController {
         this.pointsChangeRecordRepository = pointsChangeRecordRepository;
         this.signupRecordRepository = signupRecordRepository;
     }
-    // formatter:on
+    // @formatter:on
 
-    private UserProfileResponse buildProfileResponse(User user) {
+    private UserProfileResponse buildUserProfileResponse(User user) {
         Volunteer volunteer = volunteerRepository.findByUserId(user.getId()).orElse(null);
         Double points = 0.0;
         Integer serviceHours = 0;
@@ -65,7 +65,7 @@ public class UserController {
             records = pointsChangeRecordRepository
                         .findTop5ByVolunteerIdOrderByChangeTimeDesc(volunteerId)
                         .stream()
-                        .map(record -> toPointsRecordResponse(record))
+                        .map(record -> buildPointsRecordResponse(record))
                         .toList();
             // @formatter:on
         }
@@ -87,7 +87,7 @@ public class UserController {
     @GetMapping("/{userId}/profile")
     public UserProfileResponse getProfile(@PathVariable Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("用户不存在"));
-        return buildProfileResponse(user);
+        return buildUserProfileResponse(user);
     }
 
     @PutMapping("/{userId}/profile")
@@ -116,7 +116,7 @@ public class UserController {
             volunteerRepository.save(volunteer);
         }
 
-        return buildProfileResponse(user);
+        return buildUserProfileResponse(user);
     }
 
     @PostMapping("/{userId}/volunteer-apply")
@@ -143,16 +143,16 @@ public class UserController {
             if (existing.getStatus() == VolunteerStatus.REJECTED) {
                 existing.resetForReapply(realName, user.getPhone());
                 volunteerRepository.save(existing);
-                return buildProfileResponse(user);
+                return buildUserProfileResponse(user);
             }
             throw new IllegalArgumentException("已提交过志愿者申请");
         }
         Volunteer volunteer = new Volunteer(realName, phone, userId);
         volunteerRepository.save(volunteer);
-        return buildProfileResponse(user);
+        return buildUserProfileResponse(user);
     }
 
-    private PointsRecordResponse toPointsRecordResponse(PointsChangeRecord record) {
+    private PointsRecordResponse buildPointsRecordResponse(PointsChangeRecord record) {
         String time = record.getChangeTime() != null ? record.getChangeTime().format(DATE_FORMATTER) : "";
         String type = record.getChangeType() != null ? record.getChangeType().name() : "";
         return new PointsRecordResponse(time, type, record.getChangePoints(), record.getReason());
