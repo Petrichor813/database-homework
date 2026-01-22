@@ -43,7 +43,7 @@
           v-if="canApplyVolunteer"
           class="primary-btn"
           :disabled="isApplying"
-          @click="applyVolunteer"
+          @click="openApplyVolunteer"
         >
           {{ applyVolunteerLabel }}
         </button>
@@ -117,6 +117,33 @@
         <p class="modal-tip">修改手机号后将自动同步到已有志愿者档案。</p>
       </div>
     </div>
+
+    <div v-if="showApplyModal" class="modal-overlay">
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <h3>志愿者认证申请</h3>
+        <div class="form-grid">
+          <label class="form-field">
+            <span>真实姓名</span>
+            <input v-model="applyForm.realName" type="text" maxlength="20" />
+          </label>
+          <label class="form-field">
+            <span>手机号确认（可选）</span>
+            <input v-model="applyForm.phone" type="text" maxlength="20" />
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button
+            class="modal-btn primary"
+            :disabled="isApplying"
+            @click="applyVolunteer"
+          >
+            提交申请
+          </button>
+          <button class="modal-btn" @click="closeApplyVolunteer">取消</button>
+        </div>
+        <p class="modal-tip">请填写真实姓名以便进行志愿者身份审核。</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -167,6 +194,11 @@ const displayName = computed(() => profile.value?.username || "游客");
 const showEditModal = ref(false);
 const editForm = reactive({
   username: "",
+  phone: "",
+});
+const showApplyModal = ref(false);
+const applyForm = reactive({
+  realName: "",
   phone: "",
 });
 const isSaving = ref(false);
@@ -325,6 +357,17 @@ const closeEditProfile = () => {
   showEditModal.value = false;
 };
 
+const openApplyVolunteer = () => {
+  if (!profile.value) return;
+  applyForm.realName = "";
+  applyForm.phone = profile.value.phone ?? "";
+  showApplyModal.value = true;
+};
+
+const closeApplyVolunteer = () => {
+  showApplyModal.value = false;
+};
+
 const updateLocalUser = (data: UserProfile) => {
   const userStr = localStorage.getItem("user");
   if (!userStr) return;
@@ -378,15 +421,29 @@ const saveProfile = async () => {
 
 const applyVolunteer = async () => {
   if (!profile.value?.id || isApplying.value) return;
+  const realName = applyForm.realName.trim();
+  if (!realName) {
+    error("申请失败", "真实姓名不能为空");
+    return;
+  }
+  const phone = applyForm.phone.trim();
+  if (phone && profile.value.phone && phone !== profile.value.phone) {
+    error("申请失败", "手机号与当前绑定手机号不一致");
+    return;
+  }
   isApplying.value = true;
   try {
     const updated = await postJson<UserProfile>(
       `/api/users/${profile.value.id}/volunteer-apply`,
-      {},
+      {
+        realName,
+        phone,
+      },
     );
     profile.value = updated;
     updateLocalUser(updated);
     success("已提交申请", "等待管理员审核");
+    showApplyModal.value = false;
   } catch (err) {
     const message = err instanceof Error ? err.message : "申请失败";
     error("申请失败", message);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.volunteer.backend.dto.PointsRecordResponse;
 import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
+import com.volunteer.backend.dto.VolunteerApplyRequest;
 import com.volunteer.backend.entity.PointsChangeRecord;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
@@ -24,6 +25,8 @@ import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
 import com.volunteer.backend.utils.UserRole;
 import com.volunteer.backend.utils.VolunteerStatus;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -117,21 +120,34 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/volunteer-apply")
-    public UserProfileResponse applyVolunteer(@PathVariable Long userId) {
+    // @formatter:off
+    public UserProfileResponse applyVolunteer(
+        @PathVariable Long userId,
+        @Valid @RequestBody VolunteerApplyRequest request
+    ) {
+        // @formatter:on
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+        String realName = request.getRealName() != null ? request.getRealName().trim() : "";
+        if (realName.isEmpty()) {
+            throw new IllegalArgumentException("真实姓名不能为空");
+        }
+        String phone = request.getPhone() != null ? request.getPhone().trim() : "";
+        if (phone.isEmpty()) {
+            phone = user.getPhone();
+        }
         if (user.getRole() == UserRole.ADMIN) {
             throw new IllegalArgumentException("管理员无需申请志愿者认证");
         }
         Volunteer existing = volunteerRepository.findByUserId(userId).orElse(null);
         if (existing != null) {
             if (existing.getStatus() == VolunteerStatus.REJECTED) {
-                existing.resetForReapply(user.getUsername(), user.getPhone());
+                existing.resetForReapply(realName, user.getPhone());
                 volunteerRepository.save(existing);
                 return buildProfileResponse(user);
             }
             throw new IllegalArgumentException("已提交过志愿者申请");
         }
-        Volunteer volunteer = new Volunteer(user.getUsername(), user.getPhone(), userId);
+        Volunteer volunteer = new Volunteer(realName, phone, userId);
         volunteerRepository.save(volunteer);
         return buildProfileResponse(user);
     }
