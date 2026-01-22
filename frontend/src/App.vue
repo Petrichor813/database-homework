@@ -294,14 +294,28 @@ const roleLabel = computed(() => {
   return roleMap[role] || role;
 });
 
+const handleUserUpdated = (event: Event) => {
+  const customEvent = event as CustomEvent<{ username?: string }>;
+  const nextUsername = customEvent.detail?.username;
+  if (nextUsername && currentUser.value) {
+    currentUser.value = {
+      ...currentUser.value,
+      username: nextUsername,
+    };
+  }
+  checkAuth();
+};
+
 onMounted(() => {
   checkAuth();
   loading.value = false;
   document.addEventListener("click", handleClickOutside);
+  window.addEventListener("user-updated", handleUserUpdated);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
+  window.removeEventListener("user-updated", handleUserUpdated);
 });
 
 const checkAuth = () => {

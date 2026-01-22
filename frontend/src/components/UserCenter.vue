@@ -16,6 +16,7 @@
       </div>
       <div class="profile-card">
         <h3>基础信息</h3>
+        <p></p>
         <div class="info-grid">
           <div class="info-item">
             <span class="label">手机号</span>
@@ -33,6 +34,7 @@
       </div>
       <div class="profile-card">
         <h3>认证状态</h3>
+        <p></p>
         <div class="status-block" :class="[statusClass, statusSizeClass]">
           {{ volunteerStatusLabel }}
         </div>
@@ -351,6 +353,11 @@ const saveProfile = async () => {
     );
     profile.value = updated;
     updateLocalUser(updated);
+    window.dispatchEvent(
+      new CustomEvent("user-updated", {
+        detail: { username: updated.username ?? username },
+      }),
+    );
     success("保存成功", "资料已更新");
     showEditModal.value = false;
   } catch (err) {
@@ -468,31 +475,55 @@ const applyVolunteer = async () => {
 }
 
 .status-certified {
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 16px;
   background: #ecfdf3;
   color: #065f46;
 }
 
 .status-pending {
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 16px;
   background: #fef3c7;
   color: #92400e;
 }
 
 .status-rejected {
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 16px;
   background: #fee2e2;
   color: #b91c1c;
 }
 
 .status-suspended {
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 16px;
   background: #e0f2fe;
   color: #0369a1;
 }
 
 .status-muted {
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 16px;
   background: #f3f4f6;
   color: #6b7280;
 }
 
 .status-admin {
+  width: 100%;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 16px;
   background: #eef2ff;
   color: #3730a3;
 }
