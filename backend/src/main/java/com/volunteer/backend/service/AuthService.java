@@ -20,6 +20,16 @@ public class AuthService {
         this.userRepository = userRepository;
     }
 
+    public User authenticate(String username, String password, UserRole role) {
+        UserRole queryRole = role == null ? UserRole.USER : role;
+        User user = userRepository.findByUsernameAndRole(username, queryRole)
+                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+        if (!user.getPassword().equals(password)) {
+            throw new IllegalArgumentException("密码错误");
+        }
+        return user;
+    }
+
     public LoginResponse login(LoginRequest request) {
         User user = authenticate(request.getUsername(), request.getPassword(), request.getRole());
         String token = UUID.randomUUID().toString();
@@ -34,15 +44,5 @@ public class AuthService {
         User user = new User(request.getUsername(), request.getPassword(), role);
         User savedUser = userRepository.save(user);
         return new RegisterResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getRole());
-    }
-
-    public User authenticate(String username, String password, UserRole role) {
-        UserRole queryRole = role == null ? UserRole.USER : role;
-        User user = userRepository.findByUsernameAndRole(username, queryRole)
-                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
-        if (!user.getPassword().equals(password)) {
-            throw new IllegalArgumentException("密码错误");
-        }
-        return user;
     }
 }
