@@ -33,7 +33,9 @@
       </div>
       <div class="profile-card">
         <h3>认证状态</h3>
-        <div class="status-block" :class="statusClass">{{ volunteerStatusLabel }}</div>
+        <div class="status-block" :class="statusClass">
+          {{ volunteerStatusLabel }}
+        </div>
         <button v-if="showSupplement" class="ghost-btn">提交补充材料</button>
       </div>
     </section>
@@ -62,7 +64,11 @@
         <span>变动</span>
         <span>备注</span>
       </div>
-      <div v-for="record in formattedRecords" :key="record.key" class="table-row">
+      <div
+        v-for="record in formattedRecords"
+        :key="record.key"
+        class="table-row"
+      >
         <span>{{ record.time }}</span>
         <span>{{ record.typeLabel }}</span>
         <span :class="record.amount.startsWith('+') ? 'positive' : 'negative'">
@@ -78,151 +84,160 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { getJson } from '../utils/api'
-import { useToast } from '../utils/toast'
+import { computed, onMounted, ref } from "vue";
+import { getJson } from "../utils/api";
+import { useToast } from "../utils/toast";
 
-type UserRole = 'ADMIN' | 'VOLUNTEER' | 'USER'
-type VolunteerStatus = 'CERTIFIED' | 'PENDING' | 'REJECTED' | 'SUSPENDED' | null
+type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
+type VolunteerStatus =
+  | "CERTIFIED"
+  | "PENDING"
+  | "REJECTED"
+  | "SUSPENDED"
+  | null;
 
 interface PointsRecord {
-  time: string
-  type: string
-  amount?: number
-  note?: string
+  time: string;
+  type: string;
+  amount?: number;
+  note?: string;
 }
 
 interface UserProfile {
-  id?: number | string
-  username?: string
-  role?: UserRole
-  phone?: string
-  points?: number
-  serviceHours?: number
-  volunteerStatus?: VolunteerStatus
-  pointsRecords?: PointsRecord[]
+  id?: number | string;
+  username?: string;
+  role?: UserRole;
+  phone?: string;
+  points?: number;
+  serviceHours?: number;
+  volunteerStatus?: VolunteerStatus;
+  pointsRecords?: PointsRecord[];
 }
 
 interface FormattedRecord {
-  key: string
-  time: string
-  typeLabel: string
-  amount: string
-  note: string
+  key: string;
+  time: string;
+  typeLabel: string;
+  amount: string;
+  note: string;
 }
 
-const { error } = useToast()
+const { error } = useToast();
 
-const profile = ref<UserProfile | null>(null)
-const records = ref<PointsRecord[]>([])
+const profile = ref<UserProfile | null>(null);
+const records = ref<PointsRecord[]>([]);
 
-const displayName = computed(() => profile.value?.username || '游客')
-const avatarText = computed(() => (displayName.value ? displayName.value.slice(0, 1) : '游'))
+const displayName = computed(() => profile.value?.username || "游客");
+const avatarText = computed(() =>
+  displayName.value ? displayName.value.slice(0, 1) : "游",
+);
 const roleLabel = computed(() => {
-  if (!profile.value?.role) return '游客'
+  if (!profile.value?.role) return "游客";
   const roleMap: Record<UserRole, string> = {
-    ADMIN: '管理员',
-    VOLUNTEER: '志愿者',
-    USER: '普通用户'
-  }
-  const role = profile.value.role
-  if (!role) return '游客'
-  return roleMap[role] || role
-})
-const displayPhone = computed(() => profile.value?.phone || '暂无')
-const displayPoints = computed(() => profile.value?.points ?? 0)
-const displayHours = computed(() => profile.value?.serviceHours ?? 0)
+    ADMIN: "管理员",
+    VOLUNTEER: "志愿者",
+    USER: "普通用户",
+  };
+  const role = profile.value.role;
+  if (!role) return "游客";
+  return roleMap[role] || role;
+});
+const displayPhone = computed(() => profile.value?.phone || "暂无");
+const displayPoints = computed(() => profile.value?.points ?? 0);
+const displayHours = computed(() => profile.value?.serviceHours ?? 0);
 
 const volunteerStatusLabel = computed(() => {
-  if (!profile.value) return '未登录'
-  if (profile.value.role === 'ADMIN') return '管理员权限'
-  const status = profile.value.volunteerStatus
-  if (status === 'CERTIFIED') return '已认证'
-  if (status === 'PENDING') return '等待管理员审核'
-  if (status === 'REJECTED') return '未通过审核'
-  if (status === 'SUSPENDED') return '已停用'
-  return '未申请'
-})
+  if (!profile.value) return "未登录";
+  if (profile.value.role === "ADMIN") return "管理员权限";
+  const status = profile.value.volunteerStatus;
+  if (status === "CERTIFIED") return "已认证";
+  if (status === "PENDING") return "等待管理员审核";
+  if (status === "REJECTED") return "未通过审核";
+  if (status === "SUSPENDED") return "已停用";
+  return "未申请";
+});
 
 const statusClass = computed(() => {
-  if (profile.value?.role === 'ADMIN') return 'status-admin'
-  if (profile.value?.volunteerStatus === 'CERTIFIED') return 'status-certified'
-  if (profile.value?.volunteerStatus === 'PENDING') return 'status-pending'
-  if (profile.value?.volunteerStatus === 'REJECTED') return 'status-rejected'
-  if (profile.value?.volunteerStatus === 'SUSPENDED') return 'status-suspended'
-  return 'status-muted'
-})
+  if (profile.value?.role === "ADMIN") return "status-admin";
+  if (profile.value?.volunteerStatus === "CERTIFIED") return "status-certified";
+  if (profile.value?.volunteerStatus === "PENDING") return "status-pending";
+  if (profile.value?.volunteerStatus === "REJECTED") return "status-rejected";
+  if (profile.value?.volunteerStatus === "SUSPENDED") return "status-suspended";
+  return "status-muted";
+});
 
-const showSupplement = computed(() =>
-  profile.value?.volunteerStatus === 'PENDING' || profile.value?.volunteerStatus === 'REJECTED'
-)
+const showSupplement = computed(
+  () =>
+    profile.value?.volunteerStatus === "PENDING" ||
+    profile.value?.volunteerStatus === "REJECTED",
+);
 
 const formattedRecords = computed<FormattedRecord[]>(() =>
   records.value.map((record: PointsRecord) => {
-    const amountValue = Number(record.amount ?? 0)
-    const amountText = amountValue >= 0 ? `+${amountValue}` : `${amountValue}`
+    const amountValue = Number(record.amount ?? 0);
+    const amountText = amountValue >= 0 ? `+${amountValue}` : `${amountValue}`;
     return {
       key: `${record.time}-${record.type}-${record.amount}`,
       time: record.time,
       typeLabel: resolveRecordType(record.type),
       amount: amountText,
-      note: record.note || '—'
-    }
-  })
-)
+      note: record.note || "—",
+    };
+  }),
+);
 
 const monthlyEarned = computed(() => {
-  const now = new Date()
+  const now = new Date();
   return formattedRecords.value
     .filter((record: FormattedRecord) => {
-      const recordDate = new Date(record.time)
+      const recordDate = new Date(record.time);
       if (Number.isNaN(recordDate.getTime())) {
-        return false
+        return false;
       }
       return (
         recordDate.getFullYear() === now.getFullYear() &&
         recordDate.getMonth() === now.getMonth()
-      )
+      );
     })
     .reduce((sum: number, record: FormattedRecord) => {
-      const amount = Number(record.amount.replace('+', ''))
-      return amount > 0 ? sum + amount : sum
-    }, 0)
-})
+      const amount = Number(record.amount.replace("+", ""));
+      return amount > 0 ? sum + amount : sum;
+    }, 0);
+});
 
 const resolveRecordType = (type: string) => {
   const map: Record<string, string> = {
-    ACTIVITY_EARN: '活动结算',
-    EXCHANGE_USE: '积分兑换',
-    ADMIN_ADJUST: '管理员调整',
-    SYSTEM_BONUS: '系统奖励',
-    EXPIRED_DEDUCT: '过期扣除'
-  }
-  return map[type] || '积分变动'
-}
+    ACTIVITY_EARN: "活动结算",
+    EXCHANGE_USE: "积分兑换",
+    ADMIN_ADJUST: "管理员调整",
+    SYSTEM_BONUS: "系统奖励",
+    EXPIRED_DEDUCT: "过期扣除",
+  };
+  return map[type] || "积分变动";
+};
 
 const loadProfile = async () => {
-  const userStr = localStorage.getItem('user')
+  const userStr = localStorage.getItem("user");
   if (!userStr) {
-    return
+    return;
   }
 
   try {
-    const user = JSON.parse(userStr) as UserProfile
-    profile.value = user
-    if (!user.id) return
-    const data = await getJson<UserProfile>(`/api/users/${user.id}/profile`)
-    profile.value = data
-    records.value = data.pointsRecords ?? []
+    const user = JSON.parse(userStr) as UserProfile;
+    profile.value = user;
+    if (!user.id) return;
+    const data = await getJson<UserProfile>(`/api/users/${user.id}/profile`);
+    profile.value = data;
+    records.value = data.pointsRecords ?? [];
   } catch (err) {
-    const message = err instanceof Error ? err.message : '获取个人信息失败'
-    error('加载失败', message)
+    const message = err instanceof Error ? err.message : "获取个人信息失败";
+    error("加载失败", message);
   }
-}
+};
 
 onMounted(() => {
-  loadProfile()
-})
+  loadProfile();
+});
 </script>
 
 <style scoped>

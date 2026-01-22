@@ -8,7 +8,11 @@
       <form class="register-form" @submit.prevent="handleRegister">
         <div class="form-row">
           <label>用户名</label>
-          <input v-model="form.username" type="text" placeholder="请输入用户名" />
+          <input
+            v-model="form.username"
+            type="text"
+            placeholder="请输入用户名"
+          />
         </div>
         <div class="form-row">
           <label>手机号</label>
@@ -16,21 +20,40 @@
         </div>
         <div class="form-row">
           <label>密码</label>
-          <input v-model="form.password" type="password" placeholder="请输入密码" />
+          <input
+            v-model="form.password"
+            type="password"
+            placeholder="请输入密码"
+          />
         </div>
         <div class="form-row">
           <label>确认密码</label>
-          <input v-model="form.confirmPassword" type="password" placeholder="再次输入密码" />
+          <input
+            v-model="form.confirmPassword"
+            type="password"
+            placeholder="再次输入密码"
+          />
         </div>
         <div class="form-row">
           <label>注册身份</label>
           <div class="role-options">
             <label class="role-option">
-              <input v-model="form.primaryRole" type="radio" name="primary-role" value="USER" checked />
+              <input
+                v-model="form.primaryRole"
+                type="radio"
+                name="primary-role"
+                value="USER"
+                checked
+              />
               <span>普通用户</span>
             </label>
             <label class="role-option">
-              <input v-model="form.primaryRole" type="radio" name="primary-role" value="ADMIN" />
+              <input
+                v-model="form.primaryRole"
+                type="radio"
+                name="primary-role"
+                value="ADMIN"
+              />
               <span>管理员</span>
             </label>
           </div>
@@ -41,10 +64,12 @@
             <input v-model="form.isVolunteer" type="checkbox" />
             <span>申请成为志愿者</span>
           </label>
-          <p class="form-hint">管理员默认具备志愿者权限，可按需勾选是否进入志愿者流程。</p>
+          <p class="form-hint">
+            管理员默认具备志愿者权限，可按需勾选是否进入志愿者流程。
+          </p>
         </div>
         <button type="submit" :disabled="loading">
-          {{ loading ? '注册中...' : '提交注册' }}
+          {{ loading ? "注册中..." : "提交注册" }}
         </button>
       </form>
       <footer>
@@ -56,60 +81,60 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { postJson } from '../utils/api'
-import { useToast } from '../utils/toast'
+import { computed, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { postJson } from "../utils/api";
+import { useToast } from "../utils/toast";
 
-const router = useRouter()
-const { success, error } = useToast()
+const router = useRouter();
+const { success, error } = useToast();
 
 const form = reactive({
-  username: '',
-  phone: '',
-  password: '',
-  confirmPassword: '',
-  primaryRole: 'USER',
-  isVolunteer: false
-})
+  username: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+  primaryRole: "USER",
+  isVolunteer: false,
+});
 
-const loading = ref(false)
+const loading = ref(false);
 const resolvedRole = computed(() => {
-  if (form.primaryRole === 'ADMIN') return 'ADMIN'
-  return 'USER'
-})
+  if (form.primaryRole === "ADMIN") return "ADMIN";
+  return "USER";
+});
 
 const handleRegister = async () => {
   if (!form.username.trim() || !form.password.trim()) {
-    error('注册失败', '请输入用户名和密码')
-    return
+    error("注册失败", "请输入用户名和密码");
+    return;
   }
 
   if (form.password !== form.confirmPassword) {
-    error('注册失败', '两次输入的密码不一致')
-    return
+    error("注册失败", "两次输入的密码不一致");
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
 
   try {
-    await postJson('/api/auth/register', {
+    await postJson("/api/auth/register", {
       username: form.username,
       password: form.password,
       role: resolvedRole.value,
       phone: form.phone,
-      requestVolunteer: form.isVolunteer
-    })
+      requestVolunteer: form.isVolunteer,
+    });
 
-    success('注册成功')
-    await router.push('/login')
+    success("注册成功");
+    await router.push("/login");
   } catch (err) {
-    const message = err instanceof Error ? err.message : '注册失败，请稍后重试'
-    error('注册失败', message)
+    const message = err instanceof Error ? err.message : "注册失败，请稍后重试";
+    error("注册失败", message);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

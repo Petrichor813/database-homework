@@ -31,22 +31,37 @@
       <form class="login-form" @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="username">用户名</label>
-          <input id="username" v-model="form.username" type="text" placeholder="请输入用户名" required class="form-input" />
+          <input
+            id="username"
+            v-model="form.username"
+            type="text"
+            placeholder="请输入用户名"
+            required
+            class="form-input"
+          />
         </div>
 
         <div class="form-group">
           <label for="password">密码</label>
-          <input id="password" v-model="form.password" type="password" placeholder="请输入密码" required
-            class="form-input" />
+          <input
+            id="password"
+            v-model="form.password"
+            type="password"
+            placeholder="请输入密码"
+            required
+            class="form-input"
+          />
         </div>
 
         <button type="submit" class="login-btn" :disabled="loading">
-          {{ loading ? '登录中...' : '登录' }}
+          {{ loading ? "登录中..." : "登录" }}
         </button>
 
         <div class="form-footer">
           <span>没有账号？</span>
-          <a href="#" @click.prevent="goToRegister" class="register-link">立即注册</a>
+          <a href="#" @click.prevent="goToRegister" class="register-link"
+            >立即注册</a
+          >
         </div>
       </form>
     </div>
@@ -54,45 +69,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { postJson } from '../utils/api'
-import { useToast } from '../utils/toast'
+import { ref, reactive } from "vue";
+import { useRouter } from "vue-router";
+import { postJson } from "../utils/api";
+import { useToast } from "../utils/toast";
 
-type UserRole = 'ADMIN' | 'VOLUNTEER' | 'USER'
+type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
 
 interface LoginResponse {
-  id: number | string
-  username: string
-  role: UserRole
-  token: string
-  volunteerStatus?: string | null
-  phone?: string | null
+  id: number | string;
+  username: string;
+  role: UserRole;
+  token: string;
+  volunteerStatus?: string | null;
+  phone?: string | null;
 }
 
-const router = useRouter()
-const { success, error } = useToast()
+const router = useRouter();
+const { success, error } = useToast();
 
 const form = reactive({
-  username: '',
-  password: ''
-})
+  username: "",
+  password: "",
+});
 
-const loading = ref(false)
+const loading = ref(false);
 
 const handleLogin = async () => {
   if (!form.username.trim() || !form.password.trim()) {
-    error('登录失败', '请输入用户名和密码')
-    return
+    error("登录失败", "请输入用户名和密码");
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
 
   try {
-    const response = await postJson<LoginResponse>('/api/auth/login', {
+    const response = await postJson<LoginResponse>("/api/auth/login", {
       username: form.username,
-      password: form.password
-    })
+      password: form.password,
+    });
 
     const userData = {
       id: response.id,
@@ -100,25 +115,26 @@ const handleLogin = async () => {
       role: response.role,
       token: response.token,
       volunteerStatus: response.volunteerStatus ?? null,
-      phone: response.phone ?? null
-    }
+      phone: response.phone ?? null,
+    };
 
-    localStorage.setItem('user', JSON.stringify(userData))
-    localStorage.setItem('token', response.token)
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", response.token);
 
-    await router.push('/home')
-    success('登录成功')
+    await router.push("/home");
+    success("登录成功");
   } catch (err) {
-    const message = err instanceof Error ? err.message : '登录失败，请检查用户名或密码'
-    error('登录失败', message)
+    const message =
+      err instanceof Error ? err.message : "登录失败，请检查用户名或密码";
+    error("登录失败", message);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const goToRegister = () => {
-  router.push('/register')
-}
+  router.push("/register");
+};
 </script>
 
 <style scoped>

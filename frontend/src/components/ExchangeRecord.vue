@@ -12,7 +12,9 @@
           <p class="meta">兑换时间：{{ record.time }}</p>
           <p class="meta">消耗积分：{{ record.points }}</p>
         </div>
-        <span class="status" :class="record.statusClass">{{ record.status }}</span>
+        <span class="status" :class="record.statusClass">{{
+          record.status
+        }}</span>
       </article>
     </section>
   </div>
@@ -22,29 +24,29 @@
 const records = [
   {
     id: 1,
-    item: '环保礼包',
-    time: '2025-04-02 14:20',
+    item: "环保礼包",
+    time: "2025-04-02 14:20",
     points: 120,
-    status: '配送中',
-    statusClass: 'processing'
+    status: "配送中",
+    statusClass: "processing",
   },
   {
     id: 2,
-    item: '志愿徽章',
-    time: '2025-03-19 09:10',
+    item: "志愿徽章",
+    time: "2025-03-19 09:10",
     points: 80,
-    status: '已完成',
-    statusClass: 'done'
+    status: "已完成",
+    statusClass: "done",
   },
   {
     id: 3,
-    item: '社区福利券',
-    time: '2025-02-26 16:40',
+    item: "社区福利券",
+    time: "2025-02-26 16:40",
     points: 200,
-    status: '待发货',
-    statusClass: 'pending'
-  }
-]
+    status: "待发货",
+    statusClass: "pending",
+  },
+];
 </script>
 
 <style scoped>

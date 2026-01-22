@@ -38,27 +38,27 @@
 <script setup lang="ts">
 const activities = [
   {
-    title: '社区环境清洁行动',
-    type: '社区治理',
-    time: '本周六 08:30',
-    location: '朝阳社区',
-    desc: '一起清理公共区域，提升社区环境品质。'
+    title: "社区环境清洁行动",
+    type: "社区治理",
+    time: "本周六 08:30",
+    location: "朝阳社区",
+    desc: "一起清理公共区域，提升社区环境品质。",
   },
   {
-    title: '银龄陪伴计划',
-    type: '关爱服务',
-    time: '本周日 14:00',
-    location: '幸福敬老院',
-    desc: '陪伴老人聊天、读书与文娱互动。'
+    title: "银龄陪伴计划",
+    type: "关爱服务",
+    time: "本周日 14:00",
+    location: "幸福敬老院",
+    desc: "陪伴老人聊天、读书与文娱互动。",
   },
   {
-    title: '防诈宣传志愿行动',
-    type: '安全宣传',
-    time: '下周一 19:00',
-    location: '社区广场',
-    desc: '协助派发宣传资料与现场讲解。'
-  }
-]
+    title: "防诈宣传志愿行动",
+    type: "安全宣传",
+    time: "下周一 19:00",
+    location: "社区广场",
+    desc: "协助派发宣传资料与现场讲解。",
+  },
+];
 </script>
 
 <style scoped>

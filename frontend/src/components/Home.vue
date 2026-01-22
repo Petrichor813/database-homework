@@ -38,10 +38,16 @@
         <router-link to="/login" class="text-link">查看全部</router-link>
       </div>
       <div class="activity-grid">
-        <article v-for="activity in activities" :key="activity.title" class="activity-card">
+        <article
+          v-for="activity in activities"
+          :key="activity.title"
+          class="activity-card"
+        >
           <span class="activity-tag">{{ activity.type }}</span>
           <h4>{{ activity.title }}</h4>
-          <p class="activity-meta">{{ activity.time }} · {{ activity.location }}</p>
+          <p class="activity-meta">
+            {{ activity.time }} · {{ activity.location }}
+          </p>
           <p class="activity-desc">{{ activity.desc }}</p>
           <button class="ghost-btn">报名参与</button>
         </article>
@@ -73,35 +79,35 @@
 
 <script setup lang="ts">
 const stats = [
-  { label: '累计志愿时长', value: '12,580 小时' },
-  { label: '服务居民人次', value: '8,960 人次' },
-  { label: '累计活动场次', value: '320 场' },
-  { label: '在线志愿者', value: '1,250 名' }
-]
+  { label: "累计志愿时长", value: "12,580 小时" },
+  { label: "服务居民人次", value: "8,960 人次" },
+  { label: "累计活动场次", value: "320 场" },
+  { label: "在线志愿者", value: "1,250 名" },
+];
 
 const activities = [
   {
-    title: '社区环境清洁行动',
-    type: '社区治理',
-    time: '本周六 08:30',
-    location: '朝阳社区',
-    desc: '一起清理公共区域，提升社区环境品质。'
+    title: "社区环境清洁行动",
+    type: "社区治理",
+    time: "本周六 08:30",
+    location: "朝阳社区",
+    desc: "一起清理公共区域，提升社区环境品质。",
   },
   {
-    title: '银龄陪伴计划',
-    type: '关爱服务',
-    time: '本周日 14:00',
-    location: '幸福敬老院',
-    desc: '陪伴老人聊天、读书与文娱互动。'
+    title: "银龄陪伴计划",
+    type: "关爱服务",
+    time: "本周日 14:00",
+    location: "幸福敬老院",
+    desc: "陪伴老人聊天、读书与文娱互动。",
   },
   {
-    title: '防诈宣传志愿行动',
-    type: '安全宣传',
-    time: '下周一 19:00',
-    location: '社区广场',
-    desc: '协助派发宣传资料与现场讲解。'
-  }
-]
+    title: "防诈宣传志愿行动",
+    type: "安全宣传",
+    time: "下周一 19:00",
+    location: "社区广场",
+    desc: "协助派发宣传资料与现场讲解。",
+  },
+];
 </script>
 
 <style scoped>

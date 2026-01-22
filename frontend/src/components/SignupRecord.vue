@@ -14,7 +14,9 @@
       <div v-for="record in records" :key="record.title" class="table-row">
         <span>{{ record.title }}</span>
         <span>{{ record.time }}</span>
-        <span class="status" :class="record.statusClass">{{ record.status }}</span>
+        <span class="status" :class="record.statusClass">{{
+          record.status
+        }}</span>
         <button>查看详情</button>
       </div>
     </section>
@@ -23,10 +25,25 @@
 
 <script setup lang="ts">
 const records = [
-  { title: '社区环境清洁行动', time: '2025-04-12', status: '已报名', statusClass: 'pending' },
-  { title: '银龄陪伴计划', time: '2025-04-20', status: '进行中', statusClass: 'active' },
-  { title: '防诈宣传志愿行动', time: '2025-03-18', status: '已完成', statusClass: 'done' }
-]
+  {
+    title: "社区环境清洁行动",
+    time: "2025-04-12",
+    status: "已报名",
+    statusClass: "pending",
+  },
+  {
+    title: "银龄陪伴计划",
+    time: "2025-04-20",
+    status: "进行中",
+    statusClass: "active",
+  },
+  {
+    title: "防诈宣传志愿行动",
+    time: "2025-03-18",
+    status: "已完成",
+    statusClass: "done",
+  },
+];
 </script>
 
 <style scoped>

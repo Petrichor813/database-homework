@@ -23,9 +23,9 @@
 
 <script setup lang="ts">
 const orders = [
-  { item: '环保礼包', count: 1, points: '120', status: '待处理' },
-  { item: '志愿徽章', count: 2, points: '160', status: '已完成' }
-]
+  { item: "环保礼包", count: 1, points: "120", status: "待处理" },
+  { item: "志愿徽章", count: 2, points: "160", status: "已完成" },
+];
 </script>
 
 <style scoped>

@@ -26,9 +26,9 @@
 
 <script setup lang="ts">
 const volunteers = [
-  { name: '李同学', phone: '138****1111', status: '待审核' },
-  { name: '王老师', phone: '139****2222', status: '待审核' }
-]
+  { name: "李同学", phone: "138****1111", status: "待审核" },
+  { name: "王老师", phone: "139****2222", status: "待审核" },
+];
 </script>
 
 <style scoped>

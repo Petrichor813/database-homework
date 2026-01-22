@@ -5,7 +5,9 @@
         <h2>兑换商城</h2>
         <p>用积分兑换公益礼包与周边（占位）。</p>
       </div>
-      <router-link to="/exchange-records" class="record-entry">兑换记录</router-link>
+      <router-link to="/exchange-records" class="record-entry"
+        >兑换记录</router-link
+      >
     </header>
     <section class="product-grid">
       <article v-for="item in items" :key="item.name" class="product-card">
@@ -23,10 +25,10 @@
 
 <script setup lang="ts">
 const items = [
-  { name: '环保礼包', points: 120, desc: '可循环水杯 + 帆布袋' },
-  { name: '志愿徽章', points: 80, desc: '纪念徽章套装' },
-  { name: '社区福利券', points: 200, desc: '指定商户优惠券' }
-]
+  { name: "环保礼包", points: 120, desc: "可循环水杯 + 帆布袋" },
+  { name: "志愿徽章", points: 80, desc: "纪念徽章套装" },
+  { name: "社区福利券", points: 200, desc: "指定商户优惠券" },
+];
 </script>
 
 <style scoped>

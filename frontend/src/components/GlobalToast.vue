@@ -7,16 +7,18 @@
       </div>
       <div class="toast-content">
         <p class="toast-title">{{ state.message }}</p>
-        <p v-if="state.detail" class="toast-detail">失败原因：{{ state.detail }}</p>
+        <p v-if="state.detail" class="toast-detail">
+          失败原因：{{ state.detail }}
+        </p>
       </div>
     </div>
   </transition>
 </template>
 
 <script setup lang="ts">
-import { useToast } from '../utils/toast'
+import { useToast } from "../utils/toast";
 
-const { state } = useToast()
+const { state } = useToast();
 </script>
 
 <style scoped>

@@ -35,10 +35,10 @@
 
 <script setup lang="ts">
 const records = [
-  { time: '2025-04-08', type: '活动结算', amount: '+40', note: '社区清洁行动' },
-  { time: '2025-04-02', type: '积分兑换', amount: '-60', note: '兑换环保礼包' },
-  { time: '2025-03-28', type: '活动结算', amount: '+30', note: '防诈宣传' }
-]
+  { time: "2025-04-08", type: "活动结算", amount: "+40", note: "社区清洁行动" },
+  { time: "2025-04-02", type: "积分兑换", amount: "-60", note: "兑换环保礼包" },
+  { time: "2025-03-28", type: "活动结算", amount: "+30", note: "防诈宣传" },
+];
 </script>
 
 <style scoped>

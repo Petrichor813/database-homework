@@ -29,11 +29,11 @@
 
 <script setup lang="ts">
 const kpis = [
-  { label: '累计服务时长', value: '12,580 小时' },
-  { label: '累计活动场次', value: '320 场' },
-  { label: '活跃志愿者', value: '1,250 人' },
-  { label: '积分发放', value: '98,000 分' }
-]
+  { label: "累计服务时长", value: "12,580 小时" },
+  { label: "累计活动场次", value: "320 场" },
+  { label: "活跃志愿者", value: "1,250 人" },
+  { label: "积分发放", value: "98,000 分" },
+];
 </script>
 
 <style scoped>

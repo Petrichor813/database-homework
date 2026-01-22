@@ -8,54 +8,114 @@
         <nav class="nav-menu" ref="navMenuRef">
           <router-link to="/home" class="nav-link">首页</router-link>
           <div class="nav-group">
-            <button type="button" class="nav-link nav-trigger" aria-controls="nav-activities"
-              :aria-expanded="activeMenu === 'activities'" @click="toggleMenu('activities')"
-              @keydown="event => handleTriggerKeydown(event, 'activities')">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-activities"
+              :aria-expanded="activeMenu === 'activities'"
+              @click="toggleMenu('activities')"
+              @keydown="(event) => handleTriggerKeydown(event, 'activities')"
+            >
               活动中心
             </button>
-            <div id="nav-activities" v-show="activeMenu === 'activities'" class="nav-dropdown">
-              <router-link to="/activities" class="nav-dropdown-link">活动列表</router-link>
-              <router-link to="/signups" class="nav-dropdown-link">报名记录</router-link>
+            <div
+              id="nav-activities"
+              v-show="activeMenu === 'activities'"
+              class="nav-dropdown"
+            >
+              <router-link to="/activities" class="nav-dropdown-link"
+                >活动列表</router-link
+              >
+              <router-link to="/signups" class="nav-dropdown-link"
+                >报名记录</router-link
+              >
             </div>
           </div>
           <div class="nav-group">
-            <button type="button" class="nav-link nav-trigger" aria-controls="nav-volunteer"
-              :aria-expanded="activeMenu === 'volunteer'" @click="toggleMenu('volunteer')"
-              @keydown="event => handleTriggerKeydown(event, 'volunteer')">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-volunteer"
+              :aria-expanded="activeMenu === 'volunteer'"
+              @click="toggleMenu('volunteer')"
+              @keydown="(event) => handleTriggerKeydown(event, 'volunteer')"
+            >
               兑换中心
             </button>
-            <div id="nav-volunteer" v-show="activeMenu === 'volunteer'" class="nav-dropdown">
-              <router-link to="/exchange" class="nav-dropdown-link">商品列表</router-link>
+            <div
+              id="nav-volunteer"
+              v-show="activeMenu === 'volunteer'"
+              class="nav-dropdown"
+            >
+              <router-link to="/exchange" class="nav-dropdown-link"
+                >商品列表</router-link
+              >
             </div>
           </div>
           <div class="nav-group">
-            <button type="button" class="nav-link nav-trigger" aria-controls="nav-dashboard"
-              :aria-expanded="activeMenu === 'dashboard'" @click="toggleMenu('dashboard')"
-              @keydown="event => handleTriggerKeydown(event, 'dashboard')">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-dashboard"
+              :aria-expanded="activeMenu === 'dashboard'"
+              @click="toggleMenu('dashboard')"
+              @keydown="(event) => handleTriggerKeydown(event, 'dashboard')"
+            >
               数据看板
             </button>
-            <div id="nav-dashboard" v-show="activeMenu === 'dashboard'" class="nav-dropdown">
-              <router-link to="/dashboard" class="nav-dropdown-link">看板总览</router-link>
-              <router-link to="/data-import" class="nav-dropdown-link">数据导入</router-link>
-              <router-link to="/data-export" class="nav-dropdown-link">数据导出</router-link>
+            <div
+              id="nav-dashboard"
+              v-show="activeMenu === 'dashboard'"
+              class="nav-dropdown"
+            >
+              <router-link to="/dashboard" class="nav-dropdown-link"
+                >看板总览</router-link
+              >
+              <router-link to="/data-import" class="nav-dropdown-link"
+                >数据导入</router-link
+              >
+              <router-link to="/data-export" class="nav-dropdown-link"
+                >数据导出</router-link
+              >
             </div>
           </div>
           <div class="nav-group">
-            <button type="button" class="nav-link nav-trigger" aria-controls="nav-admin"
-              :aria-expanded="activeMenu === 'admin'" @click="toggleMenu('admin')"
-              @keydown="event => handleTriggerKeydown(event, 'admin')">
+            <button
+              type="button"
+              class="nav-link nav-trigger"
+              aria-controls="nav-admin"
+              :aria-expanded="activeMenu === 'admin'"
+              @click="toggleMenu('admin')"
+              @keydown="(event) => handleTriggerKeydown(event, 'admin')"
+            >
               管理后台
             </button>
-            <div id="nav-admin" v-show="activeMenu === 'admin'" class="nav-dropdown">
-              <router-link to="/admin/volunteers" class="nav-dropdown-link">志愿者审核</router-link>
-              <router-link to="/admin/activities" class="nav-dropdown-link">活动管理</router-link>
-              <router-link to="/admin/points" class="nav-dropdown-link">积分管理</router-link>
-              <router-link to="/admin/exchange" class="nav-dropdown-link">兑换管理</router-link>
+            <div
+              id="nav-admin"
+              v-show="activeMenu === 'admin'"
+              class="nav-dropdown"
+            >
+              <router-link to="/admin/volunteers" class="nav-dropdown-link"
+                >志愿者审核</router-link
+              >
+              <router-link to="/admin/activities" class="nav-dropdown-link"
+                >活动管理</router-link
+              >
+              <router-link to="/admin/points" class="nav-dropdown-link"
+                >积分管理</router-link
+              >
+              <router-link to="/admin/exchange" class="nav-dropdown-link"
+                >兑换管理</router-link
+              >
             </div>
           </div>
         </nav>
         <div class="user-area" ref="userMenuRef">
-          <button class="avatar-btn" @click="toggleUserMenu" aria-label="用户菜单">
+          <button
+            class="avatar-btn"
+            @click="toggleUserMenu"
+            aria-label="用户菜单"
+          >
             <span class="avatar-circle">{{ avatarText }}</span>
           </button>
           <transition name="fade">
@@ -83,13 +143,20 @@
               </div>
               <div class="user-actions">
                 <template v-if="currentUser">
-                  <router-link to="/user-center" class="dropdown-btn primary user-center-btn">
+                  <router-link
+                    to="/user-center"
+                    class="dropdown-btn primary user-center-btn"
+                  >
                     进入个人中心
                   </router-link>
-                  <button class="dropdown-btn" @click="handleLogout">退出登录</button>
+                  <button class="dropdown-btn" @click="handleLogout">
+                    退出登录
+                  </button>
                 </template>
                 <template v-else>
-                  <button class="dropdown-btn primary" @click="goToLogin">登录/注册</button>
+                  <button class="dropdown-btn primary" @click="goToLogin">
+                    登录/注册
+                  </button>
                 </template>
               </div>
             </div>
@@ -123,14 +190,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
-import GlobalToast from './components/GlobalToast.vue';
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import GlobalToast from "./components/GlobalToast.vue";
 import { getJson } from "./utils/api";
 
-type UserRole = 'ADMIN' | 'VOLUNTEER' | 'USER';
-type VolunteerStatus = 'CERTIFIED' | 'PENDING' | 'REJECTED' | 'SUSPENDED' | null;
-type MenuName = 'activities' | 'volunteer' | 'dashboard' | 'admin';
+type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
+type VolunteerStatus =
+  | "CERTIFIED"
+  | "PENDING"
+  | "REJECTED"
+  | "SUSPENDED"
+  | null;
+type MenuName = "activities" | "volunteer" | "dashboard" | "admin";
 
 interface UserProfile {
   id?: number | string;
@@ -151,55 +223,61 @@ const userMenuRef = ref<HTMLElement | null>(null);
 const navMenuRef = ref<HTMLElement | null>(null);
 const activeMenu = ref<MenuName | null>(null);
 
-const displayName = computed(() => currentUser.value?.username || '游客');
+const displayName = computed(() => currentUser.value?.username || "游客");
 const displayPoints = computed(() => currentUser.value?.points ?? 0);
-const avatarText = computed(() => (displayName.value ? displayName.value.slice(0, 1) : '游'));
-const isVolunteerVerified = computed(() =>
-  currentUser.value?.role === 'ADMIN' || currentUser.value?.volunteerStatus === 'CERTIFIED'
+const avatarText = computed(() =>
+  displayName.value ? displayName.value.slice(0, 1) : "游",
 );
-const isVolunteerPending = computed(() =>
-  currentUser.value?.role !== 'ADMIN' && currentUser.value?.volunteerStatus === 'PENDING'
+const isVolunteerVerified = computed(
+  () =>
+    currentUser.value?.role === "ADMIN" ||
+    currentUser.value?.volunteerStatus === "CERTIFIED",
+);
+const isVolunteerPending = computed(
+  () =>
+    currentUser.value?.role !== "ADMIN" &&
+    currentUser.value?.volunteerStatus === "PENDING",
 );
 const volunteerStatusLabel = computed(() => {
-  if (!currentUser.value) return '未登录';
-  if (currentUser.value.role === 'ADMIN') return '管理员权限';
+  if (!currentUser.value) return "未登录";
+  if (currentUser.value.role === "ADMIN") return "管理员权限";
   const status = currentUser.value.volunteerStatus;
-  if (status === 'CERTIFIED') return '已认证';
-  if (status === 'PENDING') return '待审核';
-  if (status === 'REJECTED') return '未通过';
-  if (status === 'SUSPENDED') return '已停用';
-  return '未申请';
+  if (status === "CERTIFIED") return "已认证";
+  if (status === "PENDING") return "待审核";
+  if (status === "REJECTED") return "未通过";
+  if (status === "SUSPENDED") return "已停用";
+  return "未申请";
 });
 const statusBadgeClass = computed(() => ({
-  'is-verified': isVolunteerVerified.value,
-  'is-pending': isVolunteerPending.value,
-  'is-muted': !isVolunteerVerified.value && !isVolunteerPending.value
+  "is-verified": isVolunteerVerified.value,
+  "is-pending": isVolunteerPending.value,
+  "is-muted": !isVolunteerVerified.value && !isVolunteerPending.value,
 }));
 const roleLabel = computed(() => {
-  if (!currentUser.value) return '游客';
+  if (!currentUser.value) return "游客";
   const role = currentUser.value.role;
   const roleMap = {
-    ADMIN: '管理员',
-    VOLUNTEER: '志愿者',
-    USER: '普通用户'
+    ADMIN: "管理员",
+    VOLUNTEER: "志愿者",
+    USER: "普通用户",
   };
-  if (!role) return '游客';
+  if (!role) return "游客";
   return roleMap[role] || role;
-})
+});
 
 onMounted(() => {
   checkAuth();
   loading.value = false;
-  document.addEventListener('click', handleClickOutside);
-})
+  document.addEventListener("click", handleClickOutside);
+});
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside);
-})
+  document.removeEventListener("click", handleClickOutside);
+});
 
 const checkAuth = () => {
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     if (userStr) {
       const parsedUser = JSON.parse(userStr);
       currentUser.value = parsedUser;
@@ -209,12 +287,12 @@ const checkAuth = () => {
       return;
     }
   } catch (error) {
-    console.error('读取用户信息失败:', error);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    console.error("读取用户信息失败:", error);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   }
   currentUser.value = null;
-}
+};
 
 const refreshProfile = async (userId: number | string) => {
   try {
@@ -223,29 +301,29 @@ const refreshProfile = async (userId: number | string) => {
     const updatedUser = {
       ...baseUser,
       ...profile,
-      token: baseUser.token
+      token: baseUser.token,
     };
     currentUser.value = updatedUser;
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   } catch (error) {
-    console.error('获取用户资料失败:', error);
+    console.error("获取用户资料失败:", error);
   }
-}
+};
 
 const toggleUserMenu = () => {
   menuOpen.value = !menuOpen.value;
-}
+};
 
 const toggleMenu = (menuName: MenuName) => {
   activeMenu.value = activeMenu.value === menuName ? null : menuName;
-}
+};
 
 const handleTriggerKeydown = (event: KeyboardEvent, menuName: MenuName) => {
-  if (event.key === 'Enter' || event.key === ' ') {
+  if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     toggleMenu(menuName);
   }
-}
+};
 
 const handleClickOutside = (event: MouseEvent) => {
   if (!userMenuRef.value) return;
@@ -255,35 +333,35 @@ const handleClickOutside = (event: MouseEvent) => {
   if (navMenuRef.value && !navMenuRef.value.contains(event.target as Node)) {
     activeMenu.value = null;
   }
-}
+};
 
 const handleLogout = () => {
   showLogoutConfirm.value = true;
   menuOpen.value = false;
-}
+};
 
 const confirmLogout = () => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
   currentUser.value = null;
   showLogoutConfirm.value = false;
-  router.push('/login');
-}
+  router.push("/login");
+};
 
 const cancelLogout = () => {
   showLogoutConfirm.value = false;
-}
+};
 
 const goToLogin = () => {
   menuOpen.value = false;
-  router.push('/login');
-}
+  router.push("/login");
+};
 
 router.afterEach(() => {
   checkAuth();
   menuOpen.value = false;
   activeMenu.value = null;
-})
+});
 </script>
 
 <style>
@@ -294,7 +372,7 @@ router.afterEach(() => {
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: #333;
   background-color: #f5f7fa;
@@ -380,7 +458,7 @@ body {
   background: #f3f4f6;
 }
 
-.nav-dropdown-link+.nav-dropdown-link {
+.nav-dropdown-link + .nav-dropdown-link {
   border-top: 1px solid #aaa;
   margin-top: 4px;
   padding-top: 8px;

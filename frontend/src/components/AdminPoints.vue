@@ -27,9 +27,9 @@
 
 <script setup lang="ts">
 const records = [
-  { name: '张三', change: '+40', reason: '活动结算', time: '2025-04-10' },
-  { name: '李同学', change: '-20', reason: '兑换扣减', time: '2025-04-08' }
-]
+  { name: "张三", change: "+40", reason: "活动结算", time: "2025-04-10" },
+  { name: "李同学", change: "-20", reason: "兑换扣减", time: "2025-04-08" },
+];
 </script>
 
 <style scoped>
