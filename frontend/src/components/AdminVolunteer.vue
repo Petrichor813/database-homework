@@ -26,7 +26,7 @@
       </div>
       <div v-if="loading" class="table-row empty">正在加载...</div>
       <div v-else-if="volunteers.length === 0" class="table-row empty">
-        暂无符合条件的申请。
+        <center>暂无符合条件的申请。</center>
       </div>
       <div v-else v-for="item in volunteers" :key="item.id" class="table-row">
         <span>{{ item.name }}</span>
