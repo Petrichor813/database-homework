@@ -155,7 +155,7 @@ import { useToast } from "../utils/toast";
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
 type VolunteerStatus =
   | "CERTIFIED"
-  | "PENDING"
+  | "REVIEWING"
   | "REJECTED"
   | "SUSPENDED"
   | null;
@@ -242,7 +242,7 @@ const volunteerStatusLabel = computed(() => {
   if (profile.value.role === "ADMIN") return "管理员权限";
   const status = profile.value.volunteerStatus;
   if (status === "CERTIFIED") return "已认证";
-  if (status === "PENDING") return "等待管理员审核";
+  if (status === "REVIEWING") return "等待管理员审核";
   if (status === "REJECTED") return "未通过审核";
   if (status === "SUSPENDED") return "已停用";
   return "未申请";
@@ -251,7 +251,7 @@ const volunteerStatusLabel = computed(() => {
 const statusClass = computed(() => {
   if (profile.value?.role === "ADMIN") return "status-admin";
   if (profile.value?.volunteerStatus === "CERTIFIED") return "status-certified";
-  if (profile.value?.volunteerStatus === "PENDING") return "status-pending";
+  if (profile.value?.volunteerStatus === "REVIEWING") return "status-reviewing";
   if (profile.value?.volunteerStatus === "REJECTED") return "status-rejected";
   if (profile.value?.volunteerStatus === "SUSPENDED") return "status-suspended";
   return "status-muted";
@@ -276,7 +276,7 @@ const applyVolunteerLabel = computed(() =>
 );
 
 const showSupplement = computed(
-  () => profile.value?.volunteerStatus === "PENDING",
+  () => profile.value?.volunteerStatus === "REVIEWING",
 );
 
 const formattedRecords = computed<FormattedRecord[]>(() =>
@@ -548,7 +548,7 @@ const applyVolunteer = async () => {
   color: #065f46;
 }
 
-.status-pending {
+.status-reviewing {
   width: 100%;
   text-align: center;
   padding: 14px 16px;

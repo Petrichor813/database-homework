@@ -44,7 +44,7 @@ const records = [
     time: "2025-02-26 16:40",
     points: 200,
     status: "待发货",
-    statusClass: "pending",
+    statusClass: "reviewing",
   },
 ];
 </script>
@@ -98,7 +98,7 @@ const records = [
   color: #166534;
 }
 
-.status.pending {
+.status.reviewing {
   background: #fef3c7;
   color: #92400e;
 }

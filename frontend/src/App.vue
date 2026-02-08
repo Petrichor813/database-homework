@@ -211,7 +211,7 @@ import { useToast } from "./utils/toast";
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
 type VolunteerStatus =
   | "CERTIFIED"
-  | "PENDING"
+  | "REVIEWING"
   | "REJECTED"
   | "SUSPENDED"
   | null;
@@ -269,10 +269,10 @@ const isVolunteerVerified = computed(
     currentUser.value?.volunteerStatus === "CERTIFIED",
 );
 
-const isVolunteerPending = computed(
+const isVolunteerReviewing = computed(
   () =>
     currentUser.value?.role !== "ADMIN" &&
-    currentUser.value?.volunteerStatus === "PENDING",
+    currentUser.value?.volunteerStatus === "REVIEWING",
 );
 
 const volunteerStatusLabel = computed(() => {
@@ -280,7 +280,7 @@ const volunteerStatusLabel = computed(() => {
   if (currentUser.value.role === "ADMIN") return "管理员权限";
   const status = currentUser.value.volunteerStatus;
   if (status === "CERTIFIED") return "已认证";
-  if (status === "PENDING") return "待审核";
+  if (status === "REVIEWING") return "待审核";
   if (status === "REJECTED") return "未通过";
   if (status === "SUSPENDED") return "已停用";
   return "未申请";
@@ -288,8 +288,8 @@ const volunteerStatusLabel = computed(() => {
 
 const statusBadgeClass = computed(() => ({
   "is-verified": isVolunteerVerified.value,
-  "is-pending": isVolunteerPending.value,
-  "is-muted": !isVolunteerVerified.value && !isVolunteerPending.value,
+  "is-reviewing": isVolunteerReviewing.value,
+  "is-muted": !isVolunteerVerified.value && !isVolunteerReviewing.value,
 }));
 
 const roleLabel = computed(() => {
@@ -642,7 +642,7 @@ body {
   color: #10b981;
 }
 
-.status-badge.is-pending {
+.status-badge.is-reviewing {
   border-color: #f59e0b;
   color: #d97706;
 }

@@ -50,7 +50,7 @@ public class SignupRecord {
     private String note;
 
     public SignupRecord() {
-        this.status = SignupStatus.PENDING;
+        this.status = SignupStatus.REVIEWING;
         this.signupTime = LocalDateTime.now();
     }
 

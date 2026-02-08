@@ -52,7 +52,7 @@ public class ExchangeRecord {
 
     public ExchangeRecord() {
         this.orderTime = LocalDateTime.now();
-        this.status = ExchangeStatus.PENDING;
+        this.status = ExchangeStatus.REVIEWING;
     }
 
     // @formatter:off
@@ -167,7 +167,7 @@ public class ExchangeRecord {
 
     // 是否可取消
     public boolean isCancellable() {
-        return this.status == ExchangeStatus.PENDING;
+        return this.status == ExchangeStatus.REVIEWING;
     }
 
     // 是否终止

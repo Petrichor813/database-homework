@@ -29,7 +29,7 @@ const records = [
     title: "社区环境清洁行动",
     time: "2025-04-12",
     status: "已报名",
-    statusClass: "pending",
+    statusClass: "reviewing",
   },
   {
     title: "银龄陪伴计划",
@@ -91,7 +91,7 @@ const records = [
   width: fit-content;
 }
 
-.status.pending {
+.status.reviewing {
   background: #fef3c7;
   color: #92400e;
 }
