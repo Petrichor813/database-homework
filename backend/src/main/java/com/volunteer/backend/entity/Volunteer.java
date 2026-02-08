@@ -58,7 +58,7 @@ public class Volunteer {
     private LocalDateTime reviewTime;
 
     public Volunteer() {
-        this.status = VolunteerStatus.PENDING;
+        this.status = VolunteerStatus.REVIEWING;
         this.createTime = LocalDateTime.now();
     }
 
@@ -150,7 +150,7 @@ public class Volunteer {
     }
 
     public void resetForReapply(String name, String phone) {
-        this.status = VolunteerStatus.PENDING;
+        this.status = VolunteerStatus.REVIEWING;
         this.reviewNote = null;
         this.reviewTime = null;
         this.name = name;

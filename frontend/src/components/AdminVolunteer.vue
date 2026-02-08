@@ -38,7 +38,7 @@
           <button
             class="approve"
             type="button"
-            :disabled="item.status !== 'PENDING'"
+            :disabled="item.status !== 'REVIEWING'"
             @click="openReview(item, 'APPROVE')"
           >
             通过
@@ -46,7 +46,7 @@
           <button
             class="reject"
             type="button"
-            :disabled="item.status !== 'PENDING'"
+            :disabled="item.status !== 'REVIEWING'"
             @click="openReview(item, 'REJECT')"
           >
             拒绝
@@ -85,7 +85,7 @@ type VolunteerRecord = {
   userId: number;
   name: string;
   phone: string;
-  status: "PENDING" | "CERTIFIED" | "REJECTED" | "SUSPENDED";
+  status: "REVIEWING" | "CERTIFIED" | "REJECTED" | "SUSPENDED";
   reviewNote?: string | null;
   createTime: string;
   reviewTime?: string | null;
@@ -94,13 +94,13 @@ type VolunteerRecord = {
 type ReviewAction = "APPROVE" | "REJECT";
 
 type FilterOption = {
-  value: "ALL" | "PENDING" | "PROCESSED";
+  value: "ALL" | "REVIEWING" | "PROCESSED";
   label: string;
 };
 
 const filterOptions: FilterOption[] = [
   { value: "ALL", label: "全部" },
-  { value: "PENDING", label: "申请中" },
+  { value: "REVIEWING", label: "申请中" },
   { value: "PROCESSED", label: "已操作" },
 ];
 
@@ -180,7 +180,7 @@ const submitReview = async () => {
 
 const statusLabel = (status: VolunteerRecord["status"]) => {
   switch (status) {
-    case "PENDING":
+    case "REVIEWING":
       return "审核中";
     case "CERTIFIED":
       return "已通过";
