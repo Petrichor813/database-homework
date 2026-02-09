@@ -6,7 +6,7 @@ import UserCenter from "../components/UserCenter.vue";
 import ActivityList from "../components/ActivityList.vue";
 import SignupRecord from "../components/SignupRecord.vue";
 import PointRecord from "../components/PointRecord.vue";
-import ExchangePage from "../components/ExchangePage.vue";
+import Exchange from "../components/Exchange.vue";
 import ExchangeRecord from "../components/ExchangeRecord.vue";
 import Dashboard from "../components/Dashboard.vue";
 import ImportData from "../components/ImportData.vue";
@@ -59,7 +59,7 @@ const routes = [
   {
     path: "/exchange",
     name: "Exchange",
-    component: ExchangePage,
+    component: Exchange,
   },
   {
     path: "/exchange-records",

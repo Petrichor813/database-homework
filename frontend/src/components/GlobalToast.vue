@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { useToast } from "../utils/toast";
+
+const { state } = useToast();
+</script>
+
 <template>
   <transition name="toast-slide">
     <div v-if="state.visible" class="toast" :class="`toast-${state.type}`">
@@ -16,12 +22,6 @@
     </div>
   </transition>
 </template>
-
-<script setup lang="ts">
-import { useToast } from "../utils/toast";
-
-const { state } = useToast();
-</script>
 
 <style scoped>
 .toast {
@@ -47,7 +47,7 @@ const { state } = useToast();
 }
 
 .toast-info {
-  background: #eff6ff;
+  background: #d6e8ff;
   color: #1d4ed8;
   border: 1px solid #bfdbfe;
 }
