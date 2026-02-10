@@ -5,90 +5,152 @@
       <p>汇总志愿者资料、积分与兑换信息。</p>
     </header>
 
-    <section class="profile-grid">
-      <div class="profile-card">
-        <div class="avatar-placeholder">{{ avatarText }}</div>
-        <div class="info">
-          <p class="name">{{ displayName }}</p>
-          <p class="role">{{ roleLabel }}</p>
-          <button class="ghost-btn" @click="openEditProfile">编辑资料</button>
-        </div>
-      </div>
-      <div class="profile-card">
-        <h3>基础信息</h3>
-        <p></p>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="label">手机号</span>
-            <span class="value">{{ displayPhone }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">服务时长</span>
-            <span class="value">{{ displayHours }} 小时</span>
-          </div>
-          <div class="info-item">
-            <span class="label">积分余额</span>
-            <span class="value">{{ displayPoints }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="profile-card">
-        <h3>认证状态</h3>
-        <p></p>
-        <div class="status-block" :class="[statusClass, statusSizeClass]">
-          {{ volunteerStatusLabel }}
-        </div>
-        <button v-if="showSupplement" class="ghost-btn">提交补充材料</button>
+    <section class="center-layout">
+      <aside class="tab-menu" aria-label="个人中心导航">
         <button
-          v-if="canApplyVolunteer"
-          class="primary-btn"
-          :disabled="isApplying"
-          @click="openApplyVolunteer"
+          v-for="tab in tabs"
+          :key="tab.value"
+          class="tab-btn"
+          :class="{ active: activeTab === tab.value }"
+          type="button"
+          @click="activeTab = tab.value"
         >
-          {{ applyVolunteerLabel }}
+          {{ tab.label }}
         </button>
-      </div>
-    </section>
+      </aside>
 
-    <section class="summary">
-      <div class="summary-card">
-        <p>当前积分</p>
-        <h3>{{ displayPoints }}</h3>
-      </div>
-      <div class="summary-card">
-        <p>本月新增</p>
-        <h3>+{{ monthlyEarned }}</h3>
-      </div>
-      <div class="summary-card">
-        <p>兑换记录</p>
-        <router-link to="/exchange-records" class="primary-link">
-          查看兑换记录
-        </router-link>
-      </div>
-    </section>
+      <div class="tab-content">
+        <section v-if="activeTab === 'PROFILE'" class="profile-grid">
+          <div class="profile-card">
+            <div class="avatar-placeholder">{{ avatarText }}</div>
+            <div class="info">
+              <p class="name">{{ displayName }}</p>
+              <p class="role">{{ roleLabel }}</p>
+              <button class="ghost-btn" @click="openEditProfile">
+                编辑资料
+              </button>
+            </div>
+          </div>
+          <div class="profile-card">
+            <h3>基础信息</h3>
+            <p></p>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">手机号</span>
+                <span class="value">{{ displayPhone }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">服务时长</span>
+                <span class="value">{{ displayHours }} 小时</span>
+              </div>
+              <div class="info-item">
+                <span class="label">积分余额</span>
+                <span class="value">{{ displayPoints }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-card">
+            <h3>认证状态</h3>
+            <p></p>
+            <div class="status-block" :class="[statusClass, statusSizeClass]">
+              {{ volunteerStatusLabel }}
+            </div>
+            <button v-if="showSupplement" class="ghost-btn">
+              提交补充材料
+            </button>
+            <button
+              v-if="canApplyVolunteer"
+              class="primary-btn"
+              :disabled="isApplying"
+              @click="openApplyVolunteer"
+            >
+              {{ applyVolunteerLabel }}
+            </button>
+          </div>
+        </section>
+        <section v-else-if="activeTab === 'SIGNUP'" class="panel-card">
+          <h3>志愿者申请</h3>
+          <p class="panel-tip">查看并管理当前志愿者认证进度。</p>
+          <div class="status-block" :class="[statusClass, statusSizeClass]">
+            {{ volunteerStatusLabel }}
+          </div>
+          <div class="panel-actions">
+            <button v-if="showSupplement" class="ghost-btn">
+              提交补充材料
+            </button>
+            <button
+              v-if="canApplyVolunteer"
+              class="primary-btn"
+              :disabled="isApplying"
+              @click="openApplyVolunteer"
+            >
+              {{ applyVolunteerLabel }}
+            </button>
+          </div>
+        </section>
 
-    <section v-if="records.length" class="table-card">
-      <div class="table-header">
-        <span>时间</span>
-        <span>类型</span>
-        <span>变动</span>
-        <span>备注</span>
+        <section v-else-if="activeTab === 'EXCHANGE'" class="record-panel">
+          <div class="summary">
+            <div class="summary-card">
+              <p>当前积分</p>
+              <h3>{{ displayPoints }}</h3>
+            </div>
+            <div class="summary-card">
+              <p>本月新增</p>
+              <h3>+{{ monthlyEarned }}</h3>
+            </div>
+            <div class="summary-card">
+              <p>兑换记录</p>
+              <router-link to="/exchange-records" class="primary-link">
+                查看兑换记录
+              </router-link>
+            </div>
+          </div>
+
+          <section v-if="records.length" class="table-card">
+            <div class="table-header">
+              <span>时间</span>
+              <span>类型</span>
+              <span>变动</span>
+              <span>备注</span>
+            </div>
+            <div
+              v-for="record in formattedRecords"
+              :key="record.key"
+              class="table-row"
+            >
+              <span>{{ record.time }}</span>
+              <span>{{ record.typeLabel }}</span>
+              <span
+                :class="record.amount.startsWith('+') ? 'positive' : 'negative'"
+              >
+                {{ record.amount }}
+              </span>
+              <span>{{ record.note }}</span>
+            </div>
+          </section>
+          <section v-else class="empty-card">
+            <p>暂无积分变动记录</p>
+          </section>
+        </section>
+
+        <section v-else class="panel-card">
+          <h3>账号与安全</h3>
+          <p class="panel-tip">进行账号退出与注销管理，请谨慎操作。</p>
+          <div class="panel-actions">
+            <button class="ghost-btn" type="button" @click="handleLogout">
+              退出登录
+            </button>
+            <button
+              class="danger-btn"
+              type="button"
+              @click="handleDeleteAccount"
+            >
+              注销账号
+            </button>
+          </div>
+        </section>
       </div>
-      <div
-        v-for="record in formattedRecords"
-        :key="record.key"
-        class="table-row"
-      >
-        <span>{{ record.time }}</span>
-        <span>{{ record.typeLabel }}</span>
-        <span :class="record.amount.startsWith('+') ? 'positive' : 'negative'">
-          {{ record.amount }}
-        </span>
-        <span>{{ record.note }}</span>
-      </div>
-    </section>
-    <section v-else class="empty-card">
-      <p>暂无积分变动记录</p>
     </section>
 
     <div v-if="showEditModal" class="modal-overlay">
@@ -149,10 +211,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, reactive } from "vue";
+import { useRouter } from "vue-router";
 import { getJson, postJson, putJson } from "../utils/api";
 import { useToast } from "../utils/toast";
 
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
+type UserCenterTab = "PROFILE" | "SIGNUP" | "EXCHANGE" | "SECURITY";
+
 type VolunteerStatus =
   | "CERTIFIED"
   | "REVIEWING"
@@ -186,8 +251,16 @@ interface FormattedRecord {
   note: string;
 }
 
+const router = useRouter();
 const { success, error } = useToast();
 
+const activeTab = ref<UserCenterTab>("PROFILE");
+const tabs: { label: string; value: UserCenterTab }[] = [
+  { label: "用户信息", value: "PROFILE" },
+  { label: "报名记录", value: "SIGNUP" },
+  { label: "兑换记录", value: "EXCHANGE" },
+  { label: "账号与安全", value: "SECURITY" },
+];
 const profile = ref<UserProfile | null>(null);
 const records = ref<PointsRecord[]>([]);
 const displayName = computed(() => profile.value?.username || "游客");
@@ -451,6 +524,24 @@ const applyVolunteer = async () => {
     isApplying.value = false;
   }
 };
+
+const handleLogout = () => {
+  const shouldLogout = window.confirm("确认退出登录吗？");
+  if (!shouldLogout) return;
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  success("已退出登录", "欢迎下次再来");
+  router.push("/login");
+};
+
+const handleDeleteAccount = () => {
+  const confirmed = window.confirm("注销账号后无法恢复，是否确认继续？");
+  if (!confirmed) return;
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  success("账号已注销", "如需继续使用，请重新注册");
+  router.push("/login");
+};
 </script>
 
 <style scoped>
@@ -464,9 +555,73 @@ const applyVolunteer = async () => {
   color: #6b7280;
 }
 
+.center-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.tab-menu {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  color: #475569;
+}
+
+.tab-btn.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.tab-content {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.panel-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.panel-tip {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.record-panel {
+  display: grid;
   gap: 16px;
 }
 
@@ -616,6 +771,20 @@ const applyVolunteer = async () => {
   padding: 10px 14px;
   cursor: pointer;
   font-weight: 600;
+}
+
+.danger-btn {
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.danger-btn:hover {
+  background: #b91c1c;
 }
 
 .primary-btn:disabled {

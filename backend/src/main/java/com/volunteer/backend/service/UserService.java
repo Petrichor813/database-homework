@@ -18,7 +18,9 @@ import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
 import com.volunteer.backend.utils.UserRole;
 import com.volunteer.backend.utils.VolunteerStatus;
+import org.springframework.stereotype.Service;
 
+@Service
 public class UserService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

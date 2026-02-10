@@ -13,7 +13,9 @@ import com.volunteer.backend.repository.VolunteerRepository;
 import com.volunteer.backend.utils.UserRole;
 import com.volunteer.backend.utils.VolunteerReviewAction;
 import com.volunteer.backend.utils.VolunteerStatus;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AdminVolunteerService {
     private final VolunteerRepository volunteerRepository;
     private final UserRepository userRepository;
