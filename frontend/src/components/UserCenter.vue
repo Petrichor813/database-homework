@@ -33,8 +33,11 @@
           </div>
           <div class="profile-card">
             <h3>基础信息</h3>
-            <p></p>
             <div class="info-grid">
+              <div class="info-item">
+                <span class="label">真名</span>
+                <span class="value">{{ displayRealName }}</span>
+              </div>
               <div class="info-item">
                 <span class="label">手机号</span>
                 <span class="value">{{ displayPhone }}</span>
@@ -51,7 +54,6 @@
           </div>
           <div class="profile-card">
             <h3>志愿者申请</h3>
-            <p></p>
             <p class="panel-tip">在此提交认证申请或补充审核材料。</p>
             <button v-if="showSupplement" class="ghost-btn">
               提交补充材料
@@ -67,21 +69,13 @@
           </div>
           <div class="profile-card">
             <h3>志愿者认证状态</h3>
-            <p></p>
-            <div class="status-block" :class="[statusClass, statusSizeClass]">
+            <div class="status-block" :class="statusClass">
               {{ volunteerStatusLabel }}
             </div>
           </div>
         </section>
-        <section v-else-if="activeTab === 'SIGNUP'" class="panel-card">
-          <h3>报名记录</h3>
-          <p class="panel-tip">查看您参与活动的报名信息。</p>
-          <section class="empty-card">
-            <p>暂无报名记录</p>
-          </section>
-        </section>
 
-        <section v-else-if="activeTab === 'EXCHANGE'" class="record-panel">
+        <section v-else-if="activeTab === 'POINT'" class="record-panel">
           <div class="summary">
             <div class="summary-card">
               <p>当前积分</p>
@@ -208,7 +202,7 @@ import { getJson, postJson, putJson } from "../utils/api";
 import { useToast } from "../utils/toast";
 
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
-type UserCenterTab = "PROFILE" | "SIGNUP" | "EXCHANGE" | "SECURITY";
+type UserCenterTab = "PROFILE" | "POINT" | "SECURITY";
 
 type VolunteerStatus =
   | "CERTIFIED"
@@ -227,6 +221,7 @@ interface PointsRecord {
 interface UserProfile {
   id?: number | string;
   username?: string;
+  realName?: string;
   role?: UserRole;
   phone?: string;
   points?: number;
@@ -249,8 +244,7 @@ const { success, error } = useToast();
 const activeTab = ref<UserCenterTab>("PROFILE");
 const tabs: { label: string; value: UserCenterTab }[] = [
   { label: "用户信息", value: "PROFILE" },
-  { label: "报名记录", value: "SIGNUP" },
-  { label: "兑换记录", value: "EXCHANGE" },
+  { label: "积分变动记录", value: "POINT" },
   { label: "账号与安全", value: "SECURITY" },
 ];
 const profile = ref<UserProfile | null>(null);
@@ -273,17 +267,21 @@ const avatarText = computed(() =>
   displayName.value ? displayName.value.slice(0, 1) : "游",
 );
 
-const roleLabel = computed(() => {
-  if (!profile.value?.role) return "游客";
-  const roleMap: Record<UserRole, string> = {
-    ADMIN: "管理员",
-    VOLUNTEER: "志愿者",
-    USER: "普通用户",
-  };
-  const role = profile.value.role;
-  if (!role) return "游客";
-  return roleMap[role] || role;
-});
+const roleMap: Record<UserRole, string> = {
+  ADMIN: "管理员",
+  VOLUNTEER: "志愿者",
+  USER: "普通用户",
+};
+
+const roleLabel = computed(() =>
+  profile.value?.role
+    ? (roleMap[profile.value.role] ?? profile.value.role)
+    : "游客",
+);
+
+const displayRealName = computed(
+  () => profile.value?.realName?.trim() || "未填写",
+);
 
 const maskPhone = (phone?: string) => {
   if (!phone) return "";
@@ -315,16 +313,15 @@ const volunteerStatusLabel = computed(() => {
 
 const statusClass = computed(() => {
   if (profile.value?.role === "ADMIN") return "status-admin";
-  if (profile.value?.volunteerStatus === "CERTIFIED") return "status-certified";
-  if (profile.value?.volunteerStatus === "REVIEWING") return "status-reviewing";
-  if (profile.value?.volunteerStatus === "REJECTED") return "status-rejected";
-  if (profile.value?.volunteerStatus === "SUSPENDED") return "status-suspended";
-  return "status-muted";
+  const statusClassMap: Record<Exclude<VolunteerStatus, null>, string> = {
+    CERTIFIED: "status-certified",
+    REVIEWING: "status-reviewing",
+    REJECTED: "status-rejected",
+    SUSPENDED: "status-suspended",
+  };
+  const status = profile.value?.volunteerStatus;
+  return status ? statusClassMap[status] : "status-muted";
 });
-
-const statusSizeClass = computed(() =>
-  profile.value?.volunteerStatus ? "" : "status-empty",
-);
 
 const canApplyVolunteer = computed(() => {
   if (profile.value?.role !== "USER") return false;
@@ -664,7 +661,7 @@ const handleDeleteAccount = () => {
   justify-content: space-between;
   background: #f8fafc;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 8px 20px;
   font-size: 14px;
 }
 
@@ -678,73 +675,42 @@ const handleDeleteAccount = () => {
 }
 
 .status-block {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 8px 12px;
-  border-radius: 8px;
-  width: fit-content;
+  width: 100%;
+  font-size: 16px;
   font-weight: 600;
+  text-align: center;
+  padding: 14px 16px;
+  border-radius: 8px;
 }
 
 .status-certified {
-  width: 100%;
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 16px;
   background: #ecfdf3;
   color: #065f46;
 }
 
 .status-reviewing {
-  width: 100%;
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 16px;
   background: #fef3c7;
   color: #92400e;
 }
 
 .status-rejected {
-  width: 100%;
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 16px;
   background: #fee2e2;
   color: #b91c1c;
 }
 
 .status-suspended {
-  width: 100%;
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 16px;
   background: #e0f2fe;
   color: #0369a1;
 }
 
 .status-muted {
-  width: 100%;
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 16px;
   background: #f3f4f6;
   color: #6b7280;
 }
 
 .status-admin {
-  width: 100%;
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 16px;
   background: #eef2ff;
   color: #3730a3;
-}
-
-.status-empty {
-  width: 100%;
-  text-align: center;
-  padding: 14px 16px;
-  font-size: 16px;
 }
 
 .ghost-btn {
