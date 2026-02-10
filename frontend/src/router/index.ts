@@ -113,62 +113,35 @@ const router = createRouter({
 });
 
 router.beforeEach((to, _from, next) => {
-  if (to.meta.requiresAdmin) {
-    const userStr = localStorage.getItem("user");
-
-    if (!userStr) {
-      next("/login");
-      return;
-    }
-
-    try {
-      const user = JSON.parse(userStr);
-
-      if (user.role !== "ADMIN") {
-        next("/home");
-        return;
-      }
-    } catch (error) {
-      console.error("解析用户信息失败:", error);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      next("/login");
-      return;
-    }
+  const requiresAdmin = to.matched.some((r) =>
+    Boolean(r.meta && r.meta.requiresAdmin),
+  );
+  const requiresAuth = to.matched.some((r) =>
+    Boolean(r.meta && r.meta.requiresAuth),
+  );
+  if (!requiresAdmin && !requiresAuth) {
+    return next();
   }
 
-  if (to.meta.requiresAuth) {
-    const userStr = localStorage.getItem("user");
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return next("/login");
 
-    if (!userStr) {
-      next("/login");
-      return;
-    }
+  type Role = "ADMIN" | "VOLUNTEER" | "USER";
+  interface User {
+    role?: Role;
+  }
+  let user: User;
+  try {
+    user = JSON.parse(userStr) as User;
+  } catch (err) {
+    console.error("解析用户信息失败:", err);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    return next("/login");
+  }
 
-    try {
-      const user = JSON.parse(userStr);
-
-      if (to.meta.role && user.role !== to.meta.role) {
-        switch (user.role) {
-          case "ADMIN":
-            next("/admin");
-            break;
-          case "VOLUNTEER":
-            next("/volunteer");
-            break;
-          case "USER":
-          default:
-            next("/user");
-        }
-        return;
-      }
-    } catch (error) {
-      console.error("解析用户信息失败:", error);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      next("/login");
-      return;
-    }
+  if (requiresAdmin && user.role !== "ADMIN") {
+    return next("/home");
   }
 
   next();

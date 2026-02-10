@@ -199,7 +199,13 @@ const mockActivities = [
   background: #2563eb;
   color: white;
   padding: 10px 18px;
+  border: none;
   border-radius: 8px;
+}
+
+.join-button:hover {
+  cursor: pointer;
+  background: #1d4ed8;
 }
 
 .lookup-button {
@@ -208,7 +214,11 @@ const mockActivities = [
   padding: 10px 18px;
   border: 1px solid #cbd5f5;
   border-radius: 8px;
+}
+
+.lookup-button:hover {
   cursor: pointer;
+  background: #eeeeee;
 }
 
 .header-panel {
