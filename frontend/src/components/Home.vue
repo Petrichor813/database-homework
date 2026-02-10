@@ -169,6 +169,14 @@ const mockActivities = [
   border: 1px solid #e0e7ff;
 }
 
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
 .header-tag {
   font-size: 18px;
   font-weight: 600;

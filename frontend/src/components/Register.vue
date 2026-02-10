@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
 import { useToast } from "../utils/toast";
 import { postJson } from "../utils/api";
 
-const router = useRouter();
-const { success, info, error } = useToast();
+const { success, error } = useToast();
 
 const account_info = reactive({
   username: "",
