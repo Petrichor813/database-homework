@@ -208,7 +208,7 @@ const checkAuth = () => {
       return;
     }
   } catch (err) {
-    error("读取用户信息失败！");
+    error("用户信息读取失败！");
     localStorage.removeItem("user");
     localStorage.removeItem("token");
   }
