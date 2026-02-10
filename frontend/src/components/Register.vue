@@ -1,169 +1,49 @@
-<template>
-  <div class="register-page">
-    <div class="register-card">
-      <header>
-        <h2>志愿服务平台注册</h2>
-        <p>完善信息后即可参与活动与积分管理</p>
-      </header>
-      <form class="register-form" @submit.prevent="handleRegister">
-        <div class="form-row">
-          <label>用户名</label>
-          <div class="input-with-action">
-            <input
-              v-model="form.username"
-              type="text"
-              placeholder="请输入用户名"
-            />
-            <button
-              v-if="form.username"
-              type="button"
-              class="clear-button"
-              @click="form.username = ''"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-        <div class="form-row">
-          <label>手机号</label>
-          <div class="input-with-action">
-            <input
-              v-model="form.phone"
-              type="text"
-              placeholder="请输入手机号"
-            />
-            <button
-              v-if="form.phone"
-              type="button"
-              class="clear-button"
-              @click="form.phone = ''"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-        <div class="form-row">
-          <label>密码</label>
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="请输入密码"
-          />
-        </div>
-        <div class="form-row">
-          <label>确认密码</label>
-          <input
-            v-model="form.confirmPassword"
-            type="password"
-            placeholder="再次输入密码"
-          />
-        </div>
-        <div class="form-row">
-          <label>注册身份</label>
-          <div class="role-options">
-            <label class="role-option">
-              <input
-                v-model="form.primaryRole"
-                type="radio"
-                name="primary-role"
-                value="USER"
-                checked
-              />
-              <span>普通用户</span>
-            </label>
-            <label class="role-option">
-              <input
-                v-model="form.primaryRole"
-                type="radio"
-                name="primary-role"
-                value="ADMIN"
-              />
-              <span>管理员</span>
-            </label>
-          </div>
-        </div>
-        <div v-if="form.primaryRole === 'USER'">
-          <div class="form-row">
-            <label>志愿者身份</label>
-            <label class="volunteer-option">
-              <input v-model="form.isVolunteer" type="checkbox" />
-              <span>申请成为志愿者</span>
-            </label>
-          </div>
-          <div v-if="form.isVolunteer" class="form-row">
-            <label>真实姓名</label>
-            <div class="input-with-action">
-              <input
-                v-model="form.realName"
-                type="text"
-                placeholder="请输入真实姓名"
-              />
-              <button
-                v-if="form.realName"
-                type="button"
-                class="clear-button"
-                @click="form.realName = ''"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        </div>
-        <button type="submit" :disabled="loading">
-          {{ loading ? "注册中..." : "提交注册" }}
-        </button>
-      </form>
-      <footer>
-        <span>已有账号？</span>
-        <router-link to="/login">返回登录</router-link>
-      </footer>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { postJson } from "../utils/api";
 import { useToast } from "../utils/toast";
+import { postJson } from "../utils/api";
 
 const router = useRouter();
-const { success, error } = useToast();
+const { success, info, error } = useToast();
 
-const form = reactive({
+const account_info = reactive({
   username: "",
+  realName: "",
   phone: "",
   password: "",
   confirmPassword: "",
-  primaryRole: "USER",
+  userRole: "USER",
   isVolunteer: false,
-  realName: "",
 });
 
 const loading = ref(false);
 
-const resolvedRole = computed(() => {
-  if (form.primaryRole === "ADMIN") return "ADMIN";
+const updatedRole = computed(() => {
+  if (account_info.userRole === "ADMIN") {
+    return "ADMIN";
+  }
+
   return "USER";
 });
 
 watch(
-  () => form.primaryRole,
+  () => account_info.userRole,
   (value) => {
     if (value === "ADMIN") {
-      form.isVolunteer = false;
-      form.realName = "";
+      account_info.realName = "";
+      account_info.isVolunteer = false;
     }
-  }
+  },
 );
 
 const handleRegister = async () => {
-  if (!form.username.trim() || !form.password.trim()) {
+  if (!account_info.username.trim() || !account_info.password.trim()) {
     error("注册失败", "请输入用户名和密码");
     return;
   }
 
-  if (form.password !== form.confirmPassword) {
+  if (account_info.password !== account_info.confirmPassword) {
     error("注册失败", "两次输入的密码不一致");
     return;
   }
@@ -172,27 +52,196 @@ const handleRegister = async () => {
 
   try {
     await postJson("/api/auth/register", {
-      username: form.username,
-      password: form.password,
-      role: resolvedRole.value,
-      phone: form.phone,
-      requestVolunteer: form.isVolunteer,
-      ...(form.isVolunteer ? { realName: form.realName } : {}),
+      username: account_info.username,
+      password: account_info.password,
+      role: updatedRole.value,
+      phone: account_info.phone,
+      requestVolunteer: account_info.isVolunteer,
+      ...(account_info.isVolunteer ? { realName: account_info.realName } : {}),
     });
-
     success("注册成功");
-    await router.push("/login");
   } catch (err) {
-    const message = err instanceof Error ? err.message : "注册失败，请稍后重试";
-    error("注册失败", message);
+    const msg = err instanceof Error ? err.message : "请检查您的注册信息";
+    error("注册失败", msg);
   } finally {
     loading.value = false;
   }
 };
 </script>
 
-<style scoped>
-.register-page {
+<template>
+  <div class="register">
+    <div class="card">
+      <header>
+        <h2>用户注册</h2>
+        <p>注册账号并登录后即可参与活动、获取积分</p>
+      </header>
+
+      <form @submit.prevent="handleRegister">
+        <div class="form-row">
+          <label for="username">用户名</label>
+          <div class="input-area">
+            <input
+              id="username"
+              v-model="account_info.username"
+              type="text"
+              placeholder="请输入用户名"
+              required
+              class="input-box"
+            />
+            <button
+              v-if="account_info.username"
+              type="button"
+              class="clear-button"
+              @click="account_info.username = ''"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="phone">手机号</label>
+          <div class="input-area">
+            <input
+              id="username"
+              v-model="account_info.phone"
+              type="text"
+              placeholder="请输入手机号"
+              required
+              class="input-box"
+            />
+            <button
+              v-if="account_info.phone"
+              type="button"
+              class="clear-button"
+              @click="account_info.phone = ''"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="password">密码</label>
+          <div class="input-area">
+            <input
+              id="username"
+              v-model="account_info.password"
+              type="password"
+              placeholder="请输入密码"
+              required
+              class="input-box"
+            />
+            <button
+              v-if="account_info.password"
+              type="button"
+              class="clear-button"
+              @click="account_info.password = ''"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="confirm-password">确认密码</label>
+          <div class="input-area">
+            <input
+              id="username"
+              v-model="account_info.confirmPassword"
+              type="password"
+              placeholder="请再次输入密码"
+              required
+              class="input-box"
+            />
+            <button
+              v-if="account_info.confirmPassword"
+              type="button"
+              class="clear-button"
+              @click="account_info.confirmPassword = ''"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="user-role">注册身份</label>
+          <div class="check-role">
+            <label for="normal">
+              <input
+                id="user-role"
+                v-model="account_info.userRole"
+                type="radio"
+                value="USER"
+                checked
+              />
+              <span>普通用户</span>
+            </label>
+            <label for="normal">
+              <input
+                id="user-role"
+                v-model="account_info.userRole"
+                type="radio"
+                value="ADMIN"
+              />
+              <span>管理员</span>
+            </label>
+          </div>
+        </div>
+
+        <div v-if="account_info.userRole === 'USER'">
+          <div class="form-row">
+            <label for="volunteer-option-tag">志愿者身份</label>
+            <label for="volunteer-option" class="check-volunteer">
+              <input
+                id="volunteer-role"
+                v-model="account_info.isVolunteer"
+                type="checkbox"
+              />
+              <span>申请成为志愿者</span>
+            </label>
+          </div>
+
+          <div v-if="account_info.isVolunteer" class="form-row">
+            <label for="real-name">真实姓名</label>
+            <div class="input-area">
+              <input
+                id="username"
+                v-model="account_info.realName"
+                type="text"
+                placeholder="请输入真实姓名"
+                required
+                class="input-box"
+              />
+              <button
+                v-if="account_info.realName"
+                type="button"
+                class="clear-button"
+                @click="account_info.realName = ''"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" :disabled="loading" class="register-button">
+          {{ loading ? "注册中……" : "提交注册" }}
+        </button>
+      </form>
+
+      <div class="register-footer">
+        <span>已有账号？</span>
+        <router-link to="/login" class="login-link">返回登录</router-link>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="css">
+.register {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -200,28 +249,30 @@ const handleRegister = async () => {
   padding: 20px;
 }
 
-.register-card {
-  width: min(420px, 100%);
-  background: #fff;
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+.card {
   display: flex;
   flex-direction: column;
+  width: min(420px, 100%);
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
   gap: 20px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
-.register-card header h2 {
+.card header h2 {
+  text-align: center;
   margin: 0 0 8px;
 }
 
-.register-card header p {
-  margin: 0;
-  color: #6b7280;
+.card header p {
   font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  margin: 0;
 }
 
-.register-form {
+form {
   display: grid;
   gap: 16px;
 }
@@ -232,109 +283,119 @@ const handleRegister = async () => {
 }
 
 .form-row label {
-  font-size: 14px;
+  font-size: 16px;
   color: #374151;
 }
 
-.form-row input {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 10px 12px;
-}
-
-.input-with-action {
-  position: relative;
+.input-area {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
-.input-with-action input {
+.input-area .input-box {
   flex: 1;
   padding-right: 40px;
 }
 
-.clear-button {
-  border: none;
-  background: #e5e7eb;
-  color: #6b7280;
+.input-area .clear-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
   width: 28px;
   height: 28px;
+  line-height: 1;
+  background: #e5e7eb;
+  color: #6b7280;
+  border: none;
   border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   padding: 0;
-  line-height: 1;
-  transition: background 0.2s ease, color 0.2s ease;
-  position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
-.clear-button:hover {
+.input-area .clear-button:hover {
   background: #d1d5db;
   color: #374151;
 }
 
-.role-options {
+.check-role {
   display: flex;
   gap: 15px;
   margin-top: 4px;
 }
 
-.role-option {
+.check-role label {
   display: flex;
   align-items: center;
   cursor: pointer;
+  margin-right: 10px;
 }
 
-.volunteer-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #374151;
-}
-
-.volunteer-option input {
-  margin: 0;
-}
-
-.role-option input {
+.check-role input {
   margin-right: 8px;
 }
 
-.role-option span {
+.check-role span {
   font-size: 14px;
-  color: #555;
+  color: #555555;
 }
 
-.register-form button {
+.check-volunteer {
+  display: inline-flex;
+  align-items: center;
+  color: #374151;
+  gap: 8px;
+}
+
+.check-volunteer span {
+  font-size: 14px;
+}
+
+.register-footer {
+  display: flex;
+  justify-content: center;
+  font-size: 14px;
+  color: #6b7280;
+  gap: 8px;
+}
+
+.register-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
   background: #2563eb;
-  color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 12px;
-  font-weight: 600;
   cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s;
 }
 
-.register-form button:disabled {
+.register-button:hover {
+  background: #1d4ed8;
+}
+
+.register-button:disabled {
   background: #9ca3af;
   cursor: not-allowed;
 }
 
-.register-card footer {
-  display: flex;
-  gap: 8px;
-  font-size: 14px;
-  color: #6b7280;
+.login-link {
+  font-weight: 500;
+  text-decoration: none;
+  color: #2563eb;
 }
 
-.register-card footer a {
-  color: #2563eb;
-  text-decoration: none;
+.login-link:hover {
+  text-decoration: underline;
 }
 </style>
