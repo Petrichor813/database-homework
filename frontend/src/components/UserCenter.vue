@@ -50,43 +50,35 @@
             </div>
           </div>
           <div class="profile-card">
-            <h3>认证状态</h3>
+            <h3>志愿者申请</h3>
+            <p></p>
+            <p class="panel-tip">在此提交认证申请或补充审核材料。</p>
+            <button v-if="showSupplement" class="ghost-btn">
+              提交补充材料
+            </button>
+            <button
+              v-if="canApplyVolunteer"
+              class="primary-btn"
+              :disabled="isApplying"
+              @click="openApplyVolunteer"
+            >
+              {{ applyVolunteerLabel }}
+            </button>
+          </div>
+          <div class="profile-card">
+            <h3>志愿者认证状态</h3>
             <p></p>
             <div class="status-block" :class="[statusClass, statusSizeClass]">
               {{ volunteerStatusLabel }}
             </div>
-            <button v-if="showSupplement" class="ghost-btn">
-              提交补充材料
-            </button>
-            <button
-              v-if="canApplyVolunteer"
-              class="primary-btn"
-              :disabled="isApplying"
-              @click="openApplyVolunteer"
-            >
-              {{ applyVolunteerLabel }}
-            </button>
           </div>
         </section>
         <section v-else-if="activeTab === 'SIGNUP'" class="panel-card">
-          <h3>志愿者申请</h3>
-          <p class="panel-tip">查看并管理当前志愿者认证进度。</p>
-          <div class="status-block" :class="[statusClass, statusSizeClass]">
-            {{ volunteerStatusLabel }}
-          </div>
-          <div class="panel-actions">
-            <button v-if="showSupplement" class="ghost-btn">
-              提交补充材料
-            </button>
-            <button
-              v-if="canApplyVolunteer"
-              class="primary-btn"
-              :disabled="isApplying"
-              @click="openApplyVolunteer"
-            >
-              {{ applyVolunteerLabel }}
-            </button>
-          </div>
+          <h3>报名记录</h3>
+          <p class="panel-tip">查看您参与活动的报名信息。</p>
+          <section class="empty-card">
+            <p>暂无报名记录</p>
+          </section>
         </section>
 
         <section v-else-if="activeTab === 'EXCHANGE'" class="record-panel">
@@ -596,7 +588,7 @@ const handleDeleteAccount = () => {
 
 .profile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
