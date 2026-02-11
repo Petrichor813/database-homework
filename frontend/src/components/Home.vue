@@ -214,19 +214,28 @@ const mockActivities = [
 .join-button:hover {
   cursor: pointer;
   background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
 }
 
 .lookup-button {
   background: white;
+  font-weight: 500;
   color: #2563eb;
   padding: 10px 18px;
-  border: 1px solid #cbd5f5;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
 }
 
 .lookup-button:hover {
   cursor: pointer;
-  background: #eeeeee;
+  color: #1d4ed8;
+  background: #f8fafc;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+  transition: all 0.2s ease;
 }
 
 .header-panel {

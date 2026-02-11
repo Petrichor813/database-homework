@@ -92,12 +92,17 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 
 const displayName = computed(() => curUser.value?.username || "游客");
+const userCircleText = computed(() =>
+  displayName.value ? displayName.value.slice(0, 1) : "游",
+);
 
 const displayPoints = computed(() => curUser.value?.points ?? 0);
 
-const userText = computed(() =>
-  displayName.value ? displayName.value.slice(0, 1) : "游",
-);
+const roleMap: Record<UserRole, string> = {
+  ADMIN: "管理员",
+  VOLUNTEER: "志愿者",
+  USER: "普通用户",
+};
 
 const roleLabel = computed(() => {
   if (!curUser.value) {
@@ -109,12 +114,6 @@ const roleLabel = computed(() => {
     return "游客";
   }
 
-  const roleMap = {
-    ADMIN: "管理员",
-    VOLUNTEER: "志愿者",
-    USER: "普通用户",
-  };
-
   return roleMap[role] || role;
 });
 
@@ -125,12 +124,20 @@ const volunteerStatusLabel = computed(() => {
   if (curUser.value.role === "ADMIN") {
     return "管理员权限";
   }
+
   const status = curUser.value.volunteerStatus;
-  if (status === "CERTIFIED") return "已认证";
-  if (status === "REVIEWING") return "待审核";
-  if (status === "REJECTED") return "未通过";
-  if (status === "SUSPENDED") return "已停用";
-  return "未申请";
+  switch (status) {
+    case "CERTIFIED":
+      return "已认证";
+    case "REVIEWING":
+      return "等待管理员审核";
+    case "REJECTED":
+      return "未通过审核";
+    case "SUSPENDED":
+      return "已停用";
+    default:
+      return "未申请";
+  }
 });
 
 const isCertified = computed(
@@ -373,14 +380,14 @@ onBeforeUnmount(() => {
             @click="toggleUserMenu"
           >
             <span class="user-circle">
-              {{ userText }}
+              {{ userCircleText }}
             </span>
           </button>
           <transition name="fade">
             <div v-if="userMenuOpen" class="user-dropdown">
               <div class="user-card">
                 <div class="user-large-circle">
-                  {{ userText }}
+                  {{ userCircleText }}
                 </div>
                 <div>
                   <p class="user-name">{{ displayName }}</p>
@@ -740,15 +747,17 @@ body {
 }
 
 .user-action-button--logout {
-  background: #f8fafc;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  background: white;
+  color: black;
+  border: 2px solid #cbd5f5;
 }
 
 .user-action-button--logout:hover {
-  background: #f1f5f9;
+  background: #eeeeee;
   color: #475569;
   border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .user-action-button--login {
@@ -845,6 +854,7 @@ body {
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .logout-button--confirm {
@@ -853,8 +863,21 @@ body {
   border: none;
 }
 
-.logout-button-cancel {
+.logout-button--confirm:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.logout-button--cancel {
   background: white;
-  border: 1px solid #e5e7eb;
+  border: 2px solid #cbd5f5;
+}
+
+.logout-button--cancel:hover {
+  background: #eee;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 </style>
