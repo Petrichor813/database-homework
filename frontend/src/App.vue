@@ -122,7 +122,7 @@ const volunteerStatusLabel = computed(() => {
     return "未登录";
   }
   if (curUser.value.role === "ADMIN") {
-    return "管理员权限";
+    return "管理员";
   }
 
   const status = curUser.value.volunteerStatus;
@@ -140,23 +140,23 @@ const volunteerStatusLabel = computed(() => {
   }
 });
 
-const isCertified = computed(
-  () =>
-    curUser.value?.role === "ADMIN" ||
-    curUser.value?.volunteerStatus === "CERTIFIED",
-);
+const volunteerStatusMap = new Map<VolunteerStatus, string>([
+  ["CERTIFIED", "certified"],
+  ["REVIEWING", "reviewing"],
+  ["REJECTED", "rejected"],
+  ["SUSPENDED", "suspended"],
+  [null, "muted"],
+]);
 
-const isReviewing = computed(
-  () =>
-    curUser.value?.role !== "ADMIN" &&
-    curUser.value?.volunteerStatus === "REVIEWING",
-);
+const volunteerStatus = computed(() => {
+  if (curUser.value?.role === "ADMIN") {
+    return "admin";
+  }
 
-const volunteerStatus = computed(() => ({
-  certified: isCertified.value,
-  reviewing: isReviewing.value,
-  muted: !isCertified.value && !isReviewing.value,
-}));
+  return (
+    volunteerStatusMap.get(curUser.value?.volunteerStatus ?? null) ?? "muted"
+  );
+});
 
 const handleLogout = () => {
   showLogoutDialog.value = true;
@@ -263,7 +263,7 @@ onBeforeUnmount(() => {
               type="button"
               :class="[
                 'nav-link nav-trigger',
-                { is_active: activeRoutes === 'activities' },
+                { 'is-active': activeRoutes === 'activities' },
               ]"
               aria-controls="nav-activities"
               :aria-expanded="activeMenu === 'activities'"
@@ -691,27 +691,36 @@ body {
   align-items: center;
   font-size: 12px;
   font-weight: 500;
-  color: #ef4444;
-  border: 1px solid #ef4444;
-  border-radius: 999px;
+  border-radius: 50px;
   padding: 1px 8px;
   gap: 8px;
   line-height: 1.4;
 }
 
-.volunteer-status.verified {
-  border-color: #10b981;
+.volunteer-status.admin {
+  color: #a116d4;
+  border: 1px solid #a116d4;
+}
+
+.volunteer-status.certified {
   color: #10b981;
+  border: 1px solid #10b981;
 }
 
 .volunteer-status.reviewing {
-  border-color: #f59e0b;
   color: #d97706;
+  border: 1px solid #f59e0b;
+}
+
+.volunteer-status.rejected,
+.volunteer-status.suspended {
+  color: #ef4444;
+  border: 1px solid #ef4444;
 }
 
 .volunteer-status.muted {
-  border-color: #9ca3af;
   color: #6b7280;
+  border: 1px solid #9ca3af;
 }
 
 .user-actions {

@@ -683,9 +683,9 @@ const handleDeleteAccount = async () => {
             <span>申请原因</span>
             <textarea
               v-model="applyForm.applyReason"
-              placeholder="请简要说明申请成为志愿者的原因"
+              placeholder="请简要说明申请成为志愿者的原因，字数不超过 200 字"
               maxlength="200"
-              rows="3"
+              rows="5"
             ></textarea>
             <button
               v-if="applyForm.applyReason"
@@ -1182,6 +1182,20 @@ const handleDeleteAccount = async () => {
 }
 
 .form-row input:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-row textarea {
+  font-size: 14px;
+  padding: 8px 36px 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.form-row textarea:focus {
   border-color: #2563eb;
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);

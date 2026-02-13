@@ -84,6 +84,7 @@ public class UserService {
             user.getUsername(),
             user.getRole(),
             user.getPhone(),
+            volunteer != null ? volunteer.getName() : null,
             volunteer != null ? volunteer.getStatus() : null,
             points,
             serviceHours,

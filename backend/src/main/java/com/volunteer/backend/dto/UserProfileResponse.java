@@ -10,6 +10,7 @@ public class UserProfileResponse {
     private String username;
     private UserRole role;
     private String phone;
+    private String realName;
     private VolunteerStatus volunteerStatus;
     private Double points;
     private Integer serviceHours;
@@ -24,6 +25,7 @@ public class UserProfileResponse {
         String username,
         UserRole role,
         String phone,
+        String realName,
         VolunteerStatus volunteerStatus,
         Double points,
         Integer serviceHours,
@@ -33,6 +35,7 @@ public class UserProfileResponse {
         this.username = username;
         this.role = role;
         this.phone = phone;
+        this.realName = realName;
         this.volunteerStatus = volunteerStatus;
         this.points = points;
         this.serviceHours = serviceHours;
@@ -70,6 +73,14 @@ public class UserProfileResponse {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 
     public VolunteerStatus getVolunteerStatus() {
