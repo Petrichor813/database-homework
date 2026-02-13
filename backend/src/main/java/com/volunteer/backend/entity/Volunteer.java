@@ -51,6 +51,10 @@ public class Volunteer {
     @Column(nullable = false)
     private Boolean deleted;
 
+    // 申请原因
+    @Column(length = 200)
+    private String applyReason;
+
     // 审核备注
     @Column(length = 200)
     private String reviewNote;
@@ -123,6 +127,14 @@ public class Volunteer {
         this.deleted = deleted;
     }
 
+    public String getApplyReason() {
+        return applyReason;
+    }
+
+    public void setApplyReason(String applyReason) {
+        this.applyReason = applyReason;
+    }
+
     public String getReviewNote() {
         return reviewNote;
     }
@@ -177,6 +189,7 @@ public class Volunteer {
         this.reviewTime = null;
         this.name = name;
         this.phone = phone;
+        this.applyReason = null;
     }
 
     public void markDeleted() {

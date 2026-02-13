@@ -190,6 +190,7 @@ const showSupplement = computed(
 const applyForm = reactive({
   realName: "",
   phone: "",
+  applyReason: "",
 });
 
 const canApply = computed(() => {
@@ -210,6 +211,7 @@ const openApplyDialog = () => {
   if (!profile.value) return;
   applyForm.realName = "";
   applyForm.phone = profile.value.phone ?? "";
+  applyForm.applyReason = "";
   showApplyDialog.value = true;
 };
 
@@ -246,6 +248,7 @@ const applyVolunteer = async () => {
       {
         realName,
         phone,
+        applyReason: applyForm.applyReason.trim(),
       },
     );
     profile.value = updated;
@@ -410,7 +413,6 @@ const closeDeleteDialog = () => {
   showDeleteDialog.value = false;
 };
 
-// TODO: 注销，暂时用的是退出登录的逻辑
 const handleDeleteAccount = async () => {
   try {
     await deleteJson<{ message: string }>(
@@ -673,6 +675,23 @@ const handleDeleteAccount = async () => {
               type="button"
               class="clear-button"
               @click="applyForm.phone = ''"
+            >
+              ×
+            </button>
+          </label>
+          <label for="applyReason" class="form-row">
+            <span>申请原因</span>
+            <textarea
+              v-model="applyForm.applyReason"
+              placeholder="请简要说明申请成为志愿者的原因"
+              maxlength="200"
+              rows="3"
+            ></textarea>
+            <button
+              v-if="applyForm.applyReason"
+              type="button"
+              class="clear-button"
+              @click="applyForm.applyReason = ''"
             >
               ×
             </button>

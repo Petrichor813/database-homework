@@ -10,6 +10,7 @@ public class AdminVolunteerResponse {
     private String name;
     private String phone;
     private VolunteerStatus status;
+    private String applyReason;
     private String reviewNote;
     private LocalDateTime createTime;
     private LocalDateTime reviewTime;
@@ -24,6 +25,7 @@ public class AdminVolunteerResponse {
         String name,
         String phone,
         VolunteerStatus status,
+        String applyReason,
         String reviewNote,
         LocalDateTime createTime,
         LocalDateTime reviewTime
@@ -33,6 +35,7 @@ public class AdminVolunteerResponse {
         this.name = name;
         this.phone = phone;
         this.status = status;
+        this.applyReason = applyReason;
         this.reviewNote = reviewNote;
         this.createTime = createTime;
         this.reviewTime = reviewTime;
@@ -77,6 +80,14 @@ public class AdminVolunteerResponse {
 
     public void setStatus(VolunteerStatus status) {
         this.status = status;
+    }
+    
+    public String getApplyReason() {
+        return applyReason;
+    }
+
+    public void setApplyReason(String applyReason) {
+        this.applyReason = applyReason;
     }
 
     public String getReviewNote() {

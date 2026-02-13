@@ -52,6 +52,7 @@ public class AdminVolunteerService {
                 v.getName(),
                 v.getPhone(),
                 v.getStatus(),
+                v.getApplyReason(),
                 v.getReviewNote(),
                 v.getCreateTime(),
                 v.getReviewTime()
@@ -106,6 +107,7 @@ public class AdminVolunteerService {
             saved.getName(),
             saved.getPhone(),
             saved.getStatus(),
+            saved.getApplyReason(),
             saved.getReviewNote(),
             saved.getCreateTime(),
             saved.getReviewTime()

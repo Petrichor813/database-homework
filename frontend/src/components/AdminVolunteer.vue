@@ -19,6 +19,7 @@
       <div class="table-header">
         <span>姓名</span>
         <span>手机号</span>
+        <span>申请原因</span>
         <span>状态</span>
         <span>备注</span>
         <span>审核时间</span>
@@ -31,6 +32,7 @@
       <div v-else v-for="item in volunteers" :key="item.id" class="table-row">
         <span>{{ item.name }}</span>
         <span>{{ item.phone }}</span>
+        <span>{{ item.applyReason || "-" }}</span>
         <span>{{ statusLabel(item.status) }}</span>
         <span>{{ item.reviewNote || "-" }}</span>
         <span>{{ formatTime(item.reviewTime) }}</span>
@@ -85,6 +87,7 @@ type VolunteerRecord = {
   userId: number;
   name: string;
   phone: string;
+  applyReason?: string | null;
   status: "REVIEWING" | "CERTIFIED" | "REJECTED" | "SUSPENDED";
   reviewNote?: string | null;
   createTime: string;

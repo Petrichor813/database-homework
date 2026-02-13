@@ -7,6 +7,8 @@ public class VolunteerApplyRequest {
     private String realName;
 
     private String phone;
+    
+    private String applyReason;
 
     public String getRealName() {
         return realName;
@@ -22,5 +24,13 @@ public class VolunteerApplyRequest {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+    
+    public String getApplyReason() {
+        return applyReason;
+    }
+
+    public void setApplyReason(String applyReason) {
+        this.applyReason = applyReason;
     }
 }

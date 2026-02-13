@@ -150,6 +150,7 @@ public class UserService {
         }
 
         Volunteer volunteer = new Volunteer(realName, phone, userId);
+        volunteer.setApplyReason(request.getApplyReason());
         volunteerRepository.save(volunteer);
         return buildUserProfileResponse(user);
     }
