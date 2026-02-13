@@ -15,9 +15,8 @@ export const postJson = async <T>(
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message =
-      typeof data?.message === "string" ? data.message : "请求失败";
-    throw new Error(message);
+    const msg = typeof data?.message === "string" ? data.message : "创建失败";
+    throw new Error(msg);
   }
 
   return data as T;
@@ -29,9 +28,9 @@ export const getJson = async <T>(path: string): Promise<T> => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message =
-      typeof data?.message === "string" ? data.message : "请求失败";
-    throw new Error(message);
+    const msg =
+      typeof data?.message === "string" ? data.message : "获取数据失败";
+    throw new Error(msg);
   }
 
   return data as T;
@@ -52,9 +51,30 @@ export const putJson = async <T>(
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message =
-      typeof data?.message === "string" ? data.message : "请求失败";
-    throw new Error(message);
+    const msg = typeof data?.message === "string" ? data.message : "更新失败";
+    throw new Error(msg);
+  }
+
+  return data as T;
+};
+
+export const deleteJson = async <T>(
+  path: string,
+  payload?: unknown,
+): Promise<T> => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: payload ? JSON.stringify(payload) : undefined,
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const msg = typeof data?.message === "string" ? data.message : "删除失败";
+    throw new Error(msg);
   }
 
   return data as T;

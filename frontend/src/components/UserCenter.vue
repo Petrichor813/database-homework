@@ -5,7 +5,7 @@ import { getJson, postJson, putJson } from "../utils/api";
 import { useToast } from "../utils/toast";
 
 const router = useRouter();
-const { success, info, error } = useToast();
+const { success, error } = useToast();
 
 type UserCenterTab = "PROFILE" | "POINT" | "SECURITY";
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
