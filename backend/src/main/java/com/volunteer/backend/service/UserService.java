@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
 import com.volunteer.backend.dto.PointsRecordResponse;
 import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
@@ -86,6 +87,7 @@ public class UserService {
             user.getPhone(),
             volunteer != null ? volunteer.getName() : null,
             volunteer != null ? volunteer.getStatus() : null,
+            volunteer != null ? volunteer.getApplyReason() : null,
             points,
             serviceHours,
             responses
@@ -144,6 +146,7 @@ public class UserService {
         if (existedVolunteer != null) {
             if (existedVolunteer.getStatus() == VolunteerStatus.REJECTED) {
                 existedVolunteer.resetForReapply(realName, phone);
+                existedVolunteer.setApplyReason(request.getApplyReason());
                 volunteerRepository.save(existedVolunteer);
                 return buildUserProfileResponse(user);
             }
@@ -153,6 +156,42 @@ public class UserService {
         Volunteer volunteer = new Volunteer(realName, phone, userId);
         volunteer.setApplyReason(request.getApplyReason());
         volunteerRepository.save(volunteer);
+        return buildUserProfileResponse(user);
+    }
+
+    public UserProfileResponse updateVolunteerApplication(Long userId, ModifyVolunteerApplicationRequest request) {
+        User user = findActiveUser(userId);
+        
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new IllegalArgumentException("管理员无需修改志愿者申请");
+        }
+
+        Optional<Volunteer> e = volunteerRepository.findByUserIdAndDeletedFalse(userId);
+        Volunteer volunteer = e.isPresent() ? e.get() : null;
+        
+        if (volunteer == null) {
+            throw new IllegalArgumentException("未找到志愿者申请记录");
+        }
+        
+        if (volunteer.getStatus() != VolunteerStatus.REVIEWING) {
+            throw new IllegalArgumentException("只能修改审核中的申请");
+        }
+        
+        String realName = (request.getRealName() != null) ? request.getRealName().trim() : "";
+        if (realName.isEmpty()) {
+            throw new IllegalArgumentException("真实姓名不能为空");
+        }
+        
+        String phone = (request.getPhone() != null) ? request.getPhone().trim() : "";
+        if (phone.isEmpty()) {
+            phone = user.getPhone();
+        }
+        
+        volunteer.setName(realName);
+        volunteer.setPhone(phone);
+        volunteer.setApplyReason(request.getApplyReason());
+        volunteerRepository.save(volunteer);
+        
         return buildUserProfileResponse(user);
     }
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
 import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
@@ -50,6 +51,16 @@ public class UserController {
     ) {
         // @formatter:on
         return userService.applyVolunteer(userId, request);
+    }
+
+    @PutMapping("/{userId}/volunteer-application")
+    // @formatter:off
+    public UserProfileResponse updateVolunteerApplication(
+        @PathVariable Long userId,
+        @Valid @RequestBody ModifyVolunteerApplicationRequest request
+    ) {
+        // @formatter:on
+        return userService.updateVolunteerApplication(userId, request);
     }
 
     @DeleteMapping("/{userId}")

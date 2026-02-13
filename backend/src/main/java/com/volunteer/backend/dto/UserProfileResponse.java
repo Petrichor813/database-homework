@@ -12,6 +12,7 @@ public class UserProfileResponse {
     private String phone;
     private String realName;
     private VolunteerStatus volunteerStatus;
+    private String applyReason;
     private Double points;
     private Integer serviceHours;
     private List<PointsRecordResponse> pointsRecords;
@@ -27,6 +28,7 @@ public class UserProfileResponse {
         String phone,
         String realName,
         VolunteerStatus volunteerStatus,
+        String applyReason,
         Double points,
         Integer serviceHours,
         List<PointsRecordResponse> pointsRecords
@@ -37,6 +39,7 @@ public class UserProfileResponse {
         this.phone = phone;
         this.realName = realName;
         this.volunteerStatus = volunteerStatus;
+        this.applyReason = applyReason;
         this.points = points;
         this.serviceHours = serviceHours;
         this.pointsRecords = pointsRecords;
@@ -89,6 +92,14 @@ public class UserProfileResponse {
 
     public void setVolunteerStatus(VolunteerStatus volunteerStatus) {
         this.volunteerStatus = volunteerStatus;
+    }
+
+    public String getApplyReason() {
+        return applyReason;
+    }
+
+    public void setApplyReason(String applyReason) {
+        this.applyReason = applyReason;
     }
 
     public Double getPoints() {

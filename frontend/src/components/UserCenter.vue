@@ -40,6 +40,7 @@ interface UserProfile {
   points?: number;
   serviceHours?: number;
   volunteerStatus?: VolunteerStatus;
+  applyReason?: string;
   pointsChangeRecords?: PointsChangeRecord[];
 }
 
@@ -181,13 +182,21 @@ const saveProfile = async () => {
 
 // 申请志愿者、补充材料
 const showApplyDialog = ref(false);
+const showModifyDialog = ref(false);
 const isApplying = ref(false);
+const isModifying = ref(false);
 
-const showSupplement = computed(
+const showModify = computed(
   () => profile.value?.volunteerStatus === "REVIEWING",
 );
 
 const applyForm = reactive({
+  realName: "",
+  phone: "",
+  applyReason: "",
+});
+
+const modifyForm = reactive({
   realName: "",
   phone: "",
   applyReason: "",
@@ -258,6 +267,65 @@ const applyVolunteer = async () => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "申请故障，请耐心等待修复";
     error("提交申请失败", msg);
+  }
+};
+
+const openModifyDialog = () => {
+  if (!profile.value) return;
+
+  // 使用当前用户资料中的信息作为默认值
+  modifyForm.realName = profile.value.realName || "";
+  modifyForm.phone = profile.value.phone || "";
+  modifyForm.applyReason = profile.value.applyReason || "";
+
+  showModifyDialog.value = true;
+};
+
+const closeModifyDialog = () => {
+  showModifyDialog.value = false;
+};
+
+const modifyApply = async () => {
+  if (!profile.value?.id || isModifying.value) {
+    return;
+  }
+
+  const realName = modifyForm.realName.trim();
+  if (!realName) {
+    error("修改申请失败", "真实姓名不能为空");
+    return;
+  }
+
+  const phone = modifyForm.phone.trim();
+  if (!phone) {
+    error("修改申请失败", "手机号不能为空");
+    return;
+  }
+  if (phone && profile.value.phone && phone !== profile.value.phone) {
+    error("修改申请失败", "输入手机号和当前绑定的手机号不一致");
+    return;
+  }
+
+  isModifying.value = true;
+
+  try {
+    const updated = await putJson<UserProfile>(
+      `/api/users/${profile.value.id}/volunteer-application`,
+      {
+        realName,
+        phone,
+        applyReason: modifyForm.applyReason.trim(),
+      },
+    );
+    profile.value = updated;
+    updateLocalUser(updated);
+    success("修改申请成功", "申请信息已更新，请等待管理员审核");
+    showModifyDialog.value = false;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "修改申请失败，请稍后再试";
+    error("修改申请失败", msg);
+  } finally {
+    isModifying.value = false;
   }
 };
 
@@ -496,14 +564,7 @@ const handleDeleteAccount = async () => {
 
           <div class="profile-card">
             <h3>志愿者申请</h3>
-            <p class="apply-tip">在此提交或补充申请志愿者材料。</p>
-            <button
-              type="button"
-              v-if="showSupplement"
-              class="show-supplement-button"
-            >
-              提交补充材料
-            </button>
+            <p class="apply-tip">在此提交或修改志愿者申请材料。</p>
             <button
               type="button"
               v-if="canApply"
@@ -512,6 +573,15 @@ const handleDeleteAccount = async () => {
               @click="openApplyDialog"
             >
               {{ applyLabel }}
+            </button>
+            <button
+              type="button"
+              v-if="showModify"
+              :disabled="isModifying"
+              class="show-modify-button"
+              @click="openModifyDialog"
+            >
+              修改志愿者申请
             </button>
           </div>
 
@@ -702,6 +772,81 @@ const handleDeleteAccount = async () => {
             提交
           </button>
           <button type="button" class="cancel-button" @click="closeApplyDialog">
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showModifyDialog" class="dialog-bg">
+      <div class="dialog-body" role="dialog" aria-modal="true">
+        <h3>修改志愿者申请</h3>
+        <div class="edit-form">
+          <label for="username" class="form-row">
+            <span>真实姓名</span>
+            <input
+              v-model="modifyForm.realName"
+              type="text"
+              placeholder="请输入真实姓名"
+              maxlength="20"
+            />
+            <button
+              v-if="modifyForm.realName"
+              type="button"
+              class="clear-button"
+              @click="modifyForm.realName = ''"
+            >
+              ×
+            </button>
+          </label>
+          <label for="phone" class="form-row">
+            <span>手机号</span>
+            <input
+              v-model="modifyForm.phone"
+              type="text"
+              placeholder="请输入手机号"
+              maxlength="20"
+            />
+            <button
+              v-if="modifyForm.phone"
+              type="button"
+              class="clear-button"
+              @click="modifyForm.phone = ''"
+            >
+              ×
+            </button>
+          </label>
+          <label for="applyReason" class="form-row">
+            <span>申请原因</span>
+            <textarea
+              v-model="modifyForm.applyReason"
+              placeholder="请简要说明申请成为志愿者的原因"
+              maxlength="200"
+              rows="3"
+            ></textarea>
+            <button
+              v-if="modifyForm.applyReason"
+              type="button"
+              class="clear-button"
+              @click="modifyForm.applyReason = ''"
+            >
+              ×
+            </button>
+          </label>
+        </div>
+        <div class="edit-buttons">
+          <button
+            type="button"
+            class="save-button"
+            @click="modifyApply"
+          >
+            保存修改
+          </button>
+          <button
+            type="button"
+            class="cancel-button"
+            @click="closeModifyDialog"
+          >
             取消
           </button>
         </div>
@@ -910,7 +1055,7 @@ const handleDeleteAccount = async () => {
   margin-top: -15px;
 }
 
-.show-supplement-button {
+.show-modify-button {
   background: #22c55e;
   color: white;
   font-weight: 500;
@@ -921,7 +1066,7 @@ const handleDeleteAccount = async () => {
   transition: all 0.2s ease;
 }
 
-.show-supplement-button:hover {
+.show-modify-button:hover {
   background: #16a34a;
   border-color: #d1d5db;
   transform: translateY(-1px);
