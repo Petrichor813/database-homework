@@ -27,10 +27,13 @@ public class AuthService {
     }
 
     public User authenticate(String username, String password, UserRole role) {
-        Optional<User> u = (role == null) ? userRepository.findByUsername(username)
-                : userRepository.findByUsernameAndRole(username, role);
+        // @formatter:off
+        Optional<User> u = (role == null)
+                            ? userRepository.findByUsernameAndDeletedFalse(username)
+                            : userRepository.findByUsernameAndRoleAndDeletedFalse(username, role);
+        // @formatter:on
         if (!u.isPresent()) {
-            throw new IllegalArgumentException("用户不存在");
+            throw new IllegalArgumentException("用户不存在或该用户账号已注销");
         }
         User user = u.get();
 
@@ -45,7 +48,7 @@ public class AuthService {
         User user = authenticate(request.getUsername(), request.getPassword(), request.getRole());
         String token = UUID.randomUUID().toString();
 
-        Optional<Volunteer> v = volunteerRepository.findByUserId(user.getId());
+        Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(user.getId());
         Volunteer volunteer = v.isPresent() ? v.get() : null;
 
         VolunteerStatus volunteerStatus = (volunteer != null) ? volunteer.getStatus() : null;
@@ -66,7 +69,7 @@ public class AuthService {
     public RegisterResponse register(RegisterRequest request) {
         UserRole role = (request.getRole() != null) ? request.getRole() : UserRole.USER;
 
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsernameAndDeletedFalse(request.getUsername())) {
             throw new IllegalArgumentException("用户名已存在");
         }
 

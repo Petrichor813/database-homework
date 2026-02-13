@@ -45,11 +45,17 @@ public class User {
     @Column(nullable = false, length = 20)
     private UserRole role;
 
+    @Column(nullable = false)
+    private Boolean deleted;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createTime;
 
+    private LocalDateTime deleteTime;
+
     public User() {
         this.createTime = LocalDateTime.now();
+        this.deleted = false;
     }
 
     public User(String username, String password, UserRole role, String phone) {
@@ -100,6 +106,14 @@ public class User {
         this.role = role;
     }
 
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -108,7 +122,20 @@ public class User {
         this.createTime = createTime;
     }
 
+    public LocalDateTime getDeleteTime() {
+        return deleteTime;
+    }
+
+    public void setDeleteTime(LocalDateTime deleteTime) {
+        this.deleteTime = deleteTime;
+    }
+
     public boolean isAdmin() {
         return UserRole.ADMIN.equals(this.role);
+    }
+
+    public void markDeleted() {
+        this.deleted = true;
+        this.deleteTime = LocalDateTime.now();
     }
 }

@@ -9,9 +9,13 @@ import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.utils.VolunteerStatus;
 
 public interface VolunteerRepository extends JpaRepository<Volunteer, Long> {
-    Optional<Volunteer> findByUserId(Long userId);
+    List<Volunteer> findByDeletedFalse();
 
-    List<Volunteer> findByStatus(VolunteerStatus status);
+    Optional<Volunteer> findByIdAndDeletedFalse(Long id);
 
-    List<Volunteer> findByStatusNot(VolunteerStatus status);
+    Optional<Volunteer> findByUserIdAndDeletedFalse(Long userId);
+
+    List<Volunteer> findByStatusAndDeletedFalse(VolunteerStatus status);
+
+    List<Volunteer> findByStatusNotAndDeletedFalse(VolunteerStatus status);
 }

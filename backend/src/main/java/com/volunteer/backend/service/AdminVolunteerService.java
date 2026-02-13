@@ -31,13 +31,13 @@ public class AdminVolunteerService {
 
         switch (volunteerStatus.toUpperCase()) {
         case "ALL":
-            volunteers = volunteerRepository.findAll();
+            volunteers = volunteerRepository.findByDeletedFalse();
             break;
         case "REVIEWING":
-            volunteers = volunteerRepository.findByStatus(VolunteerStatus.REVIEWING);
+            volunteers = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.REVIEWING);
             break;
         case "PROCESSED":
-            volunteers = volunteerRepository.findByStatusNot(VolunteerStatus.REVIEWING);
+            volunteers = volunteerRepository.findByStatusNotAndDeletedFalse(VolunteerStatus.REVIEWING);
             break;
         default:
             throw new IllegalArgumentException("未知的志愿者审核状态筛选");
@@ -64,10 +64,10 @@ public class AdminVolunteerService {
     }
 
     public AdminVolunteerResponse reviewVolunteer(Long id, AdminVolunteerReviewRequest request) {
-        Optional<Volunteer> v = volunteerRepository.findById(id);
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(id);
         Volunteer volunteer;
         if (!v.isPresent()) {
-            throw new IllegalArgumentException("志愿者申请不存在");
+            throw new IllegalArgumentException("志愿者申请不存在或该志愿者账号已注销");
         }
         volunteer = v.get();
 
@@ -84,9 +84,9 @@ public class AdminVolunteerService {
         if (action == VolunteerReviewAction.APPROVE) {
             volunteer.approve(note);
 
-            Optional<User> u = userRepository.findById(volunteer.getUserId());
+            Optional<User> u = userRepository.findByIdAndDeletedFalse(volunteer.getUserId());
             if (!u.isPresent()) {
-                throw new IllegalArgumentException("用户不存在");
+                throw new IllegalArgumentException("用户不存在或该用户账号已注销");
             }
             User user = u.get();
 

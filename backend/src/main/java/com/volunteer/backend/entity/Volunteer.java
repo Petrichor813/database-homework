@@ -48,6 +48,9 @@ public class Volunteer {
     @Column(nullable = false, length = 20)
     private VolunteerStatus status;
 
+    @Column(nullable = false)
+    private Boolean deleted;
+
     // 审核备注
     @Column(length = 200)
     private String reviewNote;
@@ -57,8 +60,11 @@ public class Volunteer {
 
     private LocalDateTime reviewTime;
 
+    private LocalDateTime deleteTime;
+
     public Volunteer() {
         this.status = VolunteerStatus.REVIEWING;
+        this.deleted = false;
         this.createTime = LocalDateTime.now();
     }
 
@@ -109,6 +115,14 @@ public class Volunteer {
         this.status = status;
     }
 
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     public String getReviewNote() {
         return reviewNote;
     }
@@ -133,6 +147,14 @@ public class Volunteer {
         this.reviewTime = reviewTime;
     }
 
+    public LocalDateTime getDeleteTime() {
+        return deleteTime;
+    }
+
+    public void setDeleteTime(LocalDateTime deleteTime) {
+        this.deleteTime = deleteTime;
+    }
+
     public boolean isCertified() {
         return VolunteerStatus.CERTIFIED.equals(status);
     }
@@ -155,5 +177,10 @@ public class Volunteer {
         this.reviewTime = null;
         this.name = name;
         this.phone = phone;
+    }
+
+    public void markDeleted() {
+        this.deleted = true;
+        this.deleteTime = LocalDateTime.now();
     }
 }

@@ -10,9 +10,11 @@ import com.volunteer.backend.utils.UserRole;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
+    Optional<User> findByIdAndDeletedFalse(Long id);
 
-    boolean existsByUsername(String username);
+    Optional<User> findByUsernameAndDeletedFalse(String username);
 
-    Optional<User> findByUsernameAndRole(String username, UserRole role);
+    boolean existsByUsernameAndDeletedFalse(String username);
+
+    Optional<User> findByUsernameAndRoleAndDeletedFalse(String username, UserRole role);
 }

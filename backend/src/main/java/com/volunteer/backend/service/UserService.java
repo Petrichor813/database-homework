@@ -12,12 +12,9 @@ import com.volunteer.backend.dto.PointsRecordResponse;
 import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
-import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.PointsChangeRecord;
-import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
-import com.volunteer.backend.repository.ExchangeRecordRepository;
 import com.volunteer.backend.repository.PointsChangeRecordRepository;
 import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.UserRepository;
@@ -33,25 +30,30 @@ public class UserService {
     private final VolunteerRepository volunteerRepository;
     private final PointsChangeRecordRepository pointsChangeRecordRepository;
     private final SignupRecordRepository signupRecordRepository;
-    private final ExchangeRecordRepository exchangeRecordRepository;
 
     // @formatter:off
     public UserService(
         UserRepository userRepository,
         VolunteerRepository volunteerRepository,
-        PointsChangeRecordRepository pointsChangeRecordRepository, SignupRecordRepository signupRecordRepository,
-        ExchangeRecordRepository exchangeRecordRepository
+        PointsChangeRecordRepository pointsChangeRecordRepository, SignupRecordRepository signupRecordRepository
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;
         this.pointsChangeRecordRepository = pointsChangeRecordRepository;
         this.signupRecordRepository = signupRecordRepository;
-        this.exchangeRecordRepository = exchangeRecordRepository;
     }
     // @formatter:on
 
+    private User findActiveUser(Long userId) {
+        Optional<User> u = userRepository.findByIdAndDeletedFalse(userId);
+        if (!u.isPresent()) {
+            throw new IllegalArgumentException("用户不存在或该用户账号已注销");
+        }
+        return u.get();
+    }
+
     private UserProfileResponse buildUserProfileResponse(User user) {
-        Optional<Volunteer> v = volunteerRepository.findByUserId(user.getId());
+        Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(user.getId());
         Volunteer volunteer = v.isPresent() ? v.get() : null;
         Double points = 0.0;
         Integer serviceHours = 0;
@@ -91,28 +93,18 @@ public class UserService {
     }
 
     public UserProfileResponse getProfile(Long userId) {
-        Optional<User> u = userRepository.findById(userId);
-        if (!u.isPresent()) {
-            throw new IllegalArgumentException("用户不存在");
-        }
-
-        User user = u.get();
+        User user = findActiveUser(userId);
         return buildUserProfileResponse(user);
     }
 
     public UserProfileResponse updateProfile(Long userId, UpdateUserProfileRequest request) {
-        Optional<User> u = userRepository.findById(userId);
-        if (!u.isPresent()) {
-            throw new IllegalArgumentException("用户不存在");
-        }
-
-        User user = u.get();
+        User user = findActiveUser(userId);
 
         String username = (request.getUsername() != null) ? request.getUsername().trim() : "";
         if (username.isEmpty()) {
             throw new IllegalArgumentException("用户名不能为空");
         }
-        if (!username.equals(user.getUsername()) && userRepository.existsByUsername(username)) {
+        if (!username.equals(user.getUsername()) && userRepository.existsByUsernameAndDeletedFalse(username)) {
             throw new IllegalArgumentException("用户名已存在");
         }
 
@@ -120,7 +112,7 @@ public class UserService {
         user.setPhone(request.getPhone());
         userRepository.save(user);
 
-        Optional<Volunteer> v = volunteerRepository.findByUserId(userId);
+        Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         Volunteer volunteer = v.isPresent() ? v.get() : null;
         if (volunteer != null) {
             volunteer.setPhone(user.getPhone());
@@ -131,13 +123,7 @@ public class UserService {
     }
 
     public UserProfileResponse applyVolunteer(Long userId, VolunteerApplyRequest request) {
-        Optional<User> u = userRepository.findById(userId);
-        if (!u.isPresent()) {
-            throw new IllegalArgumentException("用户不存在");
-        }
-
-        User user = u.get();
-
+        User user = findActiveUser(userId);
         String realName = (request.getRealName() != null) ? request.getRealName().trim() : "";
         if (realName.isEmpty()) {
             throw new IllegalArgumentException("真实姓名不能为空");
@@ -152,7 +138,7 @@ public class UserService {
             throw new IllegalArgumentException("管理员无需申请志愿者认证");
         }
 
-        Optional<Volunteer> e = volunteerRepository.findByUserId(userId);
+        Optional<Volunteer> e = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         Volunteer existedVolunteer = e.isPresent() ? e.get() : null;
         if (existedVolunteer != null) {
             if (existedVolunteer.getStatus() == VolunteerStatus.REJECTED) {
@@ -170,47 +156,18 @@ public class UserService {
 
     @Transactional
     public void deleteAccount(Long userId) {
-        Optional<User> u = userRepository.findById(userId);
-        if (!u.isPresent()) {
-            throw new IllegalArgumentException("用户不存在");
-        }
+        User user = findActiveUser(userId);
+        user.markDeleted();
+        userRepository.save(user);
 
-        User user = u.get();
-
-        Optional<Volunteer> v = volunteerRepository.findByUserId(userId);
+        Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         if (!v.isPresent()) {
             userRepository.delete(user);
             return;
         }
 
         Volunteer volunteer = v.get();
-
-        List<PointsChangeRecord> pointsChangeRecords = pointsChangeRecordRepository
-                .findByVolunteerId(volunteer.getId());
-        for (int i = 0; i < pointsChangeRecords.size(); i++) {
-            PointsChangeRecord record = pointsChangeRecords.get(i);
-            record.setVolunteerId(null);
-            record.setNote("[该用户账号已注销]");
-        }
-        pointsChangeRecordRepository.saveAll(pointsChangeRecords);
-
-        List<SignupRecord> signupRecords = signupRecordRepository.findByVolunteerId(volunteer.getId());
-        for (int i = 0; i < signupRecords.size(); i++) {
-            SignupRecord record = signupRecords.get(i);
-            record.setVolunteerId(null);
-            record.setNote("[该用户账号已注销]");
-        }
-        signupRecordRepository.saveAll(signupRecords);
-        
-        List<ExchangeRecord> exchangeRecords = exchangeRecordRepository.findByVolunteerId(volunteer.getId());
-        for (int i = 0; i < exchangeRecords.size(); i++) {
-            ExchangeRecord record = exchangeRecords.get(i);
-            record.setVolunteerId(null);
-            record.setNote("[该用户账号已注销]");
-        }
-        exchangeRecordRepository.saveAll(exchangeRecords);
-
-        volunteerRepository.delete(volunteer);
-        userRepository.delete(user);
+        volunteer.markDeleted();
+        volunteerRepository.save(volunteer);
     }
 }

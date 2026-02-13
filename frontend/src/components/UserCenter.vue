@@ -231,9 +231,11 @@ const applyVolunteer = async () => {
   const phone = applyForm.phone.trim();
   if (!phone) {
     error("提交申请失败", "手机号不能为空");
+    return;
   }
   if (phone && profile.value.phone && phone !== profile.value.phone) {
     error("提交申请失败", "输入手机号和当前绑定的手机号不一致");
+    return;
   }
 
   isApplying.value = true;
