@@ -388,7 +388,7 @@ const closeLogoutDialog = () => {
 
 const handleLogout = async () => {
   try {
-    await postJson<{ message: string }>("/api/users/logout", {});
+    await postJson<{ message: string }>("/api/auth/logout", {});
   } catch (err) {
     const msg = err instanceof Error ? err.message : "退出登录失败";
     error("退出失败", msg);

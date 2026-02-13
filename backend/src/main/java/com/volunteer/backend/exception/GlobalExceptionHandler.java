@@ -1,7 +1,7 @@
 package com.volunteer.backend.exception;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException exception) {
-        Map<String, Object> body = new LinkedHashMap<>();
+        Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception exception) {
-        Map<String, Object> body = new LinkedHashMap<>();
+        Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", "服务器内部错误");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);

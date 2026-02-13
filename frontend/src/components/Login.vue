@@ -26,7 +26,7 @@ const account_info = reactive({
 const loading = ref(false);
 
 const handleLogin = async () => {
-  if (!account_info.username.trim() || !account_info.username.trim()) {
+  if (!account_info.username.trim() || !account_info.password.trim()) {
     error("登录失败", "请输入用户名和密码");
     return;
   }

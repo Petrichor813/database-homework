@@ -162,7 +162,6 @@ public class UserService {
 
         Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         if (!v.isPresent()) {
-            userRepository.delete(user);
             return;
         }
 
