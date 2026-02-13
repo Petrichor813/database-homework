@@ -1,5 +1,8 @@
 package com.volunteer.backend.controller;
 
+import java.util.Map;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,5 +50,11 @@ public class UserController {
     ) {
         // @formatter:on
         return userService.applyVolunteer(userId, request);
+    }
+
+    @DeleteMapping("/{userId}")
+    public Map<String, String> deleteAccount(@PathVariable Long userId) {
+        userService.deleteAccount(userId);
+        return Map.of("message", "账号已注销");
     }
 }

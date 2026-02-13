@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import com.volunteer.backend.entity.PointsChangeRecord;
 
 public interface PointsChangeRecordRepository extends JpaRepository<PointsChangeRecord, Long> {
+    List<PointsChangeRecord> findByVolunteerId(Long volunteerId);
+
     List<PointsChangeRecord> findTop5ByVolunteerIdOrderByChangeTimeDesc(Long volunteerId);
 
     @Query("SELECT COALESCE(SUM(p.changePoints), 0) FROM PointsChangeRecord p WHERE p.volunteerId = :volunteerId")

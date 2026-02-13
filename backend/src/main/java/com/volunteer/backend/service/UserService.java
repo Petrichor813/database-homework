@@ -5,20 +5,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.volunteer.backend.dto.PointsRecordResponse;
 import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
+import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.PointsChangeRecord;
+import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
+import com.volunteer.backend.repository.ExchangeRecordRepository;
 import com.volunteer.backend.repository.PointsChangeRecordRepository;
 import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
 import com.volunteer.backend.utils.UserRole;
 import com.volunteer.backend.utils.VolunteerStatus;
-import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
@@ -28,17 +33,20 @@ public class UserService {
     private final VolunteerRepository volunteerRepository;
     private final PointsChangeRecordRepository pointsChangeRecordRepository;
     private final SignupRecordRepository signupRecordRepository;
+    private final ExchangeRecordRepository exchangeRecordRepository;
 
     // @formatter:off
     public UserService(
         UserRepository userRepository,
         VolunteerRepository volunteerRepository,
-        PointsChangeRecordRepository pointsChangeRecordRepository, SignupRecordRepository signupRecordRepository
+        PointsChangeRecordRepository pointsChangeRecordRepository, SignupRecordRepository signupRecordRepository,
+        ExchangeRecordRepository exchangeRecordRepository
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;
         this.pointsChangeRecordRepository = pointsChangeRecordRepository;
         this.signupRecordRepository = signupRecordRepository;
+        this.exchangeRecordRepository = exchangeRecordRepository;
     }
     // @formatter:on
 
@@ -76,7 +84,7 @@ public class UserService {
             user.getPhone(),
             volunteer != null ? volunteer.getStatus() : null,
             points,
-            serviceHours, 
+            serviceHours,
             responses
         );
         // @formatter:on
@@ -158,5 +166,51 @@ public class UserService {
         Volunteer volunteer = new Volunteer(realName, phone, userId);
         volunteerRepository.save(volunteer);
         return buildUserProfileResponse(user);
+    }
+
+    @Transactional
+    public void deleteAccount(Long userId) {
+        Optional<User> u = userRepository.findById(userId);
+        if (!u.isPresent()) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+
+        User user = u.get();
+
+        Optional<Volunteer> v = volunteerRepository.findByUserId(userId);
+        if (!v.isPresent()) {
+            userRepository.delete(user);
+            return;
+        }
+
+        Volunteer volunteer = v.get();
+
+        List<PointsChangeRecord> pointsChangeRecords = pointsChangeRecordRepository
+                .findByVolunteerId(volunteer.getId());
+        for (int i = 0; i < pointsChangeRecords.size(); i++) {
+            PointsChangeRecord record = pointsChangeRecords.get(i);
+            record.setVolunteerId(null);
+            record.setNote("[该用户账号已注销]");
+        }
+        pointsChangeRecordRepository.saveAll(pointsChangeRecords);
+
+        List<SignupRecord> signupRecords = signupRecordRepository.findByVolunteerId(volunteer.getId());
+        for (int i = 0; i < signupRecords.size(); i++) {
+            SignupRecord record = signupRecords.get(i);
+            record.setVolunteerId(null);
+            record.setNote("[该用户账号已注销]");
+        }
+        signupRecordRepository.saveAll(signupRecords);
+        
+        List<ExchangeRecord> exchangeRecords = exchangeRecordRepository.findByVolunteerId(volunteer.getId());
+        for (int i = 0; i < exchangeRecords.size(); i++) {
+            ExchangeRecord record = exchangeRecords.get(i);
+            record.setVolunteerId(null);
+            record.setNote("[该用户账号已注销]");
+        }
+        exchangeRecordRepository.saveAll(exchangeRecords);
+
+        volunteerRepository.delete(volunteer);
+        userRepository.delete(user);
     }
 }

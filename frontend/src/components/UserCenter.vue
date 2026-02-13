@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getJson, postJson, putJson } from "../utils/api";
+import { deleteJson, getJson, postJson, putJson } from "../utils/api";
 import { useToast } from "../utils/toast";
 
 const router = useRouter();
@@ -384,10 +384,18 @@ const closeLogoutDialog = () => {
   showLogoutDialog.value = false;
 };
 
-const handleLogout = () => {
+const handleLogout = async () => {
+  try {
+    await postJson<{ message: string }>("/api/users/logout", {});
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "退出登录失败";
+    error("退出失败", msg);
+    return;
+  }
+
   localStorage.removeItem("user");
   localStorage.removeItem("token");
-  success("已退出登录", "欢迎下次再来");
+  success("已退出登录", "期待您的再次访问");
   closeLogoutDialog();
   router.push("/login");
 };
@@ -401,10 +409,21 @@ const closeDeleteDialog = () => {
 };
 
 // TODO: 注销，暂时用的是退出登录的逻辑
-const handleDeleteAccount = () => {
+const handleDeleteAccount = async () => {
+  try {
+    await deleteJson<{ message: string }>(
+      `/api/users/${profile.value?.id}`,
+      {},
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "注销账号失败";
+    error("注销失败", msg);
+    return;
+  }
+
   localStorage.removeItem("user");
   localStorage.removeItem("token");
-  success("账号已注销", "如需继续使用，请重新注册");
+  success("账号已注销", "如需继续使用，请重新注册账号");
   closeDeleteDialog();
   router.push("/login");
 };
