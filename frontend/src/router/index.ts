@@ -9,12 +9,12 @@ import PointRecord from "../components/PointRecord.vue";
 import Exchange from "../components/Exchange.vue";
 import ExchangeRecord from "../components/ExchangeRecord.vue";
 import Dashboard from "../components/Dashboard.vue";
-import ImportData from "../components/ImportData.vue";
+import ImportData from "../components/admin/ImportData.vue";
 import ExportData from "../components/ExportData.vue";
-import AdminActivity from "../components/AdminActivity.vue";
-import AdminVolunteer from "../components/AdminVolunteer.vue";
-import AdminPoints from "../components/AdminPoints.vue";
-import AdminExchange from "../components/AdminExchange.vue";
+import AdminActivity from "../components/admin/AdminActivity.vue";
+import AdminVolunteer from "../components/admin/AdminVolunteer.vue";
+import AdminPoints from "../components/admin/AdminPoints.vue";
+import AdminExchange from "../components/admin/AdminExchange.vue";
 
 const routes = [
   {

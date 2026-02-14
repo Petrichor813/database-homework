@@ -355,7 +355,7 @@ onBeforeUnmount(() => {
               class="nav-dropdown"
             >
               <router-link to="/admin/volunteers" class="nav-dropdown-link">
-                志愿者审核
+                志愿者管理
               </router-link>
               <router-link to="/admin/activities" class="nav-dropdown-link">
                 活动管理
