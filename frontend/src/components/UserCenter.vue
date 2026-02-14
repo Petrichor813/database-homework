@@ -612,26 +612,30 @@ const handleDeleteAccount = async () => {
           </div>
 
           <section v-if="records.length" class="record-table">
-            <div class="table-header">
-              <span>时间</span>
-              <span>类型</span>
-              <span>变动</span>
-              <span>备注</span>
-            </div>
-            <div
-              v-for="record in formattedRecords"
-              :key="record.key"
-              class="table-row"
-            >
-              <span>{{ record.time }}</span>
-              <span>{{ record.typeLabel }}</span>
-              <span
-                :class="record.amount.startsWith('+') ? 'positive' : 'negative'"
-              >
-                {{ record.amount }}
-              </span>
-              <span>{{ record.note }}</span>
-            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>类型</th>
+                  <th>变动</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="record in formattedRecords" :key="record.key">
+                  <td>{{ record.time }}</td>
+                  <td>{{ record.typeLabel }}</td>
+                  <td
+                    :class="
+                      record.amount.startsWith('+') ? 'positive' : 'negative'
+                    "
+                  >
+                    {{ record.amount }}
+                  </td>
+                  <td>{{ record.note }}</td>
+                </tr>
+              </tbody>
+            </table>
           </section>
           <section v-else class="empty-record">
             <p>暂无积分变动记录</p>
@@ -835,11 +839,7 @@ const handleDeleteAccount = async () => {
           </label>
         </div>
         <div class="edit-buttons">
-          <button
-            type="button"
-            class="save-button"
-            @click="modifyApply"
-          >
+          <button type="button" class="save-button" @click="modifyApply">
             保存修改
           </button>
           <button
@@ -1178,31 +1178,26 @@ const handleDeleteAccount = async () => {
   text-decoration: underline;
 }
 
-.record-table {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  overflow: hidden;
+.record-table table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.table-header,
-.table-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 14px 16px;
-  align-items: center;
+.record-table th,
+.record-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.table-header {
-  background: #f8fafc;
-  color: #6b7280;
-  font-size: 13px;
+.record-table th {
   font-weight: 600;
+  color: #374151;
+  background-color: #f9fafb;
 }
 
-.table-row {
-  border-top: 1px solid #e5e7eb;
+.record-table tr:hover {
+  background-color: #f9fafb;
 }
 
 .positive {
