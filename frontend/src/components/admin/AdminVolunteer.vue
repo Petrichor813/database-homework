@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from "vue";
 import { getJson, postJson } from "../../utils/api";
 import { useToast } from "../../utils/toast";
-import { PageResponse } from "../../utils/page";
+import { PageResponse, usePagination } from "../../utils/page";
+import Pagination from "../utils/Pagination.vue";
 
 type VolunteerStatus = "CERTIFIED" | "REVIEWING" | "REJECTED" | "SUSPENDED";
 
@@ -27,6 +28,14 @@ type Action = "APPROVE" | "REJECT" | "SUSPEND" | "RESUME";
 
 const { error } = useToast();
 const loading = ref(false);
+const {
+  pageObject,
+  pageRanges,
+  updatePageState,
+  goToPage,
+  prevPage,
+  nextPage,
+} = usePagination(8);
 
 // 工具函数
 const formatTime = (time?: string | null) => {
@@ -57,71 +66,6 @@ const changeFilter = (value: FilterOption["value"]) => {
   fetchVolunteers(0);
 };
 
-// 分页
-const pageObject = ref({
-  curPage: 0,
-  pageSize: 8,
-  totalElements: 0,
-  totalPages: 0,
-});
-
-const goToPage = (page: number) => {
-  if (page < 0 || page >= pageObject.value.totalPages) {
-    return;
-  }
-  fetchVolunteers(page);
-};
-
-const prevPage = () => {
-  if (pageObject.value.curPage <= 0) {
-    return;
-  }
-  fetchVolunteers(pageObject.value.curPage - 1);
-};
-
-const nextPage = () => {
-  if (pageObject.value.curPage >= pageObject.value.totalPages - 1) {
-    return;
-  }
-  fetchVolunteers(pageObject.value.curPage + 1);
-};
-
-const displayedPages = computed(() => {
-  const curPage = pageObject.value.curPage;
-  const totalPages = pageObject.value.totalPages;
-  const delta = 2;
-
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, i) => i);
-  }
-
-  const range: (number | string)[] = [];
-  range.push(0);
-
-  // 如果当前页距离第一页较远，显示省略号
-  if (curPage > delta + 1) {
-    range.push("...");
-  }
-
-  // 显示当前页附近的页码
-  const start = Math.max(1, curPage - delta);
-  const end = Math.min(totalPages - 2, curPage + delta);
-
-  for (let i = start; i <= end; i++) {
-    range.push(i);
-  }
-
-  // 检查省略号显示
-  if (end < totalPages - 2) {
-    range.push("...");
-    range.push(totalPages - 1);
-  } else if (end < totalPages - 1) {
-    range.push(totalPages - 1);
-  }
-
-  return range;
-});
-
 // 志愿者
 const curVolunteer = ref<Volunteer | null>(null);
 const volunteers = ref<Volunteer[]>([]);
@@ -133,12 +77,7 @@ const fetchVolunteers = async (page: number) => {
       `/api/admin/volunteers?status=${curFilter.value}&page=${page}&size=${pageObject.value.pageSize}`,
     );
     volunteers.value = data.content;
-    pageObject.value = {
-      curPage: data.curPage,
-      pageSize: data.pageSize,
-      totalElements: data.totalElements,
-      totalPages: data.totalPages,
-    };
+    updatePageState(data);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "加载失败";
     error("加载志愿者失败", msg);
@@ -369,54 +308,15 @@ const submitReview = async () => {
       </div>
     </div>
 
-    <div
-      v-if="!loading && volunteers.length > 0 && pageObject.totalPages > 1"
-      class="page-nav"
-    >
-      <div class="page-info">
-        显示第 {{ pageObject.curPage * pageObject.pageSize + 1 }} -
-        {{
-          Math.min(
-            (pageObject.curPage + 1) * pageObject.pageSize,
-            pageObject.totalElements,
-          )
-        }}
-        条， 共 {{ pageObject.totalElements }} 条记录
-      </div>
-
-      <div class="page-control">
-        <button
-          type="button"
-          class="page-button"
-          :disabled="pageObject.curPage === 0"
-          @click="prevPage"
-        >
-          上一页
-        </button>
-
-        <template v-for="(page, index) in displayedPages" :key="index">
-          <button
-            v-if="typeof page === 'number'"
-            type="button"
-            class="page-button"
-            :class="{ active: page === pageObject.curPage }"
-            @click="goToPage(page)"
-          >
-            {{ page + 1 }}
-          </button>
-          <span v-else class="page-dots">...</span>
-        </template>
-
-        <button
-          type="button"
-          class="page-button"
-          :disabled="pageObject.curPage === pageObject.totalPages - 1"
-          @click="nextPage"
-        >
-          下一页
-        </button>
-      </div>
-    </div>
+    <Pagination
+      :page-object="pageObject"
+      :items="volunteers"
+      :loading="loading"
+      :page-ranges="pageRanges"
+      :go-to-page="(page: number) => goToPage(page, fetchVolunteers)"
+      :prev-page="() => prevPage(fetchVolunteers)"
+      :next-page="() => nextPage(fetchVolunteers)"
+    ></Pagination>
   </div>
 </template>
 
@@ -633,50 +533,5 @@ const submitReview = async () => {
 .close-button:hover {
   background: #1d4ed8;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-}
-
-.page-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.page-info {
-  color: #6b7280;
-  font-size: 16px;
-}
-
-.page-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.page-button {
-  min-width: 60px;
-  height: 36px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: white;
-  font-size: 16px;
-  font-weight: 500;
-  color: #374151;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.page-button:hover {
-  cursor: pointer;
-  background: #f8fafc;
-}
-
-.page-button.active {
-  background: #2563eb;
-  color: white;
-  border: none;
 }
 </style>
