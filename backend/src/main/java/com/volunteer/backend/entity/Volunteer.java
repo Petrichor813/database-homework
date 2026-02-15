@@ -183,6 +183,18 @@ public class Volunteer {
         this.reviewTime = LocalDateTime.now();
     }
 
+    public void suspend(String note) {
+        this.status = VolunteerStatus.SUSPENDED;
+        this.reviewNote = note;
+        this.reviewTime = LocalDateTime.now();
+    }
+
+    public void resume(String note) {
+        this.status = VolunteerStatus.CERTIFIED;
+        this.reviewNote = note;
+        this.reviewTime = LocalDateTime.now();
+    }
+
     public void resetForReapply(String name, String phone) {
         this.status = VolunteerStatus.REVIEWING;
         this.reviewNote = null;

@@ -4,8 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.volunteer.backend.dto.AdminVolunteerResponse;
 import com.volunteer.backend.dto.AdminVolunteerReviewRequest;
+import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.repository.UserRepository;
@@ -13,7 +19,6 @@ import com.volunteer.backend.repository.VolunteerRepository;
 import com.volunteer.backend.utils.UserRole;
 import com.volunteer.backend.utils.VolunteerReviewAction;
 import com.volunteer.backend.utils.VolunteerStatus;
-import org.springframework.stereotype.Service;
 
 @Service
 public class AdminVolunteerService {
@@ -25,26 +30,37 @@ public class AdminVolunteerService {
         this.userRepository = userRepository;
     }
 
-    public List<AdminVolunteerResponse> getVolunteers(String volunteerStatus) {
-        List<Volunteer> volunteers;
+    public PageResponse<AdminVolunteerResponse> getVolunteers(String volunteerStatus, int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("页码不能小于0");
+        }
+        if (size <= 0) {
+            throw new IllegalArgumentException("每页展示记录的数量不能小于等于0");
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Volunteer> volunteerPage;
         List<AdminVolunteerResponse> responses = new ArrayList<>();
 
         switch (volunteerStatus.toUpperCase()) {
         case "ALL":
-            volunteers = volunteerRepository.findByDeletedFalse();
+            volunteerPage = volunteerRepository.findByDeletedFalse(pageable);
             break;
         case "REVIEWING":
-            volunteers = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.REVIEWING);
+            volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.REVIEWING, pageable);
             break;
-        case "PROCESSED":
-            volunteers = volunteerRepository.findByStatusNotAndDeletedFalse(VolunteerStatus.REVIEWING);
+        case "CERTIFIED":
+            volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.CERTIFIED, pageable);
+            break;
+        case "SUSPENDED":
+            volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.SUSPENDED, pageable);
             break;
         default:
             throw new IllegalArgumentException("未知的志愿者审核状态筛选");
         }
 
-        for (int i = 0; i < volunteers.size(); i++) {
-            Volunteer v = volunteers.get(i);
+        for (int i = 0; i < volunteerPage.getContent().size(); i++) {
+            Volunteer v = volunteerPage.getContent().get(i);
             // @formatter:off
             AdminVolunteerResponse r = new AdminVolunteerResponse(
                 v.getId(),
@@ -61,7 +77,15 @@ public class AdminVolunteerService {
             responses.add(r);
         }
 
-        return responses;
+        // @formatter:off
+        return new PageResponse<>(
+            responses,
+            volunteerPage.getNumber(),
+            volunteerPage.getSize(),
+            volunteerPage.getTotalElements(),
+            volunteerPage.getTotalPages()
+        );
+        // @formatter:on
     }
 
     public AdminVolunteerResponse reviewVolunteer(Long id, AdminVolunteerReviewRequest request) {
@@ -82,7 +106,8 @@ public class AdminVolunteerService {
             throw new IllegalArgumentException("审核备注不能为空");
         }
 
-        if (action == VolunteerReviewAction.APPROVE) {
+        switch (action) {
+        case VolunteerReviewAction.APPROVE:
             volunteer.approve(note);
 
             Optional<User> u = userRepository.findByIdAndDeletedFalse(volunteer.getUserId());
@@ -95,8 +120,18 @@ public class AdminVolunteerService {
                 user.setRole(UserRole.VOLUNTEER);
                 userRepository.save(user);
             }
-        } else {
+            break;
+        case VolunteerReviewAction.REJECT:
             volunteer.reject(note);
+            break;
+        case VolunteerReviewAction.SUSPEND:
+            volunteer.suspend(note);
+            break;
+        case VolunteerReviewAction.RESUME:
+            volunteer.resume(note);
+            break;
+        default:
+            throw new IllegalArgumentException("未知的审核操作类型");
         }
 
         Volunteer saved = volunteerRepository.save(volunteer);

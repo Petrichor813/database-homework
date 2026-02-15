@@ -18,11 +18,19 @@ type Volunteer = {
 };
 
 type FilterOption = {
-  value: "ALL" | "REVIEWING" | "PROCESSED" | "SUSPENDED";
+  value: "ALL" | "REVIEWING" | "CERTIFIED" | "SUSPENDED";
   label: string;
 };
 
 type Action = "APPROVE" | "REJECT" | "SUSPEND" | "RESUME";
+
+type PageResponse<T> = {
+  content: T[];
+  curPage: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+};
 
 const { error } = useToast();
 const loading = ref(false);
@@ -43,7 +51,7 @@ const formatTime = (time?: string | null) => {
 const filters: FilterOption[] = [
   { value: "ALL", label: "全部" },
   { value: "REVIEWING", label: "待审核" },
-  { value: "PROCESSED", label: "已处理" },
+  { value: "CERTIFIED", label: "已认证" },
   { value: "SUSPENDED", label: "已停用" },
 ];
 const curFilter = ref<FilterOption["value"]>("ALL");
@@ -53,20 +61,91 @@ const changeFilter = (value: FilterOption["value"]) => {
     return;
   }
   curFilter.value = value;
-  fetchVolunteers();
+  fetchVolunteers(0);
 };
+
+// 分页
+const pageObject = ref({
+  curPage: 0,
+  pageSize: 8,
+  totalElements: 0,
+  totalPages: 0,
+});
+
+const goToPage = (page: number) => {
+  if (page < 0 || page >= pageObject.value.totalPages) {
+    return;
+  }
+  fetchVolunteers(page);
+};
+
+const prevPage = () => {
+  if (pageObject.value.curPage <= 0) {
+    return;
+  }
+  fetchVolunteers(pageObject.value.curPage - 1);
+};
+
+const nextPage = () => {
+  if (pageObject.value.curPage >= pageObject.value.totalPages - 1) {
+    return;
+  }
+  fetchVolunteers(pageObject.value.curPage + 1);
+};
+
+const displayedPages = computed(() => {
+  const curPage = pageObject.value.curPage;
+  const totalPages = pageObject.value.totalPages;
+  const delta = 2;
+
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i);
+  }
+
+  const range: (number | string)[] = [];
+  range.push(0);
+
+  // 如果当前页距离第一页较远，显示省略号
+  if (curPage > delta + 1) {
+    range.push("...");
+  }
+
+  // 显示当前页附近的页码
+  const start = Math.max(1, curPage - delta);
+  const end = Math.min(totalPages - 2, curPage + delta);
+
+  for (let i = start; i <= end; i++) {
+    range.push(i);
+  }
+
+  // 检查省略号显示
+  if (end < totalPages - 2) {
+    range.push("...");
+    range.push(totalPages - 1);
+  } else if (end < totalPages - 1) {
+    range.push(totalPages - 1);
+  }
+
+  return range;
+});
 
 // 志愿者
 const curVolunteer = ref<Volunteer | null>(null);
 const volunteers = ref<Volunteer[]>([]);
 
-const fetchVolunteers = async () => {
+const fetchVolunteers = async (page: number) => {
   loading.value = true;
   try {
-    const data = await getJson<Volunteer[]>(
-      `/api/admin/volunteers?status=${curFilter.value}`,
+    const data = await getJson<PageResponse<Volunteer>>(
+      `/api/admin/volunteers?status=${curFilter.value}&page=${page}&size=${pageObject.value.pageSize}`,
     );
-    volunteers.value = data;
+    volunteers.value = data.content;
+    pageObject.value = {
+      curPage: data.curPage,
+      pageSize: data.pageSize,
+      totalElements: data.totalElements,
+      totalPages: data.totalPages,
+    };
   } catch (err) {
     const msg = err instanceof Error ? err.message : "加载失败";
     error("加载志愿者失败", msg);
@@ -75,9 +154,9 @@ const fetchVolunteers = async () => {
   }
 };
 
-onMounted(() => fetchVolunteers());
+onMounted(() => fetchVolunteers(0));
 
-const statusLabel = (status: Volunteer["status"]) => {
+const statusLabel = (status?: Volunteer["status"]) => {
   switch (status) {
     case "CERTIFIED":
       return "已通过";
@@ -88,13 +167,14 @@ const statusLabel = (status: Volunteer["status"]) => {
     case "SUSPENDED":
       return "已停用";
     default:
-      return status;
+      return status || "-";
   }
 };
 
 // 操作
 const curAction = ref<Action | null>(null);
 const showActionDialog = ref(false);
+const showInfoDialog = ref(false);
 const reviewNote = ref<string>("");
 
 const actionDialogTitle = computed(() => {
@@ -126,6 +206,16 @@ const closeActionDialog = () => {
   showActionDialog.value = false;
 };
 
+const openInfoDialog = (v: Volunteer) => {
+  curVolunteer.value = v;
+  showInfoDialog.value = true;
+};
+
+const closeInfoDialog = () => {
+  curVolunteer.value = null;
+  showInfoDialog.value = false;
+};
+
 const submitReview = async () => {
   if (!curVolunteer.value || !curAction.value) {
     return;
@@ -143,7 +233,7 @@ const submitReview = async () => {
       note,
     });
     closeActionDialog();
-    await fetchVolunteers();
+    await fetchVolunteers(pageObject.value.curPage);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "提交失败";
     error("提交审核失败", msg);
@@ -176,44 +266,60 @@ const submitReview = async () => {
           <tr>
             <th>姓名</th>
             <th>手机号</th>
-            <th>申请原因</th>
             <th>状态</th>
-            <th>备注</th>
             <th>审核时间</th>
             <th>操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading" class="loading-row">
-            <td colspan="7">正在加载...</td>
+            <td colspan="5">正在加载...</td>
           </tr>
           <tr v-else-if="volunteers.length === 0" class="empty-row">
-            <td colspan="7">暂无符合条件的申请。</td>
+            <td colspan="5">暂无符合条件的申请。</td>
           </tr>
           <tr v-else v-for="v in volunteers" :key="v.id">
             <td>{{ v.name }}</td>
             <td>{{ v.phone }}</td>
-            <td>{{ v.applyReason || "-" }}</td>
             <td>{{ statusLabel(v.status) }}</td>
-            <td>{{ v.reviewNote || "-" }}</td>
             <td>{{ formatTime(v.reviewTime) }}</td>
             <td>
               <div class="actions">
+                <button type="button" class="info" @click="openInfoDialog(v)">
+                  详情
+                </button>
                 <button
-                  class="approve"
+                  v-if="v.status === 'REVIEWING'"
                   type="button"
+                  class="approve"
                   :disabled="v.status !== 'REVIEWING'"
                   @click="openReviewDialog(v, 'APPROVE')"
                 >
                   通过
                 </button>
                 <button
+                  v-if="v.status === 'REVIEWING'"
                   class="reject"
                   type="button"
-                  :disabled="v.status !== 'REVIEWING'"
                   @click="openReviewDialog(v, 'REJECT')"
                 >
                   拒绝
+                </button>
+                <button
+                  v-if="v.status === 'CERTIFIED'"
+                  class="reject"
+                  type="button"
+                  @click="openReviewDialog(v, 'SUSPEND')"
+                >
+                  停用
+                </button>
+                <button
+                  v-if="v.status === 'SUSPENDED'"
+                  class="approve"
+                  type="button"
+                  @click="openReviewDialog(v, 'RESUME')"
+                >
+                  恢复
                 </button>
               </div>
             </td>
@@ -239,6 +345,83 @@ const submitReview = async () => {
             取消
           </button>
         </div>
+      </div>
+    </div>
+
+    <div v-if="showInfoDialog" class="dialog-bg">
+      <div class="dialog-area">
+        <h3>志愿者详情</h3>
+        <p><strong>姓名：</strong>{{ curVolunteer?.name }}</p>
+        <p><strong>手机号：</strong>{{ curVolunteer?.phone }}</p>
+        <p><strong>状态：</strong>{{ statusLabel(curVolunteer?.status) }}</p>
+        <p v-if="curVolunteer?.status === 'REVIEWING'">
+          <strong>申请原因：</strong>{{ curVolunteer?.applyReason || "无" }}
+        </p>
+        <p v-if="curVolunteer?.status !== 'REVIEWING'">
+          <strong>审核时间：</strong>{{ formatTime(curVolunteer?.reviewTime) }}
+        </p>
+        <p v-if="curVolunteer?.status !== 'REVIEWING'">
+          <strong>
+            {{
+              curVolunteer?.status === "SUSPENDED" ? "停用原因" : "审核备注"
+            }}：
+          </strong>
+          {{ curVolunteer?.reviewNote || "无" }}
+        </p>
+        <div class="dialog-actions">
+          <button type="button" class="close-button" @click="closeInfoDialog">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="!loading && volunteers.length > 0 && pageObject.totalPages > 1"
+      class="page-nav"
+    >
+      <div class="page-info">
+        显示第 {{ pageObject.curPage * pageObject.pageSize + 1 }} -
+        {{
+          Math.min(
+            (pageObject.curPage + 1) * pageObject.pageSize,
+            pageObject.totalElements,
+          )
+        }}
+        条， 共 {{ pageObject.totalElements }} 条记录
+      </div>
+
+      <div class="page-control">
+        <button
+          type="button"
+          class="page-button"
+          :disabled="pageObject.curPage === 0"
+          @click="prevPage"
+        >
+          上一页
+        </button>
+
+        <template v-for="(page, index) in displayedPages" :key="index">
+          <button
+            v-if="typeof page === 'number'"
+            type="button"
+            class="page-button"
+            :class="{ active: page === pageObject.curPage }"
+            @click="goToPage(page)"
+          >
+            {{ page + 1 }}
+          </button>
+          <span v-else class="page-dots">...</span>
+        </template>
+
+        <button
+          type="button"
+          class="page-button"
+          :disabled="pageObject.curPage === pageObject.totalPages - 1"
+          @click="nextPage"
+        >
+          下一页
+        </button>
       </div>
     </div>
   </div>
@@ -319,7 +502,20 @@ const submitReview = async () => {
 .actions {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.actions button {
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  transition: all 0.2s ease;
+}
+
+.actions button:hover:not(:disabled) {
+  cursor: pointer;
+  transform: translateY(-1px);
 }
 
 .actions button:disabled {
@@ -327,20 +523,31 @@ const submitReview = async () => {
   cursor: not-allowed;
 }
 
+.info {
+  background: #2563eb;
+}
+
+.info:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
 .approve {
+  background: #22c55e;
+}
+
+.approve:hover:not(:disabled) {
   background: #16a34a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 .reject {
   background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
+}
+
+.reject:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .dialog-bg {
@@ -390,36 +597,93 @@ const submitReview = async () => {
   gap: 10px;
 }
 
-.confirm-button {
+.dialog-actions button {
   min-width: 80px;
-  background: #22c55e;
-  color: white;
-  cursor: pointer;
   padding: 10px 20px;
-  border: none;
   border-radius: 8px;
   transition: all 0.2s ease;
+}
+
+.dialog-actions button:hover {
+  cursor: pointer;
+  transform: translateY(-1px);
+}
+
+.confirm-button {
+  background: #22c55e;
+  color: white;
+  border: none;
 }
 
 .confirm-button:hover {
   background: #16a34a;
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 .cancel-button {
-  min-width: 80px;
   background: white;
-  cursor: pointer;
-  padding: 10px 20px;
+  color: #374151;
   border: 2px solid #e5e7eb;
-  border-radius: 8px;
 }
 
 .cancel-button:hover {
   background: #efefef;
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+}
+
+.close-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.close-button:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.page-info {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.page-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-button {
+  min-width: 60px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   transition: all 0.2s ease;
+}
+
+.page-button:hover {
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.page-button.active {
+  background: #2563eb;
+  color: white;
+  border: none;
 }
 </style>

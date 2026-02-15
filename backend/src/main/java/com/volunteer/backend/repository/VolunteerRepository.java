@@ -1,21 +1,22 @@
 package com.volunteer.backend.repository;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.utils.VolunteerStatus;
 
 public interface VolunteerRepository extends JpaRepository<Volunteer, Long> {
-    List<Volunteer> findByDeletedFalse();
+    Page<Volunteer> findByDeletedFalse(Pageable pageable);
 
     Optional<Volunteer> findByIdAndDeletedFalse(Long id);
 
     Optional<Volunteer> findByUserIdAndDeletedFalse(Long userId);
 
-    List<Volunteer> findByStatusAndDeletedFalse(VolunteerStatus status);
+    Page<Volunteer> findByStatusAndDeletedFalse(VolunteerStatus status, Pageable pageable);
 
-    List<Volunteer> findByStatusNotAndDeletedFalse(VolunteerStatus status);
+    Page<Volunteer> findByStatusNotAndDeletedFalse(VolunteerStatus status, Pageable pageable);
 }

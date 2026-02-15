@@ -186,10 +186,6 @@ const showModifyDialog = ref(false);
 const isApplying = ref(false);
 const isModifying = ref(false);
 
-const showModify = computed(
-  () => profile.value?.volunteerStatus === "REVIEWING",
-);
-
 const applyForm = reactive({
   realName: "",
   phone: "",
@@ -269,6 +265,12 @@ const applyVolunteer = async () => {
     error("提交申请失败", msg);
   }
 };
+
+const showModify = computed(
+  () =>
+    profile.value?.role === "USER" &&
+    profile.value?.volunteerStatus === "REVIEWING",
+);
 
 const openModifyDialog = () => {
   if (!profile.value) return;
