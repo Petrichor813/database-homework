@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { getJson, postJson } from "../../utils/api";
 import { useToast } from "../../utils/toast";
+import { PageResponse } from "../../utils/page";
 
 type VolunteerStatus = "CERTIFIED" | "REVIEWING" | "REJECTED" | "SUSPENDED";
 
@@ -23,14 +24,6 @@ type FilterOption = {
 };
 
 type Action = "APPROVE" | "REJECT" | "SUSPEND" | "RESUME";
-
-type PageResponse<T> = {
-  content: T[];
-  curPage: number;
-  pageSize: number;
-  totalElements: number;
-  totalPages: number;
-};
 
 const { error } = useToast();
 const loading = ref(false);

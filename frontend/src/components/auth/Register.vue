@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
-import { useToast } from "../utils/toast";
-import { postJson } from "../utils/api";
+import { useToast } from "../../utils/toast";
+import { postJson } from "../../utils/api";
 
 const { success, error } = useToast();
 

@@ -1,20 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "../components/Login.vue";
 import Home from "../components/Home.vue";
-import Register from "../components/Register.vue";
 import UserCenter from "../components/UserCenter.vue";
-import ActivityList from "../components/ActivityList.vue";
-import SignupRecord from "../components/SignupRecord.vue";
-import PointRecord from "../components/PointRecord.vue";
-import Exchange from "../components/Exchange.vue";
-import ExchangeRecord from "../components/ExchangeRecord.vue";
-import Dashboard from "../components/Dashboard.vue";
-import ImportData from "../components/admin/ImportData.vue";
-import ExportData from "../components/ExportData.vue";
+import ActivityList from "../components/activity/ActivityList.vue";
+import SignupRecord from "../components/activity/SignupRecord.vue";
 import AdminActivity from "../components/admin/AdminActivity.vue";
-import AdminVolunteer from "../components/admin/AdminVolunteer.vue";
-import AdminPoints from "../components/admin/AdminPoints.vue";
 import AdminExchange from "../components/admin/AdminExchange.vue";
+import AdminPoints from "../components/admin/AdminPoints.vue";
+import AdminVolunteer from "../components/admin/AdminVolunteer.vue";
+import ImportData from "../components/admin/ImportData.vue";
+import Login from "../components/auth/Login.vue";
+import Register from "../components/auth/Register.vue";
+import Dashboard from "../components/data/Dashboard.vue";
+import ExportData from "../components/data/ExportData.vue";
+import Exchange from "../components/exchange/Exchange.vue";
+import ExchangeRecord from "../components/exchange/ExchangeRecord.vue";
 
 const routes = [
   {
@@ -50,11 +49,6 @@ const routes = [
     path: "/signups",
     name: "Signups",
     component: SignupRecord,
-  },
-  {
-    path: "/points",
-    name: "Points",
-    component: PointRecord,
   },
   {
     path: "/exchange",

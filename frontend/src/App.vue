@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import GlobalToast from "./components/GlobalToast.vue";
+import GlobalToast from "./components/utils/GlobalToast.vue";
 import { useToast } from "./utils/toast";
 import { getJson } from "./utils/api";
 

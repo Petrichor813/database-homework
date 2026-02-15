@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { useToast } from "../utils/toast";
-import { postJson } from "../utils/api";
+import { useToast } from "../../utils/toast";
+import { postJson } from "../../utils/api";
 
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
 

@@ -25,17 +25,17 @@ const { state } = useToast();
 
 <style scoped>
 .toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   min-width: 320px;
   max-width: 480px;
-  padding: 14px 18px;
-  border-radius: 12px;
+  position: fixed;
   display: flex;
-  gap: 12px;
   align-items: flex-start;
+  top: 20px;
+  left: 50%;
+  padding: 14px 18px;
+  gap: 12px;
+  border-radius: 12px;
+  transform: translateX(-50%);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
   z-index: 2000;
 }
@@ -61,13 +61,13 @@ const { state } = useToast();
 .toast-icon {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.8);
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-weight: 700;
+  align-items: center;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+  border-radius: 50%;
 }
 
 .toast-title {
