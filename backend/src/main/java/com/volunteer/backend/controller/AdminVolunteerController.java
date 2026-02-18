@@ -1,5 +1,6 @@
 package com.volunteer.backend.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,17 +24,16 @@ public class AdminVolunteerController {
     }
 
     @GetMapping
-    public PageResponse<AdminVolunteerResponse> getVolunteers(
+    public ResponseEntity<PageResponse<AdminVolunteerResponse>> getVolunteers(
             @RequestParam(defaultValue = "ALL") String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return adminVolunteerService.getVolunteers(status, page, size);
+        return ResponseEntity.ok(adminVolunteerService.getVolunteers(status, page, size));
     }
 
     @PostMapping("/{id}/review")
-    public AdminVolunteerResponse reviewVolunteer(@PathVariable Long id,
+    public ResponseEntity<AdminVolunteerResponse> reviewVolunteer(@PathVariable Long id,
             @RequestBody AdminVolunteerReviewRequest request) {
-        return adminVolunteerService.reviewVolunteer(id, request);
+        return ResponseEntity.ok(adminVolunteerService.reviewVolunteer(id, request));
     }
-
 }

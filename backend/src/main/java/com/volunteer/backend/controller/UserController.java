@@ -2,6 +2,8 @@ package com.volunteer.backend.controller;
 
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,43 +31,43 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/profile")
-    public UserProfileResponse getProfile(@PathVariable Long userId) {
-        return userService.getProfile(userId);
+    public ResponseEntity<UserProfileResponse> getProfile(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getProfile(userId));
     }
 
     @PutMapping("/{userId}/profile")
     // @formatter:off
-    public UserProfileResponse updateProfile(
+    public ResponseEntity<UserProfileResponse> updateProfile(
         @PathVariable Long userId,
         @RequestBody UpdateUserProfileRequest request
     ) {
         // @formatter:on
-        return userService.updateProfile(userId, request);
+        return ResponseEntity.ok(userService.updateProfile(userId, request));
     }
 
     @PostMapping("/{userId}/volunteer-apply")
     // @formatter:off
-    public UserProfileResponse applyVolunteer(
+    public ResponseEntity<UserProfileResponse> applyVolunteer(
         @PathVariable Long userId,
         @Valid @RequestBody VolunteerApplyRequest request
     ) {
         // @formatter:on
-        return userService.applyVolunteer(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.applyVolunteer(userId, request));
     }
 
     @PutMapping("/{userId}/volunteer-application")
     // @formatter:off
-    public UserProfileResponse updateVolunteerApplication(
+    public ResponseEntity<UserProfileResponse> updateVolunteerApplication(
         @PathVariable Long userId,
         @Valid @RequestBody ModifyVolunteerApplicationRequest request
     ) {
         // @formatter:on
-        return userService.updateVolunteerApplication(userId, request);
+        return ResponseEntity.ok(userService.updateVolunteerApplication(userId, request));
     }
 
     @DeleteMapping("/{userId}")
-    public Map<String, String> deleteAccount(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, String>> deleteAccount(@PathVariable Long userId) {
         userService.deleteAccount(userId);
-        return Map.of("message", "账号已注销");
+        return ResponseEntity.ok(Map.of("message", "账号已注销"));
     }
 }
