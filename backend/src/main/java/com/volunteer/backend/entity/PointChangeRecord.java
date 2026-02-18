@@ -19,8 +19,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "points_change_record")
-public class PointsChangeRecord {
+@Table(name = "point_change_record")
+public class PointChangeRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,13 +54,13 @@ public class PointsChangeRecord {
     @Column(nullable = false, length = 200)
     private String note;
 
-    public PointsChangeRecord() {
+    public PointChangeRecord() {
         this.changeTime = LocalDateTime.now();
     }
 
     // @formatter:off
     // 不带关联记录
-    public PointsChangeRecord(
+    public PointChangeRecord(
         Long volunteerId,
         Double changePoints,
         PointsChangeType changeType,
@@ -74,7 +74,7 @@ public class PointsChangeRecord {
     }
 
     // 带关联记录
-    public PointsChangeRecord(
+    public PointChangeRecord(
         Long volunteerId,
         Double changePoints,
         PointsChangeType changeType,

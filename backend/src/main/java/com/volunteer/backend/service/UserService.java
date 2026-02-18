@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
-import com.volunteer.backend.dto.PointsRecordResponse;
+import com.volunteer.backend.dto.PointChangeRecordResponse;
 import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
-import com.volunteer.backend.entity.PointsChangeRecord;
+import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
-import com.volunteer.backend.repository.PointsChangeRecordRepository;
+import com.volunteer.backend.repository.PointChangeRecordRepository;
 import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
@@ -29,14 +29,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final VolunteerRepository volunteerRepository;
-    private final PointsChangeRecordRepository pointsChangeRecordRepository;
+    private final PointChangeRecordRepository pointsChangeRecordRepository;
     private final SignupRecordRepository signupRecordRepository;
 
     // @formatter:off
     public UserService(
         UserRepository userRepository,
         VolunteerRepository volunteerRepository,
-        PointsChangeRecordRepository pointsChangeRecordRepository, SignupRecordRepository signupRecordRepository
+        PointChangeRecordRepository pointsChangeRecordRepository, SignupRecordRepository signupRecordRepository
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;
@@ -58,21 +58,21 @@ public class UserService {
         Volunteer volunteer = v.isPresent() ? v.get() : null;
         Double points = 0.0;
         Integer serviceHours = 0;
-        List<PointsRecordResponse> responses = new ArrayList<>();
+        List<PointChangeRecordResponse> responses = new ArrayList<>();
 
         if (volunteer != null) {
             Long volunteerId = volunteer.getId();
             points = pointsChangeRecordRepository.sumPointsByVolunteerId(volunteerId);
             serviceHours = signupRecordRepository.sumHoursByVolunteerId(volunteerId);
-            List<PointsChangeRecord> records = pointsChangeRecordRepository
+            List<PointChangeRecord> records = pointsChangeRecordRepository
                     .findTop5ByVolunteerIdOrderByChangeTimeDesc(volunteerId);
 
             for (int i = 0; i < records.size(); i++) {
-                PointsChangeRecord record = records.get(i);
+                PointChangeRecord record = records.get(i);
                 String time = (record.getChangeTime() != null) ? record.getChangeTime().format(DATE_FORMATTER) : "";
                 String type = (record.getChangeType() != null) ? record.getChangeType().name() : "";
                 // @formatter:off
-                PointsRecordResponse r = new PointsRecordResponse(
+                PointChangeRecordResponse r = new PointChangeRecordResponse(
                     time, type, record.getChangePoints(), record.getReason());
                 // @formatter:on
                 responses.add(r);

@@ -15,7 +15,7 @@ public class UserProfileResponse {
     private String applyReason;
     private Double points;
     private Integer serviceHours;
-    private List<PointsRecordResponse> pointsRecords;
+    private List<PointChangeRecordResponse> pointsRecords;
 
     public UserProfileResponse() {
     }
@@ -31,7 +31,7 @@ public class UserProfileResponse {
         String applyReason,
         Double points,
         Integer serviceHours,
-        List<PointsRecordResponse> pointsRecords
+        List<PointChangeRecordResponse> pointsRecords
     ) {
         this.id = id;
         this.username = username;
@@ -118,11 +118,11 @@ public class UserProfileResponse {
         this.serviceHours = serviceHours;
     }
 
-    public List<PointsRecordResponse> getPointsRecords() {
+    public List<PointChangeRecordResponse> getPointsRecords() {
         return pointsRecords;
     }
 
-    public void setPointsRecords(List<PointsRecordResponse> pointsRecords) {
+    public void setPointsRecords(List<PointChangeRecordResponse> pointsRecords) {
         this.pointsRecords = pointsRecords;
     }
 }

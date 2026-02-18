@@ -1,15 +1,15 @@
 package com.volunteer.backend.dto;
 
-public class PointsRecordResponse {
+public class PointChangeRecordResponse {
     private String time;
     private String type;
     private Double amount;
     private String note;
 
-    public PointsRecordResponse() {
+    public PointChangeRecordResponse() {
     }
 
-    public PointsRecordResponse(String time, String type, Double amount, String note) {
+    public PointChangeRecordResponse(String time, String type, Double amount, String note) {
         this.time = time;
         this.type = type;
         this.amount = amount;

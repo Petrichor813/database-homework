@@ -1,11 +1,22 @@
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { deleteJson, getJson, postJson, putJson } from "../utils/api";
 import { useToast } from "../utils/toast";
+import { PageState, usePagination } from "../utils/page";
+import Pagination from "./utils/Pagination.vue";
+import type { PageResponse } from "../utils/page";
 
 const router = useRouter();
 const { success, error } = useToast();
+const {
+  pageObject,
+  pageRanges,
+  updatePageState,
+  goToPage,
+  prevPage,
+  nextPage,
+} = usePagination(10);
 
 type UserCenterTab = "PROFILE" | "POINT" | "SECURITY";
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
@@ -375,6 +386,43 @@ const volunteerStatus = computed(() => {
 
 // 积分变动记录
 const records = ref<PointsChangeRecord[]>([]);
+const recordLoading = ref(false);
+
+const fetchPointsRecords = async (page: number) => {
+  const localUser = localStorage.getItem("user");
+  if (!localUser) {
+    return;
+  }
+
+  try {
+    const parsedUser = JSON.parse(localUser);
+    if (!parsedUser.id) {
+      return;
+    }
+
+    recordLoading.value = true;
+    const data = await getJson<PageResponse<PointsChangeRecord>>(
+      `/api/users/${parsedUser.id}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`,
+    );
+    records.value = data.content;
+    updatePageState(data);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "获取积分记录失败";
+    error("加载失败", msg);
+  } finally {
+    recordLoading.value = false;
+  }
+};
+
+// 监听选项卡变动，当切换到积分变动记录选项卡时，加载第一页记录
+watch(
+  activeTab,
+  (newTab: UserCenterTab) => {
+    if (newTab === "POINT" && records.value.length === 0) {
+      fetchPointsRecords(0);
+    }
+  },
+);
 
 const pointsChangeMap: Record<string, string> = {
   ACTIVITY_EARN: "活动结算",
@@ -437,7 +485,6 @@ const loadProfile = async () => {
       `/api/users/${parsedUser.id}/profile`,
     );
     profile.value = data;
-    records.value = data.pointsChangeRecords ?? [];
   } catch (err) {
     const msg = err instanceof Error ? err.message : "获取用户信息失败";
     error("加载失败", msg);
@@ -613,7 +660,11 @@ const handleDeleteAccount = async () => {
             </div>
           </div>
 
-          <section v-if="records.length" class="record-table">
+          <section v-if="recordLoading" class="loading-record">
+            <p>正在加载积分记录...</p>
+          </section>
+
+          <section v-else-if="records.length" class="record-table">
             <table>
               <thead>
                 <tr>
@@ -638,7 +689,18 @@ const handleDeleteAccount = async () => {
                 </tr>
               </tbody>
             </table>
+
+            <Pagination
+              :page-object="pageObject"
+              :items="records"
+              :loading="recordLoading"
+              :page-ranges="pageRanges"
+              :go-to-page="(page: number) => goToPage(page, fetchPointsRecords)"
+              :prev-page="() => prevPage(fetchPointsRecords)"
+              :next-page="() => nextPage(fetchPointsRecords)"
+            />
           </section>
+
           <section v-else class="empty-record">
             <p>暂无积分变动记录</p>
           </section>
@@ -1210,6 +1272,15 @@ const handleDeleteAccount = async () => {
 .negative {
   color: #dc2626;
   font-weight: 600;
+}
+
+.loading-record {
+  background: white;
+  color: #6b7280;
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
 }
 
 .empty-record {
