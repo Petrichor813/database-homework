@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.volunteer.backend.entity.User;
-import com.volunteer.backend.utils.UserRole;
+import com.volunteer.backend.enums.UserRole;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {

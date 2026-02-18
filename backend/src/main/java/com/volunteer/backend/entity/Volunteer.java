@@ -9,7 +9,7 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.VolunteerStatus;
+import com.volunteer.backend.enums.VolunteerStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

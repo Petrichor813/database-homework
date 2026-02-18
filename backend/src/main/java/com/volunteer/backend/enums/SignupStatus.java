@@ -1,4 +1,4 @@
-package com.volunteer.backend.utils;
+package com.volunteer.backend.enums;
 
 public enum SignupStatus {
     REVIEWING, // 待审核

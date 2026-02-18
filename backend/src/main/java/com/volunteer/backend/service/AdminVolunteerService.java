@@ -14,11 +14,11 @@ import com.volunteer.backend.dto.AdminVolunteerReviewRequest;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
+import com.volunteer.backend.enums.UserRole;
+import com.volunteer.backend.enums.VolunteerReviewAction;
+import com.volunteer.backend.enums.VolunteerStatus;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
-import com.volunteer.backend.utils.UserRole;
-import com.volunteer.backend.utils.VolunteerReviewAction;
-import com.volunteer.backend.utils.VolunteerStatus;
 
 @Service
 public class AdminVolunteerService {
@@ -107,7 +107,7 @@ public class AdminVolunteerService {
         }
 
         switch (action) {
-        case VolunteerReviewAction.APPROVE:
+        case APPROVE:
             volunteer.approve(note);
 
             Optional<User> u = userRepository.findByIdAndDeletedFalse(volunteer.getUserId());
@@ -121,13 +121,13 @@ public class AdminVolunteerService {
                 userRepository.save(user);
             }
             break;
-        case VolunteerReviewAction.REJECT:
+        case REJECT:
             volunteer.reject(note);
             break;
-        case VolunteerReviewAction.SUSPEND:
+        case SUSPEND:
             volunteer.suspend(note);
             break;
-        case VolunteerReviewAction.RESUME:
+        case RESUME:
             volunteer.resume(note);
             break;
         default:

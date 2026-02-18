@@ -2,7 +2,7 @@ package com.volunteer.backend.dto;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.VolunteerStatus;
+import com.volunteer.backend.enums.VolunteerStatus;
 
 public class AdminVolunteerResponse {
     private Long id;

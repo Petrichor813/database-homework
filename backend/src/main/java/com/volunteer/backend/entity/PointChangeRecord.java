@@ -6,8 +6,8 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.PointChangeType;
-import com.volunteer.backend.utils.RelatedRecordType;
+import com.volunteer.backend.enums.PointChangeType;
+import com.volunteer.backend.enums.RelatedRecordType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -11,12 +11,12 @@ import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
+import com.volunteer.backend.enums.UserRole;
+import com.volunteer.backend.enums.VolunteerStatus;
 import com.volunteer.backend.repository.PointChangeRecordRepository;
 import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
-import com.volunteer.backend.utils.UserRole;
-import com.volunteer.backend.utils.VolunteerStatus;
 
 @Service
 public class UserService {

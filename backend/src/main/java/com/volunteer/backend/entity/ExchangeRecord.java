@@ -2,7 +2,7 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.ExchangeStatus;
+import com.volunteer.backend.enums.ExchangeStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

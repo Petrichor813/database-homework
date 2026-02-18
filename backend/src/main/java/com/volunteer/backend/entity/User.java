@@ -14,7 +14,7 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.UserRole;
+import com.volunteer.backend.enums.UserRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

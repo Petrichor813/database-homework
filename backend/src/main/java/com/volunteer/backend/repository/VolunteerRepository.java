@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.volunteer.backend.entity.Volunteer;
-import com.volunteer.backend.utils.VolunteerStatus;
+import com.volunteer.backend.enums.VolunteerStatus;
 
 public interface VolunteerRepository extends JpaRepository<Volunteer, Long> {
     Page<Volunteer> findByDeletedFalse(Pageable pageable);

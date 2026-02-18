@@ -1,4 +1,4 @@
-package com.volunteer.backend.utils;
+package com.volunteer.backend.enums;
 
 public enum ActivityStatus {
     RECRUITING, // 招募中（默认）

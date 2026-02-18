@@ -11,10 +11,10 @@ import com.volunteer.backend.dto.RegisterRequest;
 import com.volunteer.backend.dto.RegisterResponse;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
+import com.volunteer.backend.enums.UserRole;
+import com.volunteer.backend.enums.VolunteerStatus;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
-import com.volunteer.backend.utils.UserRole;
-import com.volunteer.backend.utils.VolunteerStatus;
 
 @Service
 public class AuthService {

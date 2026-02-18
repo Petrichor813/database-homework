@@ -6,8 +6,8 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.ActivityStatus;
-import com.volunteer.backend.utils.ActivityType;
+import com.volunteer.backend.enums.ActivityStatus;
+import com.volunteer.backend.enums.ActivityType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

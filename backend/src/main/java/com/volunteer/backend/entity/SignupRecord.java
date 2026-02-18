@@ -6,7 +6,7 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.SignupStatus;
+import com.volunteer.backend.enums.SignupStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.dto.PointChangeRecordResponse;
 import com.volunteer.backend.entity.PointChangeRecord;
+import com.volunteer.backend.enums.PointChangeType;
 import com.volunteer.backend.repository.PointChangeRecordRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
-import com.volunteer.backend.utils.PointChangeType;
 
 @Service
 public class VolunteerService {
@@ -35,13 +35,13 @@ public class VolunteerService {
 
     private String getPointChangeTypeLabel(PointChangeType type) {
         switch (type) {
-        case PointChangeType.ACTIVITY_EARN:
+        case ACTIVITY_EARN:
             return "活动结算";
-        case PointChangeType.EXCHANGE_USE:
+        case EXCHANGE_USE:
             return "兑换消耗";
-        case PointChangeType.ADMIN_ADJUST:
+        case ADMIN_ADJUST:
             return "管理员调整";
-        case PointChangeType.SYSTEM_BONUS:
+        case SYSTEM_BONUS:
             return "系统奖励";
         default:
             throw new IllegalArgumentException("未知的积分变更类型");

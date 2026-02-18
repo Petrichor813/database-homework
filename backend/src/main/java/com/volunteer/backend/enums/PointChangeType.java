@@ -1,4 +1,4 @@
-package com.volunteer.backend.utils;
+package com.volunteer.backend.enums;
 
 public enum PointChangeType {
     ACTIVITY_EARN, // 活动获得

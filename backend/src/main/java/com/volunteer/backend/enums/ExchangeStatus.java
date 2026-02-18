@@ -1,4 +1,4 @@
-package com.volunteer.backend.utils;
+package com.volunteer.backend.enums;
 
 public enum ExchangeStatus {
     REVIEWING, // 待处理

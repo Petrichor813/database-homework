@@ -1,6 +1,6 @@
 package com.volunteer.backend.dto;
 
-import com.volunteer.backend.utils.UserRole;
+import com.volunteer.backend.enums.UserRole;
 
 public class RegisterResponse {
     private Long id;

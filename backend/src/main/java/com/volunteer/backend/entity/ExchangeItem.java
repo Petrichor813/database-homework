@@ -2,8 +2,8 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.ItemCategory;
-import com.volunteer.backend.utils.ItemStatus;
+import com.volunteer.backend.enums.ItemCategory;
+import com.volunteer.backend.enums.ItemStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

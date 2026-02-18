@@ -1,7 +1,7 @@
 package com.volunteer.backend.dto;
 
-import com.volunteer.backend.utils.UserRole;
-import com.volunteer.backend.utils.VolunteerStatus;
+import com.volunteer.backend.enums.UserRole;
+import com.volunteer.backend.enums.VolunteerStatus;
 
 public class UserProfileResponse {
     private Long id;

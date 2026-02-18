@@ -1,6 +1,6 @@
 package com.volunteer.backend.dto;
 
-import com.volunteer.backend.utils.VolunteerReviewAction;
+import com.volunteer.backend.enums.VolunteerReviewAction;
 
 public class AdminVolunteerReviewRequest {
     private VolunteerReviewAction action;

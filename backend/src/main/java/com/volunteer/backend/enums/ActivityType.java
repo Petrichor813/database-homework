@@ -1,4 +1,4 @@
-package com.volunteer.backend.utils;
+package com.volunteer.backend.enums;
 
 public enum ActivityType {
     COMMUNITY_SERVICE, // 社区服务

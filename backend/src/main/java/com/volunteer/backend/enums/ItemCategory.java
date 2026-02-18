@@ -1,4 +1,4 @@
-package com.volunteer.backend.utils;
+package com.volunteer.backend.enums;
 
 public enum ItemCategory {
     DAILY_NECESSITIES, // 日用品
