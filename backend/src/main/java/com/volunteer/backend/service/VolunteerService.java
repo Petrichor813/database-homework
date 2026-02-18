@@ -1,5 +1,6 @@
 package com.volunteer.backend.service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,8 @@ import com.volunteer.backend.utils.PointChangeType;
 
 @Service
 public class VolunteerService {
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private final VolunteerRepository volunteerRepository;
     private final PointChangeRecordRepository pointChangeRecordRepository;
 
@@ -54,10 +57,11 @@ public class VolunteerService {
         List<PointChangeRecordResponse> responseList = new ArrayList<>();
         for (int i = 0; i < recordList.size(); i++) {
             PointChangeRecord record = recordList.get(i);
+            String formattedTime = record.getChangeTime().format(DATETIME_FORMATTER);
             // @formatter:off
             responseList.add(
                 new PointChangeRecordResponse(
-                    record.getChangeTime().toString(),
+                    formattedTime,
                     getPointChangeTypeLabel(record.getChangeType()),
                     record.getChangePoints(),
                     record.getNote()

@@ -5,6 +5,7 @@ import com.volunteer.backend.utils.VolunteerStatus;
 
 public class UserProfileResponse {
     private Long id;
+    private Long volunteerId;
     private String username;
     private UserRole role;
     private String phone;
@@ -20,6 +21,7 @@ public class UserProfileResponse {
     // @formatter:off
     public UserProfileResponse(
         Long id,
+        Long volunteerId,
         String username,
         UserRole role,
         String phone,
@@ -30,6 +32,7 @@ public class UserProfileResponse {
         Integer serviceHours
     ) {
         this.id = id;
+        this.volunteerId = volunteerId;
         this.username = username;
         this.role = role;
         this.phone = phone;
@@ -47,6 +50,14 @@ public class UserProfileResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVolunteerId() {
+        return volunteerId;
+    }
+
+    public void setVolunteerId(Long volunteerId) {
+        this.volunteerId = volunteerId;
     }
 
     public String getUsername() {
