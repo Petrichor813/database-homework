@@ -6,7 +6,7 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.utils.PointsChangeType;
+import com.volunteer.backend.utils.PointChangeType;
 import com.volunteer.backend.utils.RelatedRecordType;
 
 import jakarta.persistence.Column;
@@ -33,7 +33,7 @@ public class PointChangeRecord {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PointsChangeType changeType;
+    private PointChangeType changeType;
 
     @Column(nullable = false, length = 200)
     private String reason;
@@ -63,7 +63,7 @@ public class PointChangeRecord {
     public PointChangeRecord(
         Long volunteerId,
         Double changePoints,
-        PointsChangeType changeType,
+        PointChangeType changeType,
         String reason
     ) {
         this();
@@ -77,7 +77,7 @@ public class PointChangeRecord {
     public PointChangeRecord(
         Long volunteerId,
         Double changePoints,
-        PointsChangeType changeType,
+        PointChangeType changeType,
         String reason,
         Long relatedRecordId,
         RelatedRecordType relatedRecordType
@@ -116,11 +116,11 @@ public class PointChangeRecord {
         this.changePoints = changePoints;
     }
 
-    public PointsChangeType getChangeType() {
+    public PointChangeType getChangeType() {
         return changeType;
     }
 
-    public void setChangeType(PointsChangeType changeType) {
+    public void setChangeType(PointChangeType changeType) {
         this.changeType = changeType;
     }
 

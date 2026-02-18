@@ -1,22 +1,17 @@
 package com.volunteer.backend.service;
 
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.volunteer.backend.repository.PointChangeRecordRepository;
 import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
-import com.volunteer.backend.dto.PointChangeRecordResponse;
 import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
-import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
-import com.volunteer.backend.repository.PointChangeRecordRepository;
 import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
@@ -25,23 +20,22 @@ import com.volunteer.backend.utils.VolunteerStatus;
 
 @Service
 public class UserService {
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
     private final UserRepository userRepository;
     private final VolunteerRepository volunteerRepository;
-    private final PointChangeRecordRepository pointsChangeRecordRepository;
     private final SignupRecordRepository signupRecordRepository;
+    private final PointChangeRecordRepository pointChangeRecordRepository;
 
     // @formatter:off
     public UserService(
         UserRepository userRepository,
         VolunteerRepository volunteerRepository,
-        PointChangeRecordRepository pointsChangeRecordRepository, SignupRecordRepository signupRecordRepository
+        SignupRecordRepository signupRecordRepository,
+        PointChangeRecordRepository pointChangeRecordRepository
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;
-        this.pointsChangeRecordRepository = pointsChangeRecordRepository;
         this.signupRecordRepository = signupRecordRepository;
+        this.pointChangeRecordRepository = pointChangeRecordRepository;
     }
     // @formatter:on
 
@@ -58,25 +52,11 @@ public class UserService {
         Volunteer volunteer = v.isPresent() ? v.get() : null;
         Double points = 0.0;
         Integer serviceHours = 0;
-        List<PointChangeRecordResponse> responses = new ArrayList<>();
 
         if (volunteer != null) {
             Long volunteerId = volunteer.getId();
-            points = pointsChangeRecordRepository.sumPointsByVolunteerId(volunteerId);
             serviceHours = signupRecordRepository.sumHoursByVolunteerId(volunteerId);
-            List<PointChangeRecord> records = pointsChangeRecordRepository
-                    .findTop5ByVolunteerIdOrderByChangeTimeDesc(volunteerId);
-
-            for (int i = 0; i < records.size(); i++) {
-                PointChangeRecord record = records.get(i);
-                String time = (record.getChangeTime() != null) ? record.getChangeTime().format(DATE_FORMATTER) : "";
-                String type = (record.getChangeType() != null) ? record.getChangeType().name() : "";
-                // @formatter:off
-                PointChangeRecordResponse r = new PointChangeRecordResponse(
-                    time, type, record.getChangePoints(), record.getReason());
-                // @formatter:on
-                responses.add(r);
-            }
+            points = pointChangeRecordRepository.sumPointsByVolunteerId(volunteerId);
         }
 
         // @formatter:off
@@ -89,8 +69,7 @@ public class UserService {
             volunteer != null ? volunteer.getStatus() : null,
             volunteer != null ? volunteer.getApplyReason() : null,
             points,
-            serviceHours,
-            responses
+            serviceHours
         );
         // @formatter:on
     }
@@ -161,37 +140,37 @@ public class UserService {
 
     public UserProfileResponse updateVolunteerApplication(Long userId, ModifyVolunteerApplicationRequest request) {
         User user = findActiveUser(userId);
-        
+
         if (user.getRole() == UserRole.ADMIN) {
             throw new IllegalArgumentException("管理员无需修改志愿者申请");
         }
 
         Optional<Volunteer> e = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         Volunteer volunteer = e.isPresent() ? e.get() : null;
-        
+
         if (volunteer == null) {
             throw new IllegalArgumentException("未找到志愿者申请记录");
         }
-        
+
         if (volunteer.getStatus() != VolunteerStatus.REVIEWING) {
             throw new IllegalArgumentException("只能修改审核中的申请");
         }
-        
+
         String realName = (request.getRealName() != null) ? request.getRealName().trim() : "";
         if (realName.isEmpty()) {
             throw new IllegalArgumentException("真实姓名不能为空");
         }
-        
+
         String phone = (request.getPhone() != null) ? request.getPhone().trim() : "";
         if (phone.isEmpty()) {
             phone = user.getPhone();
         }
-        
+
         volunteer.setName(realName);
         volunteer.setPhone(phone);
         volunteer.setApplyReason(request.getApplyReason());
         volunteerRepository.save(volunteer);
-        
+
         return buildUserProfileResponse(user);
     }
 

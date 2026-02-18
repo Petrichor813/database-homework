@@ -1,7 +1,5 @@
 package com.volunteer.backend.dto;
 
-import java.util.List;
-
 import com.volunteer.backend.utils.UserRole;
 import com.volunteer.backend.utils.VolunteerStatus;
 
@@ -15,7 +13,6 @@ public class UserProfileResponse {
     private String applyReason;
     private Double points;
     private Integer serviceHours;
-    private List<PointChangeRecordResponse> pointsRecords;
 
     public UserProfileResponse() {
     }
@@ -30,8 +27,7 @@ public class UserProfileResponse {
         VolunteerStatus volunteerStatus,
         String applyReason,
         Double points,
-        Integer serviceHours,
-        List<PointChangeRecordResponse> pointsRecords
+        Integer serviceHours
     ) {
         this.id = id;
         this.username = username;
@@ -42,7 +38,6 @@ public class UserProfileResponse {
         this.applyReason = applyReason;
         this.points = points;
         this.serviceHours = serviceHours;
-        this.pointsRecords = pointsRecords;
     }
     // @formatter:on
 
@@ -116,13 +111,5 @@ public class UserProfileResponse {
 
     public void setServiceHours(Integer serviceHours) {
         this.serviceHours = serviceHours;
-    }
-
-    public List<PointChangeRecordResponse> getPointsRecords() {
-        return pointsRecords;
-    }
-
-    public void setPointsRecords(List<PointChangeRecordResponse> pointsRecords) {
-        this.pointsRecords = pointsRecords;
     }
 }

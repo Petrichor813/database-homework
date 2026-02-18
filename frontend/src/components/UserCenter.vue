@@ -44,6 +44,7 @@ interface FormattedRecord {
 
 interface UserProfile {
   id?: number | string;
+  volunteerId?: number | string;
   username?: string;
   realName?: string;
   role?: UserRole;
@@ -52,7 +53,6 @@ interface UserProfile {
   serviceHours?: number;
   volunteerStatus?: VolunteerStatus;
   applyReason?: string;
-  pointsChangeRecords?: PointsChangeRecord[];
 }
 
 // 侧边栏选项卡
@@ -396,13 +396,13 @@ const fetchPointsRecords = async (page: number) => {
 
   try {
     const parsedUser = JSON.parse(localUser);
-    if (!parsedUser.id) {
+    if (!parsedUser.volunteerId) {
       return;
     }
 
     recordLoading.value = true;
     const data = await getJson<PageResponse<PointsChangeRecord>>(
-      `/api/users/${parsedUser.id}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/volunteers/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`,
     );
     records.value = data.content;
     updatePageState(data);
