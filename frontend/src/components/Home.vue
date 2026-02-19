@@ -152,7 +152,7 @@ const mockActivities = [
   </div>
 </template>
 
-<style lang="css">
+<style lang="css" scoped>
 .home {
   display: flex;
   flex-direction: column;

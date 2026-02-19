@@ -152,7 +152,7 @@ const handleLogin = async () => {
   </div>
 </template>
 
-<style lang="css">
+<style lang="css" scoped>
 .login {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -207,10 +207,10 @@ const handleLogin = async () => {
 }
 
 .header {
-  padding: 24px;
+  background: linear-gradient(135deg, #e9f2ff 0%, #f8fbff 100%);
   text-align: center;
   color: black;
-  background: #1f2937;
+  padding: 24px;
 }
 
 .header h1 {

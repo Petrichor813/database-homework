@@ -415,20 +415,17 @@ const fetchPointsRecords = async (page: number) => {
 };
 
 // 监听选项卡变动，当切换到积分变动记录选项卡时，加载第一页记录
-watch(
-  activeTab,
-  (newTab: UserCenterTab) => {
-    if (newTab === "POINT" && records.value.length === 0) {
-      fetchPointsRecords(0);
-    }
-  },
-);
+watch(activeTab, (newTab: UserCenterTab) => {
+  if (newTab === "POINT" && records.value.length === 0) {
+    fetchPointsRecords(0);
+  }
+});
 
 const pointsChangeMap: Record<string, string> = {
   ACTIVITY_EARN: "活动结算",
   EXCHANGE_USE: "兑换消耗",
   ADMIN_ADJUST: "管理员调整",
-  SYSTEM_BONUS: "系统奖励"
+  SYSTEM_BONUS: "系统奖励",
 };
 
 const formattedRecords = computed<FormattedRecord[]>(() =>

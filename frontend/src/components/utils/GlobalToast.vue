@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useToast } from "../utils/toast";
+import { useToast } from "../../utils/toast";
 
 const { state } = useToast();
 </script>
