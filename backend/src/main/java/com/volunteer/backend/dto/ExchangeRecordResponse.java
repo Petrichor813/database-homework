@@ -1,20 +1,17 @@
 package com.volunteer.backend.dto;
 
-import java.time.LocalDateTime;
-
 public class ExchangeRecordResponse {
     private Long id;
     private String itemName;
     private Long number;
     private Double totalPoints;
     private String status;
-    private LocalDateTime orderTime;
-    private LocalDateTime processTime;
+    private String orderTime;
+    private String processTime;
     private String note;
     private String recvInfo;
 
-    public ExchangeRecordResponse(String recvInfo) {
-        this.recvInfo = recvInfo;
+    public ExchangeRecordResponse() {
     }
 
     // @formatter:off
@@ -24,8 +21,8 @@ public class ExchangeRecordResponse {
         Long number,
         Double totalPoints,
         String status,
-        LocalDateTime orderTime,
-        LocalDateTime processTime,
+        String orderTime,
+        String processTime,
         String note,
         String recvInfo
     ) {
@@ -81,19 +78,19 @@ public class ExchangeRecordResponse {
         this.status = status;
     }
 
-    public LocalDateTime getOrderTime() {
+    public String getOrderTime() {
         return orderTime;
     }
 
-    public void setOrderTime(LocalDateTime orderTime) {
+    public void setOrderTime(String orderTime) {
         this.orderTime = orderTime;
     }
 
-    public LocalDateTime getProcessTime() {
+    public String getProcessTime() {
         return processTime;
     }
 
-    public void setProcessTime(LocalDateTime processTime) {
+    public void setProcessTime(String processTime) {
         this.processTime = processTime;
     }
 

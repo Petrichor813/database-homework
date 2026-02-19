@@ -19,7 +19,7 @@ type Volunteer = {
   reviewTime?: string | null;
 };
 
-type FilterOption = {
+type FilterTab = {
   value: "ALL" | "REVIEWING" | "CERTIFIED" | "SUSPENDED";
   label: string;
 };
@@ -50,15 +50,15 @@ const formatTime = (time?: string | null) => {
 };
 
 // 过滤选项卡
-const filters: FilterOption[] = [
+const filters: FilterTab[] = [
   { value: "ALL", label: "全部" },
   { value: "REVIEWING", label: "待审核" },
   { value: "CERTIFIED", label: "已认证" },
   { value: "SUSPENDED", label: "已停用" },
 ];
-const curFilter = ref<FilterOption["value"]>("ALL");
+const curFilter = ref<FilterTab["value"]>("ALL");
 
-const changeFilter = (value: FilterOption["value"]) => {
+const changeFilter = (value: FilterTab["value"]) => {
   if (curFilter.value === value) {
     return;
   }

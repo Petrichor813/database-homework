@@ -21,7 +21,7 @@ import com.volunteer.backend.repository.VolunteerRepository;
 
 @Service
 public class SignupRecordService {
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private final VolunteerRepository volunteerRepository;
     private final ActivityRepository activityRepository;

@@ -135,6 +135,7 @@ onMounted(() => {
               }}</span>
             </td>
             <td>
+              <!-- TODO: 需要增加查看详情功能和取消报名功能 -->
               <button>查看详情</button>
             </td>
           </tr>

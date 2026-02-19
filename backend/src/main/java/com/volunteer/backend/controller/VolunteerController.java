@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.volunteer.backend.dto.ExchangeRecordResponse;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.dto.PointChangeRecordResponse;
 import com.volunteer.backend.dto.SignupRecordResponse;
+import com.volunteer.backend.service.ExchangeRecordService;
 import com.volunteer.backend.service.SignupRecordService;
 import com.volunteer.backend.service.VolunteerService;
 
@@ -18,15 +20,18 @@ import com.volunteer.backend.service.VolunteerService;
 public class VolunteerController {
     private final VolunteerService volunteerService;
     private final SignupRecordService signupRecordService;
+    private final ExchangeRecordService exchangeRecordService;
 
     // @formatter:off
     public VolunteerController(
         VolunteerService volunteerService,
-        SignupRecordService signupRecordService
+        SignupRecordService signupRecordService,
+        ExchangeRecordService exchangeRecordService
     ) {
         // @formatter:on
         this.volunteerService = volunteerService;
         this.signupRecordService = signupRecordService;
+        this.exchangeRecordService = exchangeRecordService;
     }
 
     // @formatter:off
@@ -49,5 +54,16 @@ public class VolunteerController {
     ) {
         // @formatter:on
         return ResponseEntity.ok(signupRecordService.getSignupRecords(volunteerId, page, size));
+    }
+
+    // @formatter:off
+    @GetMapping("/{volunteerId}/exchange-records")
+    public ResponseEntity<PageResponse<ExchangeRecordResponse>> getExchangeRecords(
+        @PathVariable Long volunteerId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        // @formatter:on
+        return ResponseEntity.ok(exchangeRecordService.getExchangeRecords(volunteerId, page, size));
     }
 }
