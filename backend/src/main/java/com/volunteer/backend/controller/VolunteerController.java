@@ -9,15 +9,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.dto.PointChangeRecordResponse;
+import com.volunteer.backend.dto.SignupRecordResponse;
+import com.volunteer.backend.service.SignupRecordService;
 import com.volunteer.backend.service.VolunteerService;
 
 @RestController
 @RequestMapping("/api/volunteers")
 public class VolunteerController {
     private final VolunteerService volunteerService;
+    private final SignupRecordService signupRecordService;
 
-    public VolunteerController(VolunteerService volunteerService) {
+    // @formatter:off
+    public VolunteerController(
+        VolunteerService volunteerService,
+        SignupRecordService signupRecordService
+    ) {
+        // @formatter:on
         this.volunteerService = volunteerService;
+        this.signupRecordService = signupRecordService;
     }
 
     // @formatter:off
@@ -27,7 +36,18 @@ public class VolunteerController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size
     ) {
+        // @formatter:on
         return ResponseEntity.ok(volunteerService.getPointChangeRecords(volunteerId, page, size));
     }
-    // @formatter:on
+
+    // @formatter:off
+    @GetMapping("/{volunteerId}/signup-records")
+    public ResponseEntity<PageResponse<SignupRecordResponse>> getSignupRecords(
+        @PathVariable Long volunteerId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        // @formatter:on
+        return ResponseEntity.ok(signupRecordService.getSignupRecords(volunteerId, page, size));
+    }
 }

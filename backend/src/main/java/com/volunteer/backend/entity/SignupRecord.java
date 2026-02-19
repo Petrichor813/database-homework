@@ -40,8 +40,15 @@ public class SignupRecord {
     // 积分，这个也是在活动后计算
     private Double points;
 
+    // 填写报名记录的时间
     @Column(nullable = false)
     private LocalDateTime signupTime;
+
+    // 志愿者自己填的活动开始时间
+    private LocalDateTime volunteerStartTime;
+
+    // 志愿者自己填的活动结束时间
+    private LocalDateTime volunteerEndTime;
 
     private LocalDateTime updateTime;
 
@@ -54,10 +61,12 @@ public class SignupRecord {
         this.signupTime = LocalDateTime.now();
     }
 
-    public SignupRecord(Long volunteerId, Long activityId) {
+    public SignupRecord(Long volunteerId, Long activityId, LocalDateTime volunteerStartTime, LocalDateTime volunteerEndTime) {
         this();
         this.volunteerId = volunteerId;
         this.activityId = activityId;
+        this.volunteerStartTime = volunteerStartTime;
+        this.volunteerEndTime = volunteerEndTime;
     }
 
     public Long getId() {
@@ -114,6 +123,22 @@ public class SignupRecord {
 
     public void setSignupTime(LocalDateTime createTime) {
         this.signupTime = createTime;
+    }
+
+    public LocalDateTime getVolunteerStartTime() {
+        return volunteerStartTime;
+    }
+
+    public void setVolunteerStartTime(LocalDateTime volunteerStartTime) {
+        this.volunteerStartTime = volunteerStartTime;
+    }
+
+    public LocalDateTime getVolunteerEndTime() {
+        return volunteerEndTime;
+    }
+
+    public void setVolunteerEndTime(LocalDateTime volunteerEndTime) {
+        this.volunteerEndTime = volunteerEndTime;
     }
 
     public LocalDateTime getUpdateTime() {

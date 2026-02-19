@@ -14,21 +14,17 @@ import com.volunteer.backend.dto.PointChangeRecordResponse;
 import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.enums.PointChangeType;
 import com.volunteer.backend.repository.PointChangeRecordRepository;
-import com.volunteer.backend.repository.VolunteerRepository;
 
 @Service
 public class VolunteerService {
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private final VolunteerRepository volunteerRepository;
     private final PointChangeRecordRepository pointChangeRecordRepository;
 
     // @formatter:off
     public VolunteerService(
-        VolunteerRepository volunteerRepository,
         PointChangeRecordRepository pointChangeRecordRepository
     ) {
-        this.volunteerRepository = volunteerRepository;
         this.pointChangeRecordRepository = pointChangeRecordRepository;
     }
     // @formatter:on
