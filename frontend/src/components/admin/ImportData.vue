@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { useToast } from "../../utils/toast";
+import { postJson } from "../../utils/api";
 
 type ImportTab = "ACTIVITY" | "ITEM";
 
@@ -96,26 +97,16 @@ const itemForm = reactive({
   sortWeight: 0,
 });
 
-const activityImage = ref<File | null>(null);
 const itemImage = ref<File | null>(null);
 
-const activityImageText = computed(() =>
-  activityImage.value
-    ? activityImage.value.name
-    : "未选择图片（COS 接入后上传）",
-);
 const itemImageText = computed(() =>
   itemImage.value ? itemImage.value.name : "未选择图片（COS 接入后上传）",
 );
 
-const pickImage = (event: Event, type: "activity" | "item") => {
+const pickImage = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0] ?? null;
-  if (type === "activity") {
-    activityImage.value = file;
-  } else {
-    itemImage.value = file;
-  }
+  itemImage.value = file;
   info("图片上传待接入", "已保留选择入口，后续将接入 COS 上传服务");
 };
 
@@ -167,15 +158,30 @@ const validateItemForm = () => {
   return true;
 };
 
-const submitActivityImport = () => {
+const submitActivityImport = async () => {
   if (!validateActivityForm()) {
     return;
   }
 
-  success(
-    "活动导入表单已提交",
-    "当前仅完成前端录入结构，后续可直接接入后端导入接口",
-  );
+  try {
+    const request = {
+      title: activityForm.title,
+      description: activityForm.description,
+      type: activityForm.type,
+      location: activityForm.location,
+      startTime: activityForm.startTime,
+      endTime: activityForm.endTime,
+      status: activityForm.status,
+      pointsPerHour: activityForm.pointsPerHour,
+      maxParticipants: activityForm.maxParticipants,
+    }
+
+    await postJson("/api/admin/activity/import", request);
+    success("导入活动数据成功", `已导入活动 ${activityForm.title}`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "未知错误";
+    error("导入活动数据失败", msg);
+  }
 };
 
 const submitItemImport = () => {
@@ -297,22 +303,8 @@ const submitItemImport = () => {
                 min="1"
               />
             </label>
-
-            <div class="form-item full-width image-upload">
-              <span>活动封面图（预留）</span>
-              <label class="upload-trigger">
-                <input
-                  type="file"
-                  accept="image/*"
-                  @change="pickImage($event, 'activity')"
-                />
-                选择图片
-              </label>
-              <p>{{ activityImageText }}</p>
-              <small>当前后端尚未接入 COS，暂不执行真实上传。</small>
-            </div>
           </div>
-          <button class="primary" type="submit">提交活动导入</button>
+          <button class="submit-button" type="submit">提交活动导入</button>
         </form>
 
         <form v-else class="form-card" @submit.prevent="submitItemImport">
@@ -384,7 +376,7 @@ const submitItemImport = () => {
                 <input
                   type="file"
                   accept="image/*"
-                  @change="pickImage($event, 'item')"
+                  @change="pickImage($event)"
                 />
                 选择图片
               </label>
@@ -392,7 +384,7 @@ const submitItemImport = () => {
               <small>当前后端尚未接入 COS，暂不执行真实上传。</small>
             </div>
           </div>
-          <button class="primary" type="submit">提交商品导入</button>
+          <button class="submit-button" type="submit">提交商品导入</button>
         </form>
       </div>
     </section>
@@ -522,7 +514,7 @@ const submitItemImport = () => {
   cursor: pointer;
 }
 
-.primary {
+.submit-button {
   width: fit-content;
   background: #2563eb;
   cursor: pointer;
@@ -530,5 +522,12 @@ const submitItemImport = () => {
   border: none;
   border-radius: 8px;
   padding: 9px 14px;
+  transition: all 0.2s ease;
+}
+
+.submit-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
 }
 </style>
