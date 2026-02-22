@@ -4,9 +4,9 @@ spring:
 
   # datasource configuration
   datasource:
-    url: jdbc:mysql://localhost:3306/volunteer?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-    username: volunteer
-    password: volunteer1227
+    url: jdbc:mysql://localhost:3306/${DB_NAME}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # JPA configuration
@@ -17,6 +17,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 864000000
 
 # server port
 server:

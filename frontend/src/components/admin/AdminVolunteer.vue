@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { getJson, postJson } from "../../utils/api";
+import type { PageResponse } from "../../utils/page";
+import { usePagination } from "../../utils/page";
 import { useToast } from "../../utils/toast";
-import { PageResponse, usePagination } from "../../utils/page";
 import Pagination from "../utils/Pagination.vue";
 
 type VolunteerStatus = "CERTIFIED" | "REVIEWING" | "REJECTED" | "SUSPENDED";

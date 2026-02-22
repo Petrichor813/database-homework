@@ -1,14 +1,28 @@
 export const API_BASE_URL = "http://localhost:5200";
 
+const buildHeader = (includeAuth: boolean = true): Record<string, string> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (includeAuth) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  return headers;
+};
+
 export const postJson = async <T>(
   path: string,
   payload: unknown,
+  includeAuth: boolean = true,
 ): Promise<T> => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: buildHeader(includeAuth),
     body: JSON.stringify(payload),
   });
 
@@ -22,8 +36,14 @@ export const postJson = async <T>(
   return data as T;
 };
 
-export const getJson = async <T>(path: string): Promise<T> => {
-  const response = await fetch(`${API_BASE_URL}${path}`);
+export const getJson = async <T>(
+  path: string,
+  includeAuth: boolean = true,
+): Promise<T> => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: buildHeader(includeAuth),
+  });
 
   const data = await response.json().catch(() => ({}));
 
@@ -39,12 +59,11 @@ export const getJson = async <T>(path: string): Promise<T> => {
 export const putJson = async <T>(
   path: string,
   payload: unknown,
+  includeAuth: boolean = true,
 ): Promise<T> => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: buildHeader(includeAuth),
     body: JSON.stringify(payload),
   });
 
@@ -61,12 +80,11 @@ export const putJson = async <T>(
 export const deleteJson = async <T>(
   path: string,
   payload?: unknown,
+  includeAuth: boolean = true,
 ): Promise<T> => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: buildHeader(includeAuth),
     body: payload ? JSON.stringify(payload) : undefined,
   });
 

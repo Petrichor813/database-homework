@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PageState } from "../../utils/page";
+import type { PageState } from "../../utils/page";
 
 const props = defineProps({
   pageObject: {
