@@ -52,7 +52,7 @@ const items = [
 
 .record-entry {
   background: #2563eb;
-  color: #fff;
+  color: white;
   border-radius: 8px;
   padding: 8px 14px;
   text-decoration: none;
@@ -66,7 +66,7 @@ const items = [
 }
 
 .product-card {
-  background: #fff;
+  background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
@@ -100,7 +100,7 @@ const items = [
 button {
   border: none;
   background: #2563eb;
-  color: #fff;
+  color: white;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;

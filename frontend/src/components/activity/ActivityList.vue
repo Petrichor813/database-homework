@@ -80,7 +80,7 @@ const activities = [
   display: grid;
   grid-template-columns: 1.5fr repeat(2, 1fr) auto;
   gap: 12px;
-  background: #fff;
+  background: white;
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
@@ -95,7 +95,7 @@ const activities = [
 
 .filter-bar button {
   background: #2563eb;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 8px;
   padding: 10px 16px;
@@ -109,7 +109,7 @@ const activities = [
 }
 
 .card {
-  background: #fff;
+  background: white;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #e5e7eb;
@@ -154,7 +154,7 @@ const activities = [
 
 .primary {
   background: #2563eb;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 8px;
   padding: 8px 12px;

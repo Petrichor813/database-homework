@@ -55,18 +55,18 @@ const activities = [
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   padding: 8px 12px;
-  background: #fff;
+  background: white;
   cursor: pointer;
 }
 
 .toolbar .primary {
   background: #2563eb;
-  color: #fff;
+  color: white;
   border: none;
 }
 
 .table-card {
-  background: #fff;
+  background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
@@ -99,7 +99,7 @@ const activities = [
 
 .actions button {
   border: 1px solid #e5e7eb;
-  background: #fff;
+  background: white;
   border-radius: 6px;
   padding: 6px 10px;
   cursor: pointer;

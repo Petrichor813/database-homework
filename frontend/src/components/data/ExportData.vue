@@ -42,7 +42,7 @@
 }
 
 .export-card {
-  background: #fff;
+  background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   padding: 16px;
@@ -52,7 +52,7 @@
 
 .export-card button {
   background: #2563eb;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 8px;
   padding: 8px 12px;

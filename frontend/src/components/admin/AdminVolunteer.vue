@@ -359,7 +359,7 @@ const submitReview = async () => {
 }
 
 .table-card {
-  background: #fff;
+  background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
@@ -458,7 +458,7 @@ const submitReview = async () => {
   display: flex;
   flex-direction: column;
   width: min(420px, 90vw);
-  background: #fff;
+  background: white;
   padding: 20px;
   gap: 12px;
   border-radius: 12px;
