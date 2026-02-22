@@ -56,7 +56,7 @@ const handleRegister = async () => {
       phone: account_info.phone,
       requestVolunteer: account_info.isVolunteer,
       ...(account_info.isVolunteer ? { realName: account_info.realName } : {}),
-    });
+    }, false);
     success("注册成功");
   } catch (err) {
     const msg = err instanceof Error ? err.message : "请检查您的注册信息";

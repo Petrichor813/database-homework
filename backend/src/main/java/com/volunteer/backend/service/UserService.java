@@ -41,7 +41,7 @@ public class UserService {
 
     private User findActiveUser(Long userId) {
         Optional<User> u = userRepository.findByIdAndDeletedFalse(userId);
-        if (!u.isPresent()) {
+        if (u.isEmpty()) {
             throw new IllegalArgumentException("用户不存在或该用户账号已注销");
         }
         return u.get();
@@ -182,7 +182,7 @@ public class UserService {
         userRepository.save(user);
 
         Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
-        if (!v.isPresent()) {
+        if (v.isEmpty()) {
             return;
         }
 

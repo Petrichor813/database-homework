@@ -41,7 +41,7 @@ public class SignupRecordService {
 
     public PageResponse<SignupRecordResponse> getSignupRecords(Long volunteerId, int page, int size) {
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
-        if (!v.isPresent()) {
+        if (v.isEmpty()) {
             throw new IllegalArgumentException("未找到志愿者信息");
         }
 
@@ -55,7 +55,7 @@ public class SignupRecordService {
         for (int i = 0; i < records.size(); i++) {
             SignupRecord record = records.get(i);
             Optional<Activity> a = activityRepository.findById(record.getActivityId());
-            if (!a.isPresent()) {
+            if (a.isEmpty()) {
                 throw new IllegalArgumentException("活动不存在");
             }
             Activity activity = a.get();

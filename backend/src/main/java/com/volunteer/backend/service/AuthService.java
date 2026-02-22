@@ -1,8 +1,8 @@
 package com.volunteer.backend.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +19,9 @@ import com.volunteer.backend.enums.VolunteerStatus;
 import com.volunteer.backend.repository.TokenRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
+import com.volunteer.backend.security.JWTUtil;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class AuthService {
@@ -26,29 +29,39 @@ public class AuthService {
     private final VolunteerRepository volunteerRepository;
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JWTUtil jwtUtil;
 
     // @formatter:off
     public AuthService(
         UserRepository userRepository,
         VolunteerRepository volunteerRepository,
         TokenRepository tokenRepository,
-        PasswordEncoder passwordEncoder
+        PasswordEncoder passwordEncoder,
+        JWTUtil jwtUtil
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
     // @formatter:on
 
-    public User validateToken(String token) {
+    public User validateToken(String token) throws IllegalArgumentException {
         if (token == null || token.trim().isEmpty()) {
             throw new IllegalArgumentException("Token不能为空");
         }
 
-        Optional<Token> t = tokenRepository.findByToken(token);
-        if (!t.isPresent()) {
+        if (!jwtUtil.validateToken(token)) {
             throw new IllegalArgumentException("无效的Token");
+        }
+
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        String username = jwtUtil.getUsernameFromToken(token);
+
+        Optional<Token> t = tokenRepository.findByToken(token);
+        if (t.isEmpty() || !userId.equals(t.get().getUserId())) {
+            throw new IllegalArgumentException("Token不存在或已失效");
         }
 
         Token userToken = t.get();
@@ -57,11 +70,17 @@ public class AuthService {
             throw new IllegalArgumentException("Token已过期");
         }
 
-        Optional<User> u = userRepository.findByIdAndDeletedFalse(userToken.getUserId());
-        if (!u.isPresent()) {
+        Optional<User> u = userRepository.findByIdAndDeletedFalse(userId);
+        if (u.isEmpty()) {
             throw new IllegalArgumentException("用户不存在");
         }
-        return u.get();
+
+        User user = u.get();
+        if (!user.getUsername().equals(username)) {
+            throw new IllegalArgumentException("Token与用户不匹配");
+        }
+
+        return user;
     }
 
     public User authenticate(String username, String password, UserRole role) {
@@ -70,7 +89,7 @@ public class AuthService {
                             ? userRepository.findByUsernameAndDeletedFalse(username)
                             : userRepository.findByUsernameAndRoleAndDeletedFalse(username, role);
         // @formatter:on
-        if (!u.isPresent()) {
+        if (u.isEmpty()) {
             throw new IllegalArgumentException("用户不存在或该用户账号已注销");
         }
         User user = u.get();
@@ -84,10 +103,11 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         User user = authenticate(request.getUsername(), request.getPassword(), request.getRole());
-        String token = UUID.randomUUID().toString();
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername());
 
         tokenRepository.deleteByUserId(user.getId());
-        Token newToken = new Token(user.getId(), token, LocalDateTime.now().plusDays(1));
+        LocalDateTime expireTime = LocalDateTime.ofInstant(jwtUtil.getExpirationFromToken(token), ZoneId.systemDefault());
+        Token newToken = new Token(user.getId(), token, expireTime);
         tokenRepository.save(newToken);
 
         Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(user.getId());
@@ -127,6 +147,7 @@ public class AuthService {
         return new RegisterResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getRole());
     }
 
+    @Transactional
     public void logout(String token) {
         if (token == null || token.trim().isEmpty()) {
             return;

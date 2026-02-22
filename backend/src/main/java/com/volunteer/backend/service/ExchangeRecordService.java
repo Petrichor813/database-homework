@@ -41,7 +41,7 @@ public class ExchangeRecordService {
 
     public PageResponse<ExchangeRecordResponse> getExchangeRecords(Long volunteerId, int page, int size) {
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
-        if (!v.isPresent()) {
+        if (v.isEmpty()) {
             throw new IllegalArgumentException("未找到志愿者信息");
         }
 
@@ -55,7 +55,7 @@ public class ExchangeRecordService {
         for (int i = 0; i < records.size(); i++) {
             ExchangeRecord record = records.get(i);
             Optional<ExchangeItem> ei = exchangeItemRepository.findById(record.getItemId());
-            if (!ei.isPresent()) {
+            if (ei.isEmpty()) {
                 throw new IllegalArgumentException("商品不存在");
             }
             ExchangeItem item = ei.get();

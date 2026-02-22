@@ -39,6 +39,7 @@ const routes = [
     path: "/user-center",
     name: "UserCenter",
     component: UserCenter,
+    meta: { requiresAuth: true },
   },
   {
     path: "/activities",
@@ -49,16 +50,19 @@ const routes = [
     path: "/signups",
     name: "Signups",
     component: SignupRecord,
+    meta: { requiresAuth: true },
   },
   {
     path: "/exchange",
     name: "Exchange",
     component: Exchange,
+    meta: { requiresAuth: true },
   },
   {
     path: "/exchange-records",
     name: "ExchangeRecord",
     component: ExchangeRecord,
+    meta: { requiresAuth: true },
   },
   {
     path: "/dashboard",
@@ -69,35 +73,37 @@ const routes = [
     path: "/data-import",
     name: "DataImport",
     component: ImportData,
+    meta: { requiresAuth: true, requiresAdmin: true },
   },
   {
     path: "/data-export",
     name: "DataExport",
     component: ExportData,
+    meta: { requiresAuth: true},
   },
   {
     path: "/admin/activities",
     name: "AdminActivities",
     component: AdminActivity,
-    meta: { requiresAdmin: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
   },
   {
     path: "/admin/volunteers",
     name: "AdminVolunteers",
     component: AdminVolunteer,
-    meta: { requiresAdmin: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
   },
   {
     path: "/admin/points",
     name: "AdminPoints",
     component: AdminPoints,
-    meta: { requiresAdmin: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
   },
   {
     path: "/admin/exchange",
     name: "AdminExchange",
     component: AdminExchange,
-    meta: { requiresAdmin: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
   },
 ];
 
@@ -118,7 +124,8 @@ router.beforeEach((to, _from, next) => {
   }
 
   const userStr = localStorage.getItem("user");
-  if (!userStr) return next("/login");
+  const token = localStorage.getItem("token");
+  if (!userStr || !token) return next("/login");
 
   type Role = "ADMIN" | "VOLUNTEER" | "USER";
   interface User {

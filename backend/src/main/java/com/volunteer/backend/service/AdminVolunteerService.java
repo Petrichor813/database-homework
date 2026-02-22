@@ -91,7 +91,7 @@ public class AdminVolunteerService {
     public AdminVolunteerResponse reviewVolunteer(Long id, AdminVolunteerReviewRequest request) {
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(id);
         Volunteer volunteer;
-        if (!v.isPresent()) {
+        if (v.isEmpty()) {
             throw new IllegalArgumentException("志愿者申请不存在或该志愿者账号已注销");
         }
         volunteer = v.get();
@@ -111,7 +111,7 @@ public class AdminVolunteerService {
             volunteer.approve(note);
 
             Optional<User> u = userRepository.findByIdAndDeletedFalse(volunteer.getUserId());
-            if (!u.isPresent()) {
+            if (u.isEmpty()) {
                 throw new IllegalArgumentException("用户不存在或该用户账号已注销");
             }
             User user = u.get();

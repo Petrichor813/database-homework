@@ -37,7 +37,7 @@ const handleLogin = async () => {
     const response = await postJson<LoginResponse>("/api/auth/login", {
       username: account_info.username,
       password: account_info.password,
-    });
+    }, false);
 
     const userInfo = {
       id: response.id,

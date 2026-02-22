@@ -1,5 +1,6 @@
-package com.volunteer.backend.utils;
+package com.volunteer.backend.security;
 
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 
@@ -15,6 +16,8 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JWTUtil {
+    private static final String USER_ID_CLAIM = "uid";
+
     private final long expiration; // 单位是毫秒
     private final SecretKey key;
 
@@ -29,7 +32,7 @@ public class JWTUtil {
         this.expiration = expiration;
     }
 
-    Claims parseClaims(String token) {
+    private Claims parseClaims(String token) {
         // @formatter:off
         return Jwts.parser()
             .verifyWith(key)            // 使用密钥常量验证所有签名的 JWT
@@ -39,23 +42,46 @@ public class JWTUtil {
         // @formatter:on
     }
 
-    public String generateToken(String username) {
+    public String generateToken(Long userId, String username) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
         // @formatter:off
         return Jwts.builder()
-            .subject(username)      // 存放用户标识
-            .issuedAt(now)          // 签发时间
-            .expiration(expiryDate) // 过期时间
-            .signWith(key)          // 用密钥签名
+            .subject(username)              // 存放用户标识
+            .claim(USER_ID_CLAIM, userId)   // 存放用户 ID
+            .issuedAt(now)                  // 签发时间
+            .expiration(expiryDate)         // 过期时间
+            .signWith(key)                  // 用密钥签名
             .compact();
         // @formatter:on
+    }
+
+    public Long getUserIdFromToken(String token) throws IllegalArgumentException {
+        Claims claims = parseClaims(token);
+        Object userId = claims.get(USER_ID_CLAIM);
+
+        if (userId instanceof Number) {
+            Number number = (Number) userId;
+            return number.longValue();
+        }
+
+        if (userId instanceof String) {
+            String str = (String) userId;
+            return Long.parseLong(str);
+        }
+
+        throw new IllegalArgumentException("Token 中缺少用户 ID 信息");
     }
 
     public String getUsernameFromToken(String token) {
         Claims claims = parseClaims(token);
         return claims.getSubject();
+    }
+
+    public Instant getExpirationFromToken(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getExpiration().toInstant();
     }
 
     public boolean validateToken(String token) {
