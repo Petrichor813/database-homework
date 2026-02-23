@@ -48,13 +48,12 @@ public class SignupRecordService {
         Pageable pageable = PageRequest.of(page, size);
         Page<SignupRecord> recordPage = signupRecordRepository.findByVolunteerIdOrderBySignupTimeDesc(volunteerId,
                 pageable);
-        
+
         List<SignupRecord> records = recordPage.getContent();
         List<SignupRecordResponse> content = new ArrayList<>();
 
-        for (int i = 0; i < records.size(); i++) {
-            SignupRecord record = records.get(i);
-            Optional<Activity> a = activityRepository.findById(record.getActivityId());
+        for (SignupRecord r : records) {
+            Optional<Activity> a = activityRepository.findById(r.getActivityId());
             if (a.isEmpty()) {
                 throw new IllegalArgumentException("活动不存在");
             }
@@ -62,17 +61,17 @@ public class SignupRecordService {
             // @formatter:off
             content.add(
                 new SignupRecordResponse(
-                    record.getId(),
+                    r.getId(),
                     activity.getTitle(),
                     activity.getStartTime().format(DATETIME_FORMATTER),
                     activity.getEndTime().format(DATETIME_FORMATTER),
-                    record.getVolunteerStartTime() != null ? record.getVolunteerStartTime().format(DATETIME_FORMATTER) : null,
-                    record.getVolunteerEndTime() != null ? record.getVolunteerEndTime().format(DATETIME_FORMATTER) : null,
-                    record.getStatus().toString(),
-                    record.getSignupTime().format(DATETIME_FORMATTER),
-                    record.getActualHours(),
-                    record.getPoints(),
-                    record.getNote()
+                    r.getVolunteerStartTime() != null ? r.getVolunteerStartTime().format(DATETIME_FORMATTER) : null,
+                    r.getVolunteerEndTime() != null ? r.getVolunteerEndTime().format(DATETIME_FORMATTER) : null,
+                    r.getStatus().toString(),
+                    r.getSignupTime().format(DATETIME_FORMATTER),
+                    r.getActualHours(),
+                    r.getPoints(),
+                    r.getNote()
                 )
             );
             // @formatter:on

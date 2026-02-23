@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.volunteer.backend.enums.ActivityStatus;
 import com.volunteer.backend.enums.ActivityType;
+import com.volunteer.backend.enums.SignupStatus;
 
 public class ActivityResponse {
     private Long id;
@@ -17,6 +18,7 @@ public class ActivityResponse {
     private Double pointsPerHour;
     private Integer maxParticipants;
     private Integer curParticipants;
+    private SignupStatus signupStatus; // 添加报名状态字段
 
     // @formatter:off
     public ActivityResponse(
@@ -44,6 +46,38 @@ public class ActivityResponse {
         this.pointsPerHour = pointsPerHour;
         this.maxParticipants = maxParticipants;
         this.curParticipants = curParticipants;
+        this.signupStatus = null; // 默认为null，表示未报名
+    }
+    
+    // 添加带报名状态的构造函数
+    // @formatter:off
+    public ActivityResponse(
+        Long id,
+        String title,
+        String description,
+        ActivityType type,
+        String location,
+        LocalDateTime startTime,
+        LocalDateTime endTime,
+        ActivityStatus status,
+        Double pointsPerHour,
+        Integer maxParticipants,
+        Integer curParticipants,
+        SignupStatus signupStatus
+    ) {
+        // @formatter:on
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.location = location;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.status = status;
+        this.pointsPerHour = pointsPerHour;
+        this.maxParticipants = maxParticipants;
+        this.curParticipants = curParticipants;
+        this.signupStatus = signupStatus;
     }
 
     public Long getId() {
@@ -88,5 +122,13 @@ public class ActivityResponse {
 
     public Integer getCurParticipants() {
         return curParticipants;
+    }
+    
+    public SignupStatus getSignupStatus() {
+        return signupStatus;
+    }
+    
+    public void setSignupStatus(SignupStatus signupStatus) {
+        this.signupStatus = signupStatus;
     }
 }

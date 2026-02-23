@@ -40,7 +40,6 @@ public class AdminVolunteerService {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Volunteer> volunteerPage;
-        List<AdminVolunteerResponse> responses = new ArrayList<>();
 
         switch (volunteerStatus.toUpperCase()) {
         case "ALL":
@@ -59,8 +58,10 @@ public class AdminVolunteerService {
             throw new IllegalArgumentException("未知的志愿者审核状态筛选");
         }
 
-        for (int i = 0; i < volunteerPage.getContent().size(); i++) {
-            Volunteer v = volunteerPage.getContent().get(i);
+        List<Volunteer> volunteers = volunteerPage.getContent();
+        List<AdminVolunteerResponse> responses = new ArrayList<>();
+
+        for (Volunteer v : volunteers) {
             // @formatter:off
             AdminVolunteerResponse r = new AdminVolunteerResponse(
                 v.getId(),

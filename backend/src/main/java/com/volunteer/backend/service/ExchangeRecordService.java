@@ -52,9 +52,8 @@ public class ExchangeRecordService {
         List<ExchangeRecordResponse> content = new ArrayList<>();
         List<ExchangeRecord> records = recordPage.getContent();
 
-        for (int i = 0; i < records.size(); i++) {
-            ExchangeRecord record = records.get(i);
-            Optional<ExchangeItem> ei = exchangeItemRepository.findById(record.getItemId());
+        for (ExchangeRecord r : records) {
+            Optional<ExchangeItem> ei = exchangeItemRepository.findById(r.getItemId());
             if (ei.isEmpty()) {
                 throw new IllegalArgumentException("商品不存在");
             }
@@ -63,15 +62,15 @@ public class ExchangeRecordService {
             // @formatter:off
             content.add(
                 new ExchangeRecordResponse(
-                    record.getId(),
+                    r.getId(),
                     item.getName(),
-                    record.getNumber(),
-                    record.getTotalPoints(),
-                    record.getStatus().toString(),
-                    record.getOrderTime().format(DATETIME_FORMATTER),
-                    record.getProcessTime() != null ? record.getProcessTime().format(DATETIME_FORMATTER) : null,
-                    record.getNote(),
-                    record.getRecvInfo()
+                    r.getNumber(),
+                    r.getTotalPoints(),
+                    r.getStatus().toString(),
+                    r.getOrderTime().format(DATETIME_FORMATTER),
+                    r.getProcessTime() != null ? r.getProcessTime().format(DATETIME_FORMATTER) : null,
+                    r.getNote(),
+                    r.getRecvInfo()
                 )
             );
             // @formatter:on

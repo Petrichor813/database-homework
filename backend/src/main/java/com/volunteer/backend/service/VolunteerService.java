@@ -49,10 +49,9 @@ public class VolunteerService {
         Page<PointChangeRecord> recordPage = pointChangeRecordRepository
                 .findByVolunteerIdOrderByChangeTimeDesc(volunteerId, pageable);
 
-        List<PointChangeRecord> recordList = recordPage.getContent();
+        List<PointChangeRecord> records = recordPage.getContent();
         List<PointChangeRecordResponse> responseList = new ArrayList<>();
-        for (int i = 0; i < recordList.size(); i++) {
-            PointChangeRecord record = recordList.get(i);
+        for (PointChangeRecord record : records) {
             String formattedTime = record.getChangeTime().format(DATETIME_FORMATTER);
             // @formatter:off
             responseList.add(

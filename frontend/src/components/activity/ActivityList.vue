@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import Pagination from "../utils/Pagination.vue";
-import { getJson } from "../../utils/api";
+import { getJson, postJson } from "../../utils/api";
 import { usePagination, type PageResponse } from "../../utils/page";
 import { useToast } from "../../utils/toast";
+import Pagination from "../utils/Pagination.vue";
 
 type ActivityStatus =
   | "RECRUITING"
@@ -22,6 +22,15 @@ type ActivityType =
   | "HEALTH_PROMOTION"
   | "OTHER";
 
+type SignupStatus =
+  | "NOT_SIGNED_UP"
+  | "REVIEWING"
+  | "CONFIRMED"
+  | "CANCELLED"
+  | "REJECTED"
+  | "PARTICIPATED"
+  | "UNARRIVED";
+
 interface Activity {
   id: number;
   title: string;
@@ -31,9 +40,13 @@ interface Activity {
   startTime: string;
   endTime: string;
   status: ActivityStatus;
+  pointsPerHour?: number;
+  maxParticipants?: number;
+  curParticipants?: number;
+  signupStatus?: SignupStatus; // 添加报名状态字段
 }
 
-const { info, error } = useToast();
+const { success, error } = useToast();
 const {
   pageObject,
   pageRanges,
@@ -81,10 +94,15 @@ const fetchActivities = async (page = 0) => {
     }
 
     const response = await getJson<PageResponse<Activity>>(
-      `/api/activities?${query.toString()}`,
+      `/api/activities/get-activities?${query.toString()}`,
     );
 
-    activities.value = response.content;
+    // 设置默认报名状态为未报名
+    activities.value = response.content.map((activity) => ({
+      ...activity,
+      signupStatus: activity.signupStatus || "NOT_SIGNED_UP",
+    }));
+
     updatePageState({
       curPage: response.curPage,
       pageSize: response.pageSize,
@@ -140,7 +158,14 @@ const activityTypeLabel = (type: ActivityType) => {
 const canSignup = (status: ActivityStatus) =>
   status === "RECRUITING" || status === "CONFIRMED";
 
-const canCancel = (_status: ActivityStatus) => false;
+const canCancel = (activity: Activity) => {
+  // 只有已报名且活动未开始或未结束的状态才能取消报名
+  return (
+    (activity.signupStatus === "REVIEWING" ||
+      activity.signupStatus === "CONFIRMED") &&
+    (activity.status === "RECRUITING" || activity.status === "CONFIRMED")
+  );
+};
 
 const formatDateTime = (value: string) => {
   const date = new Date(value);
@@ -153,6 +178,54 @@ const formatDateTime = (value: string) => {
   const hh = `${date.getHours()}`.padStart(2, "0");
   const min = `${date.getMinutes()}`.padStart(2, "0");
   return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+};
+
+// 报名活动
+const handleSignup = async (activity: Activity) => {
+  try {
+    const response = await postJson<{ id: number; message: string }>(
+      "/api/activities/signup",
+      {
+        activityId: activity.id,
+        volunteerStartTime: activity.startTime,
+        volunteerEndTime: activity.endTime,
+      },
+    );
+
+    // 更新活动报名状态
+    activity.signupStatus = "REVIEWING";
+    if (activity.curParticipants !== undefined) {
+      activity.curParticipants += 1;
+    }
+
+    success("报名成功", response.message);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "报名失败";
+    error("报名失败", msg);
+  }
+};
+
+// 取消报名
+const handleCancelSignup = async (activity: Activity) => {
+  try {
+    const response = await postJson<{ id: number; message: string }>(
+      "/api/activities/cancel-signup",
+      {
+        activityId: activity.id,
+      },
+    );
+
+    // 更新活动报名状态
+    activity.signupStatus = "CANCELLED";
+    if (activity.curParticipants !== undefined) {
+      activity.curParticipants = Math.max(0, activity.curParticipants - 1);
+    }
+
+    success("取消报名成功", response.message);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "取消报名失败";
+    error("取消报名失败", msg);
+  }
 };
 
 onMounted(() => {
@@ -231,6 +304,11 @@ onMounted(() => {
             {{ formatDateTime(item.startTime) }} 至
             {{ formatDateTime(item.endTime) }} ｜ {{ item.location }} ｜
             {{ statusLabel(item.status) }}
+            <span v-if="item.maxParticipants"
+              >｜ {{ item.curParticipants || 0 }}/{{
+                item.maxParticipants
+              }}人</span
+            >
           </p>
         </div>
 
@@ -239,14 +317,27 @@ onMounted(() => {
           <button
             type="button"
             class="primary"
-            :disabled="!canSignup(item.status)"
+            :disabled="
+              !canSignup(item.status) ||
+              (item.signupStatus !== undefined &&
+                item.signupStatus !== 'NOT_SIGNED_UP' &&
+                item.signupStatus !== 'CANCELLED' &&
+                item.signupStatus !== 'REJECTED')
+            "
+            @click="handleSignup(item)"
           >
-            报名
+            {{
+              item.signupStatus === "REVIEWING" ||
+              item.signupStatus === "CONFIRMED"
+                ? "已报名"
+                : "报名"
+            }}
           </button>
           <button
             type="button"
             class="danger"
-            :disabled="!canCancel(item.status)"
+            :disabled="!canCancel(item)"
+            @click="handleCancelSignup(item)"
           >
             取消报名
           </button>
