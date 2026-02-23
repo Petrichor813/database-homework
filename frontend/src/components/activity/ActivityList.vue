@@ -103,9 +103,18 @@ const handleSearch = async () => {
   await fetchActivities(0);
 };
 
-// TODO: 活动详情弹窗
+// 活动详情弹窗
+const showDetailDialog = ref(false);
+const curActivity = ref<Activity | null>(null);
+
 const showDetail = (item: Activity) => {
-  info(item.title, item.description || "暂无活动详情");
+  curActivity.value = item;
+  showDetailDialog.value = true;
+};
+
+const closeDetailDialog = () => {
+  curActivity.value = null;
+  showDetailDialog.value = false;
 };
 
 const statusLabel = (status: ActivityStatus) => {
@@ -121,6 +130,11 @@ const statusLabel = (status: ActivityStatus) => {
     default:
       return "未知";
   }
+};
+
+const activityTypeLabel = (type: ActivityType) => {
+  const option = activityTypeOptions.find((opt) => opt.value === type);
+  return option ? option.label : type;
 };
 
 const canSignup = (status: ActivityStatus) =>
@@ -249,6 +263,40 @@ onMounted(() => {
       :prev-page="() => prevPage(fetchActivities)"
       :next-page="() => nextPage(fetchActivities)"
     />
+
+    <!-- 活动详情弹窗 -->
+    <div v-if="showDetailDialog" class="dialog-bg">
+      <div class="dialog-area">
+        <h3>活动详情</h3>
+        <p><strong>活动名称：</strong>{{ curActivity?.title }}</p>
+        <p>
+          <strong>活动类型：</strong>
+          {{ activityTypeLabel(curActivity?.type || "OTHER") }}
+        </p>
+        <p><strong>活动地点：</strong>{{ curActivity?.location || "" }}</p>
+        <p>
+          <strong>开始时间：</strong>
+          {{ formatDateTime(curActivity?.startTime || "") }}
+        </p>
+        <p>
+          <strong>结束时间：</strong>
+          {{ formatDateTime(curActivity?.endTime || "") }}
+        </p>
+        <p>
+          <strong>活动状态：</strong>
+          {{ statusLabel(curActivity?.status || "RECRUITING") }}
+        </p>
+        <p>
+          <strong>活动描述：</strong>
+          {{ curActivity?.description || "暂无描述" }}
+        </p>
+        <div class="dialog-actions">
+          <button type="button" class="close-button" @click="closeDetailDialog">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -359,5 +407,59 @@ onMounted(() => {
   text-align: center;
   color: #6b7280;
   padding: 18px 0;
+}
+
+/* 弹窗样式 */
+.dialog-bg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 2;
+}
+
+.dialog-area {
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 90vw);
+  background: white;
+  padding: 20px;
+  gap: 12px;
+  border-radius: 12px;
+}
+
+.dialog-area h3 {
+  text-align: center;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dialog-actions button {
+  min-width: 80px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.dialog-actions button:hover {
+  cursor: pointer;
+  transform: translateY(-1px);
+}
+
+.close-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.close-button:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 </style>

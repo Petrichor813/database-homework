@@ -30,6 +30,22 @@ interface SignupRecord {
 const records = ref<SignupRecord[]>([]);
 const loading = ref(false);
 
+// 报名记录详情弹窗
+const showDetailDialog = ref(false);
+const curRecord = ref<SignupRecord | null>(null);
+
+// 打开详情弹窗
+const openDetailDialog = (record: SignupRecord) => {
+  curRecord.value = record;
+  showDetailDialog.value = true;
+};
+
+// 关闭详情弹窗
+const closeDetailDialog = () => {
+  curRecord.value = null;
+  showDetailDialog.value = false;
+};
+
 const getStatusClass = (status: string) => {
   switch (status) {
     case "REVIEWING":
@@ -135,8 +151,7 @@ onMounted(() => {
               }}</span>
             </td>
             <td>
-              <!-- TODO: 需要增加查看详情功能和取消报名功能 -->
-              <button>查看详情</button>
+              <button type="button" @click="openDetailDialog(record)">查看详情</button>
             </td>
           </tr>
         </tbody>
@@ -152,6 +167,29 @@ onMounted(() => {
       :prev-page="() => prevPage(fetchSignupRecords)"
       :next-page="() => nextPage(fetchSignupRecords)"
     />
+    
+    <!-- 报名记录详情弹窗 -->
+    <div v-if="showDetailDialog" class="dialog-bg">
+      <div class="dialog-area">
+        <h3>报名详情</h3>
+        <p><strong>活动名称：</strong>{{ curRecord?.activityTitle }}</p>
+        <p><strong>活动开始时间：</strong>{{ curRecord?.activityStartTime }}</p>
+        <p><strong>活动结束时间：</strong>{{ curRecord?.activityEndTime }}</p>
+        <p><strong>实际参与时间：</strong>{{ curRecord?.volunteerStartTime }}</p>
+        <p><strong>实际结束时间：</strong>{{ curRecord?.volunteerEndTime }}</p>
+        <p><strong>报名时间：</strong>{{ curRecord?.signupTime }}</p>
+        <p><strong>状态：</strong>
+          <span class="status" :class="getStatusClass(curRecord?.status || '')">
+            {{ getStatusText(curRecord?.status || '') }}
+          </span>
+        </p>
+        <div class="dialog-actions">
+          <button type="button" class="close-button" @click="closeDetailDialog">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -240,5 +278,59 @@ td button {
 
 td button:hover {
   background: #f8fafc;
+}
+
+/* 弹窗样式 */
+.dialog-bg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 2;
+}
+
+.dialog-area {
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 90vw);
+  background: white;
+  padding: 20px;
+  gap: 12px;
+  border-radius: 12px;
+}
+
+.dialog-area h3 {
+  text-align: center;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dialog-actions button {
+  min-width: 80px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.dialog-actions button:hover {
+  cursor: pointer;
+  transform: translateY(-1px);
+}
+
+.close-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.close-button:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 </style>
