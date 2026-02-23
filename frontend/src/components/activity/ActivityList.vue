@@ -167,19 +167,6 @@ const canCancel = (activity: Activity) => {
   );
 };
 
-const formatDateTime = (value: string) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  const yyyy = date.getFullYear();
-  const mm = `${date.getMonth() + 1}`.padStart(2, "0");
-  const dd = `${date.getDate()}`.padStart(2, "0");
-  const hh = `${date.getHours()}`.padStart(2, "0");
-  const min = `${date.getMinutes()}`.padStart(2, "0");
-  return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
-};
-
 // 报名活动
 const handleSignup = async (activity: Activity) => {
   try {
@@ -301,8 +288,7 @@ onMounted(() => {
         <div class="row-main">
           <h3>{{ item.title }}</h3>
           <p class="meta">
-            {{ formatDateTime(item.startTime) }} 至
-            {{ formatDateTime(item.endTime) }} ｜ {{ item.location }} ｜
+            {{ item.startTime }} 至 {{ item.endTime }} ｜ {{ item.location }} ｜
             {{ statusLabel(item.status) }}
             <span v-if="item.maxParticipants"
               >｜ {{ item.curParticipants || 0 }}/{{
@@ -367,11 +353,11 @@ onMounted(() => {
         <p><strong>活动地点：</strong>{{ curActivity?.location || "" }}</p>
         <p>
           <strong>开始时间：</strong>
-          {{ formatDateTime(curActivity?.startTime || "") }}
+          {{ curActivity?.startTime || "" }}
         </p>
         <p>
           <strong>结束时间：</strong>
-          {{ formatDateTime(curActivity?.endTime || "") }}
+          {{ curActivity?.endTime || "" }}
         </p>
         <p>
           <strong>活动状态：</strong>

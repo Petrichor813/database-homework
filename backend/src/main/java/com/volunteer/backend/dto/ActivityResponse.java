@@ -1,7 +1,5 @@
 package com.volunteer.backend.dto;
 
-import java.time.LocalDateTime;
-
 import com.volunteer.backend.enums.ActivityStatus;
 import com.volunteer.backend.enums.ActivityType;
 import com.volunteer.backend.enums.SignupStatus;
@@ -12,8 +10,8 @@ public class ActivityResponse {
     private String description;
     private ActivityType type;
     private String location;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private String startTime;
+    private String endTime;
     private ActivityStatus status;
     private Double pointsPerHour;
     private Integer maxParticipants;
@@ -27,8 +25,8 @@ public class ActivityResponse {
         String description,
         ActivityType type,
         String location,
-        LocalDateTime startTime,
-        LocalDateTime endTime,
+        String startTime,
+        String endTime,
         ActivityStatus status,
         Double pointsPerHour,
         Integer maxParticipants,
@@ -57,8 +55,8 @@ public class ActivityResponse {
         String description,
         ActivityType type,
         String location,
-        LocalDateTime startTime,
-        LocalDateTime endTime,
+        String startTime,
+        String endTime,
         ActivityStatus status,
         Double pointsPerHour,
         Integer maxParticipants,
@@ -100,11 +98,11 @@ public class ActivityResponse {
         return location;
     }
 
-    public LocalDateTime getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public String getEndTime() {
         return endTime;
     }
 

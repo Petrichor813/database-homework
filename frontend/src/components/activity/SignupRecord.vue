@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { getJson } from "../../utils/api";
+import { getJson, postJson } from "../../utils/api";
 import type { PageResponse } from "../../utils/page";
 import { usePagination } from "../../utils/page";
 import { useToast } from "../../utils/toast";
 import Pagination from "../utils/Pagination.vue";
 
-const { error } = useToast();
+const { error, success } = useToast();
 const {
   pageObject,
   updatePageState,
@@ -18,6 +18,7 @@ const {
 
 interface SignupRecord {
   id: number | string;
+  activityId: number; // 添加活动ID，用于取消报名
   activityTitle: string;
   activityStartTime: string;
   activityEndTime: string;
@@ -44,6 +45,32 @@ const openDetailDialog = (record: SignupRecord) => {
 const closeDetailDialog = () => {
   curRecord.value = null;
   showDetailDialog.value = false;
+};
+
+// 判断是否可以取消报名
+const canCancelSignup = (record: SignupRecord) => {
+  // 只有待审核或已确认状态才能取消报名
+  return record.status === "REVIEWING" || record.status === "CONFIRMED";
+};
+
+// 取消报名
+const handleCancelSignup = async (record: SignupRecord) => {
+  try {
+    const response = await postJson<{ id: number; message: string }>(
+      "/api/activities/cancel-signup",
+      {
+        activityId: record.activityId,
+      },
+    );
+
+    // 更新报名记录状态
+    record.status = "CANCELLED";
+
+    success("取消报名成功", response.message);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "取消报名失败";
+    error("取消报名失败", msg);
+  }
 };
 
 const getStatusClass = (status: string) => {
@@ -151,7 +178,21 @@ onMounted(() => {
               }}</span>
             </td>
             <td>
-              <button type="button" @click="openDetailDialog(record)">查看详情</button>
+              <button
+                type="button"
+                class="info-button"
+                @click="openDetailDialog(record)"
+              >
+                查看详情
+              </button>
+              <button
+                v-if="canCancelSignup(record)"
+                type="button"
+                class="cancel-button"
+                @click="handleCancelSignup(record)"
+              >
+                取消报名
+              </button>
             </td>
           </tr>
         </tbody>
@@ -167,7 +208,7 @@ onMounted(() => {
       :prev-page="() => prevPage(fetchSignupRecords)"
       :next-page="() => nextPage(fetchSignupRecords)"
     />
-    
+
     <!-- 报名记录详情弹窗 -->
     <div v-if="showDetailDialog" class="dialog-bg">
       <div class="dialog-area">
@@ -175,12 +216,15 @@ onMounted(() => {
         <p><strong>活动名称：</strong>{{ curRecord?.activityTitle }}</p>
         <p><strong>活动开始时间：</strong>{{ curRecord?.activityStartTime }}</p>
         <p><strong>活动结束时间：</strong>{{ curRecord?.activityEndTime }}</p>
-        <p><strong>实际参与时间：</strong>{{ curRecord?.volunteerStartTime }}</p>
+        <p>
+          <strong>实际参与时间：</strong>{{ curRecord?.volunteerStartTime }}
+        </p>
         <p><strong>实际结束时间：</strong>{{ curRecord?.volunteerEndTime }}</p>
         <p><strong>报名时间：</strong>{{ curRecord?.signupTime }}</p>
-        <p><strong>状态：</strong>
+        <p>
+          <strong>状态：</strong>
           <span class="status" :class="getStatusClass(curRecord?.status || '')">
-            {{ getStatusText(curRecord?.status || '') }}
+            {{ getStatusText(curRecord?.status || "") }}
           </span>
         </p>
         <div class="dialog-actions">
@@ -268,19 +312,38 @@ tr:hover {
   color: #166534;
 }
 
-td button {
-  background: white;
+/* 按钮样式 */
+.info-button,
+.cancel-button {
   cursor: pointer;
-  border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 6px 12px;
+  transition: all 0.2s ease;
 }
 
-td button:hover {
+.info-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  margin-right: 8px;
+}
+
+.info-button:hover {
   background: #f8fafc;
+  border-color: #d1d5db;
 }
 
-/* 弹窗样式 */
+.cancel-button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  margin-right: 0;
+}
+
+.cancel-button:hover {
+  background: #dc2626;
+}
+
 .dialog-bg {
   display: flex;
   justify-content: center;

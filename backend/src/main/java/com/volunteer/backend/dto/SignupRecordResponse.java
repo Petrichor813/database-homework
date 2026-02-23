@@ -2,6 +2,7 @@ package com.volunteer.backend.dto;
 
 public class SignupRecordResponse {
     private Long id;
+    private Long activityId; // 添加活动ID字段
     private String activityTitle;
     private String activityStartTime;
     private String activityEndTime;
@@ -19,6 +20,7 @@ public class SignupRecordResponse {
     // @formatter:off
     public SignupRecordResponse(
         Long id,
+        Long activityId, // 添加活动ID参数
         String activityTitle,
         String activityStartTime,
         String activityEndTime,
@@ -32,6 +34,7 @@ public class SignupRecordResponse {
     ) {
         // @formatter:on
         this.id = id;
+        this.activityId = activityId; // 设置活动ID
         this.activityTitle = activityTitle;
         this.activityStartTime = activityStartTime;
         this.activityEndTime = activityEndTime;
@@ -50,6 +53,14 @@ public class SignupRecordResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getActivityId() {
+        return activityId;
+    }
+
+    public void setActivityId(Long activityId) {
+        this.activityId = activityId;
     }
 
     public String getActivityTitle() {

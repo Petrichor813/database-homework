@@ -62,6 +62,7 @@ public class SignupRecordService {
             content.add(
                 new SignupRecordResponse(
                     r.getId(),
+                    activity.getId(), // 添加活动ID
                     activity.getTitle(),
                     activity.getStartTime().format(DATETIME_FORMATTER),
                     activity.getEndTime().format(DATETIME_FORMATTER),
