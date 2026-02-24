@@ -1,5 +1,6 @@
 package com.volunteer.backend.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +13,8 @@ import com.volunteer.backend.entity.SignupRecord;
 
 public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long> {
     Page<SignupRecord> findByVolunteerIdOrderBySignupTimeDesc(Long volunteerId, Pageable pageable);
+
+    List<SignupRecord> findByActivityIdOrderBySignupTimeDesc(Long activityId);
 
     @Query("SELECT COALESCE(SUM(s.actualHours), 0) FROM SignupRecord s WHERE s.volunteerId = :volunteerId")
     Integer sumHoursByVolunteerId(@Param("volunteerId") Long volunteerId);

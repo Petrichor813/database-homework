@@ -30,6 +30,22 @@ public class AdminVolunteerService {
         this.userRepository = userRepository;
     }
 
+    private AdminVolunteerResponse buildResponse(Volunteer volunteer) {
+        // @formatter:off
+        return new AdminVolunteerResponse(
+            volunteer.getId(),
+            volunteer.getUserId(),
+            volunteer.getName(),
+            volunteer.getPhone(),
+            volunteer.getStatus(),
+            volunteer.getApplyReason(),
+            volunteer.getReviewNote(),
+            volunteer.getCreateTime(),
+            volunteer.getReviewTime()
+        );
+        // @formatter:on
+    }
+
     public PageResponse<AdminVolunteerResponse> getVolunteers(String volunteerStatus, int page, int size) {
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");
@@ -62,20 +78,7 @@ public class AdminVolunteerService {
         List<AdminVolunteerResponse> responses = new ArrayList<>();
 
         for (Volunteer v : volunteers) {
-            // @formatter:off
-            AdminVolunteerResponse r = new AdminVolunteerResponse(
-                v.getId(),
-                v.getUserId(),
-                v.getName(),
-                v.getPhone(),
-                v.getStatus(),
-                v.getApplyReason(),
-                v.getReviewNote(),
-                v.getCreateTime(),
-                v.getReviewTime()
-            );
-            // @formatter:on
-            responses.add(r);
+            responses.add(buildResponse(v));
         }
 
         // @formatter:off
@@ -136,18 +139,6 @@ public class AdminVolunteerService {
         }
 
         Volunteer saved = volunteerRepository.save(volunteer);
-        // @formatter:off
-        return new AdminVolunteerResponse(
-            saved.getId(),
-            saved.getUserId(),
-            saved.getName(),
-            saved.getPhone(),
-            saved.getStatus(),
-            saved.getApplyReason(),
-            saved.getReviewNote(),
-            saved.getCreateTime(),
-            saved.getReviewTime()
-        );
-        // @formatter:on
+        return buildResponse(saved);
     }
 }

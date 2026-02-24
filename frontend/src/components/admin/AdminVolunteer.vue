@@ -225,7 +225,6 @@ const submitReview = async () => {
                   v-if="v.status === 'REVIEWING'"
                   type="button"
                   class="approve"
-                  :disabled="v.status !== 'REVIEWING'"
                   @click="openReviewDialog(v, 'APPROVE')"
                 >
                   通过

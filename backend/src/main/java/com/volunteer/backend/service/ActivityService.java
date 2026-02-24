@@ -27,7 +27,7 @@ import com.volunteer.backend.repository.VolunteerRepository;
 
 @Service
 public class ActivityService {
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final ActivityRepository activityRepository;
     private final VolunteerRepository volunteerRepository;
@@ -106,7 +106,7 @@ public class ActivityService {
         }
     }
 
-    private ActivityResponse mapToResponse(Activity activity, Long userId) {
+    private ActivityResponse buildResponse(Activity activity, Long userId) {
         // 获取用户的报名状态
         SignupStatus signupStatus = null;
 
@@ -211,7 +211,7 @@ public class ActivityService {
 
         List<ActivityResponse> content = new ArrayList<>();
         for (Activity activity : filtered) {
-            content.add(mapToResponse(activity, userId));
+            content.add(buildResponse(activity, userId));
         }
 
         int totalElements = content.size();
