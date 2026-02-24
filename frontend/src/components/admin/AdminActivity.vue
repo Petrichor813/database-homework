@@ -107,7 +107,7 @@ const fetchActivities = async (page = 0) => {
     }
 
     const response = await getJson<PageResponse<Activity>>(
-      `/api/activities/get-activities?${query.toString()}`,
+      `/api/activities/get-activities?${query.toString()}`
     );
 
     activities.value = response.content;
@@ -156,7 +156,9 @@ const isActivityEnded = (status: ActivityStatus) => {
 };
 
 const canEdit = (status: ActivityStatus) => {
-  return status === "RECRUITING" || status === "CONFIRMED" || status === "ONGOING";
+  return (
+    status === "RECRUITING" || status === "CONFIRMED" || status === "ONGOING"
+  );
 };
 
 const canDelete = (status: ActivityStatus) => {
@@ -203,14 +205,43 @@ const editForm = ref({
   status: "RECRUITING" as ActivityStatus,
 });
 
+const editSignupForm = ref({
+  status: "REVIEWING" as SignupStatus,
+  volunteerStartDate: "",
+  volunteerStartTime: "",
+  volunteerEndDate: "",
+  volunteerEndTime: "",
+  actualHours: 0,
+  points: 0,
+  note: "",
+});
+
+const parseDateTime = (dateTimeStr: string | null | undefined): { date: string; time: string } => {
+  if (!dateTimeStr) {
+    return { date: "", time: "" };
+  }
+  const parts = dateTimeStr.split(" ");
+  if (parts.length < 2) {
+    return { date: "", time: "" };
+  }
+  const [date, time] = parts;
+  if (!date) {
+    return { date: "", time: "" };
+  }
+  if (!time) {
+    return { date, time: "" };
+  }
+  
+  const timeParts = time.split(":");
+  if (timeParts.length < 2) {
+    return { date, time: "" };
+  }
+  const [hour, minute] = timeParts;
+  return { date, time: `${hour}:${minute}` };
+};
+
 const openEditDialog = (activity: Activity) => {
   curActivity.value = activity;
-  
-  const parseDateTime = (dateTimeStr: string) => {
-    const [date, time] = dateTimeStr.split(" ");
-    const [hour, minute] = time.split(":");
-    return { date, time: `${hour}:${minute}` };
-  };
 
   const startDateTime = parseDateTime(activity.startTime);
   const endDateTime = parseDateTime(activity.endTime);
@@ -260,7 +291,7 @@ const openSignupDialog = async (activity: Activity) => {
   curActivity.value = activity;
   try {
     const records = await getJson<SignupRecord[]>(
-      `/api/admin/activities/${activity.id}/signups`,
+      `/api/admin/activities/${activity.id}/signups`
     );
     signupRecords.value = records;
     showSignupDialog.value = true;
@@ -295,26 +326,8 @@ const signupStatusLabel = (status: SignupStatus) => {
   }
 };
 
-const editSignupForm = ref({
-  status: "REVIEWING" as SignupStatus,
-  volunteerStartDate: "",
-  volunteerStartTime: "",
-  volunteerEndDate: "",
-  volunteerEndTime: "",
-  actualHours: 0,
-  points: 0,
-  note: "",
-});
-
 const openEditSignupDialog = (record: SignupRecord) => {
   curSignupRecord.value = record;
-  
-  const parseDateTime = (dateTimeStr: string | null) => {
-    if (!dateTimeStr) return { date: "", time: "" };
-    const [date, time] = dateTimeStr.split(" ");
-    const [hour, minute] = time.split(":");
-    return { date, time: `${hour}:${minute}` };
-  };
 
   const startDateTime = parseDateTime(record.volunteerStartTime);
   const endDateTime = parseDateTime(record.volunteerEndTime);
@@ -342,18 +355,22 @@ const handleSaveSignup = async () => {
 
   const payload = {
     ...editSignupForm.value,
-    volunteerStartTime: editSignupForm.value.volunteerStartDate && editSignupForm.value.volunteerStartTime
-      ? `${editSignupForm.value.volunteerStartDate} ${editSignupForm.value.volunteerStartTime}:00`
-      : null,
-    volunteerEndTime: editSignupForm.value.volunteerEndDate && editSignupForm.value.volunteerEndTime
-      ? `${editSignupForm.value.volunteerEndDate} ${editSignupForm.value.volunteerEndTime}:00`
-      : null,
+    volunteerStartTime:
+      editSignupForm.value.volunteerStartDate &&
+      editSignupForm.value.volunteerStartTime
+        ? `${editSignupForm.value.volunteerStartDate} ${editSignupForm.value.volunteerStartTime}:00`
+        : null,
+    volunteerEndTime:
+      editSignupForm.value.volunteerEndDate &&
+      editSignupForm.value.volunteerEndTime
+        ? `${editSignupForm.value.volunteerEndDate} ${editSignupForm.value.volunteerEndTime}:00`
+        : null,
   };
 
   try {
     await putJson(
       `/api/admin/activities/${curActivity.value.id}/signups/${curSignupRecord.value.id}`,
-      payload,
+      payload
     );
     success("保存成功", "报名记录已更新");
     closeEditSignupDialog();
@@ -364,13 +381,16 @@ const handleSaveSignup = async () => {
   }
 };
 
-const handleReviewAction = async (record: SignupRecord, action: SignupStatus) => {
+const handleReviewAction = async (
+  record: SignupRecord,
+  action: SignupStatus
+) => {
   if (!curActivity.value) return;
 
   try {
     await putJson(
       `/api/admin/activities/${curActivity.value.id}/signups/${record.id}`,
-      { status: action },
+      { status: action }
     );
     success("操作成功", "报名状态已更新");
     await openSignupDialog(curActivity.value);
@@ -469,10 +489,7 @@ const handleReviewAction = async (record: SignupRecord, action: SignupStatus) =>
           >
             编辑
           </button>
-          <button
-            type="button"
-            @click="openSignupDialog(item)"
-          >
+          <button type="button" @click="openSignupDialog(item)">
             查看报名
           </button>
           <button
@@ -523,8 +540,16 @@ const handleReviewAction = async (record: SignupRecord, action: SignupStatus) =>
         <div class="form-group">
           <label>开始时间</label>
           <div class="datetime-input-group">
-            <input v-model="editForm.startDate" type="date" class="date-input" />
-            <input v-model="editForm.startTime" type="time" class="time-input" />
+            <input
+              v-model="editForm.startDate"
+              type="date"
+              class="date-input"
+            />
+            <input
+              v-model="editForm.startTime"
+              type="time"
+              class="time-input"
+            />
           </div>
         </div>
         <div class="form-group">
@@ -536,11 +561,20 @@ const handleReviewAction = async (record: SignupRecord, action: SignupStatus) =>
         </div>
         <div class="form-group">
           <label>每小时积分</label>
-          <input v-model.number="editForm.pointsPerHour" type="number" min="0" step="0.1" />
+          <input
+            v-model.number="editForm.pointsPerHour"
+            type="number"
+            min="0"
+            step="0.1"
+          />
         </div>
         <div class="form-group">
           <label>人数上限</label>
-          <input v-model.number="editForm.maxParticipants" type="number" min="1" />
+          <input
+            v-model.number="editForm.maxParticipants"
+            type="number"
+            min="1"
+          />
         </div>
         <div class="form-group">
           <label>活动状态</label>
@@ -580,10 +614,12 @@ const handleReviewAction = async (record: SignupRecord, action: SignupStatus) =>
             <div class="signup-info">
               <h4>{{ record.volunteerName }}</h4>
               <p class="meta">
-                {{ record.volunteerPhone }} ｜ {{ signupStatusLabel(record.status) }}
+                {{ record.volunteerPhone }} ｜
+                {{ signupStatusLabel(record.status) }}
               </p>
               <p v-if="record.volunteerStartTime" class="meta">
-                服务时间：{{ record.volunteerStartTime }} 至 {{ record.volunteerEndTime }}
+                服务时间：{{ record.volunteerStartTime }} 至
+                {{ record.volunteerEndTime }}
               </p>
               <p v-if="record.actualHours !== null" class="meta">
                 实际时长：{{ record.actualHours }}小时
@@ -591,9 +627,7 @@ const handleReviewAction = async (record: SignupRecord, action: SignupStatus) =>
               <p v-if="record.points !== null" class="meta">
                 积分：{{ record.points }}
               </p>
-              <p v-if="record.note" class="meta">
-                备注：{{ record.note }}
-              </p>
+              <p v-if="record.note" class="meta">备注：{{ record.note }}</p>
             </div>
             <div class="signup-actions">
               <button
@@ -612,10 +646,7 @@ const handleReviewAction = async (record: SignupRecord, action: SignupStatus) =>
               >
                 拒绝
               </button>
-              <button
-                type="button"
-                @click="openEditSignupDialog(record)"
-              >
+              <button type="button" @click="openEditSignupDialog(record)">
                 编辑
               </button>
             </div>
@@ -650,31 +681,61 @@ const handleReviewAction = async (record: SignupRecord, action: SignupStatus) =>
         <div class="form-group">
           <label>志愿者开始时间</label>
           <div class="datetime-input-group">
-            <input v-model="editSignupForm.volunteerStartDate" type="date" class="date-input" />
-            <input v-model="editSignupForm.volunteerStartTime" type="time" class="time-input" />
+            <input
+              v-model="editSignupForm.volunteerStartDate"
+              type="date"
+              class="date-input"
+            />
+            <input
+              v-model="editSignupForm.volunteerStartTime"
+              type="time"
+              class="time-input"
+            />
           </div>
         </div>
         <div class="form-group">
           <label>志愿者结束时间</label>
           <div class="datetime-input-group">
-            <input v-model="editSignupForm.volunteerEndDate" type="date" class="date-input" />
-            <input v-model="editSignupForm.volunteerEndTime" type="time" class="time-input" />
+            <input
+              v-model="editSignupForm.volunteerEndDate"
+              type="date"
+              class="date-input"
+            />
+            <input
+              v-model="editSignupForm.volunteerEndTime"
+              type="time"
+              class="time-input"
+            />
           </div>
         </div>
         <div class="form-group">
           <label>实际时长（小时）</label>
-          <input v-model.number="editSignupForm.actualHours" type="number" min="0" step="0.5" />
+          <input
+            v-model.number="editSignupForm.actualHours"
+            type="number"
+            min="0"
+            step="0.5"
+          />
         </div>
         <div class="form-group">
           <label>积分</label>
-          <input v-model.number="editSignupForm.points" type="number" min="0" step="0.1" />
+          <input
+            v-model.number="editSignupForm.points"
+            type="number"
+            min="0"
+            step="0.1"
+          />
         </div>
         <div class="form-group">
           <label>备注</label>
           <textarea v-model="editSignupForm.note" rows="3"></textarea>
         </div>
         <div class="dialog-actions">
-          <button type="button" class="close-button" @click="closeEditSignupDialog">
+          <button
+            type="button"
+            class="close-button"
+            @click="closeEditSignupDialog"
+          >
             取消
           </button>
           <button type="button" class="save-button" @click="handleSaveSignup">
