@@ -111,7 +111,7 @@ public class ActivityService {
         SignupStatus signupStatus = null;
 
         if (userId != null) {
-            Optional<Volunteer> v = volunteerRepository.findByUserId(userId);
+            Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
             if (v.isPresent()) {
                 Volunteer volunteer = v.get();
                 if (volunteer.getStatus() == VolunteerStatus.CERTIFIED) {
@@ -227,7 +227,7 @@ public class ActivityService {
     }
 
     public SignupResponse signupActivity(Long userId, SignupRequest request) {
-        Optional<Volunteer> v = volunteerRepository.findById(userId);
+        Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         if (v.isEmpty()) {
             throw new IllegalArgumentException("您还未申请成为志愿者或志愿者身份未认证");
         }
@@ -297,7 +297,7 @@ public class ActivityService {
     }
 
     public SignupResponse cancelSignupActivity(Long userId, SignupRequest request) {
-        Optional<Volunteer> v = volunteerRepository.findById(userId);
+        Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         if (v.isEmpty()) {
             throw new IllegalArgumentException("您还未申请成为志愿者或志愿者身份未认证");
         }

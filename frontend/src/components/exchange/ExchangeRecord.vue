@@ -51,9 +51,22 @@ const closeDetailDialog = () => {
 const fetchExchangeRecords = async (
   page: number = pageObject.value.curPage,
 ) => {
-  const volunteerId = localStorage.getItem("volunteerId");
-  if (!volunteerId) {
-    error("用户未登录或不是志愿者");
+  const userStr = localStorage.getItem("user");
+  if (!userStr) {
+    error("用户未登录");
+    return;
+  }
+
+  let user: { volunteerId?: number | string };
+  try {
+    user = JSON.parse(userStr);
+  } catch (err) {
+    error("用户信息解析失败");
+    return;
+  }
+
+  if (!user.volunteerId) {
+    error("您还未申请成为志愿者");
     return;
   }
 
@@ -61,7 +74,7 @@ const fetchExchangeRecords = async (
     loading.value = true;
 
     const data = await getJson<PageResponse<ExchangeRecord>>(
-      `/api/volunteers/${volunteerId}/exchange-records?page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/volunteers/${user.volunteerId}/exchange-records?page=${page}&size=${pageObject.value.pageSize}`,
     );
 
     records.value = data.content;

@@ -22,6 +22,14 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 864000000
 
+tencent:
+  cos:
+    secretId: ${TENCENT_COS_SECRET_ID}
+    secretKey: ${TENCENT_COS_SECRET_KEY}
+    bucketName: ${TENCENT_COS_BUCKET_NAME}
+    region: ${TENCENT_COS_REGION}
+    durationSeconds: ${TENCENT_COS_DURATION_SECONDS}
+
 # server port
 server:
   port: 5200

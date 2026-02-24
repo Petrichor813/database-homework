@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { useToast } from "../../utils/toast";
-import { postJson } from "../../utils/api";
+import { getJson, postJson } from "../../utils/api";
+import COS from "cos-js-sdk-v5";
 
 type ImportTab = "ACTIVITY" | "ITEM";
 
@@ -29,6 +30,21 @@ type ItemCategory =
   | "FOOD"
   | "COUPON"
   | "OTHER";
+
+// 定义COS凭证类型
+interface CosCredentials {
+  tmpSecretId: string;
+  tmpSecretKey: string;
+  sessionToken: string;
+}
+
+interface StsCredentialResponse {
+  credentials: CosCredentials;
+  startTime: number;
+  expiredTime: number;
+  bucket: string;
+  region: string;
+}
 
 type ItemStatus = "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" | "DELETED";
 
@@ -98,16 +114,116 @@ const itemForm = reactive({
 });
 
 const itemImage = ref<File | null>(null);
+const itemImageUrl = ref<string>("");
 
-const itemImageText = computed(() =>
-  itemImage.value ? itemImage.value.name : "未选择图片（COS 接入后上传）",
-);
+const itemImageText = computed(() => {
+  if (itemImageUrl.value) {
+    return `已上传: ${itemImage.value?.name || "图片"}`;
+  } else if (itemImage.value) {
+    return `已选择: ${itemImage.value.name}`;
+  } else {
+    return "未选择图片";
+  }
+});
 
-const pickImage = (event: Event) => {
+const uploadImageToCos = async (file: File): Promise<string> => {
+  try {
+    // 1. 获取临时凭证
+    const credential = (await getJson(
+      "/api/sts/credential",
+    )) as StsCredentialResponse;
+
+    // 2. 使用临时凭证初始化COS客户端
+    const cosClient = new COS({
+      getAuthorization: function (_options, callback) {
+        callback({
+          TmpSecretId: credential.credentials.tmpSecretId,
+          TmpSecretKey: credential.credentials.tmpSecretKey,
+          XCosSecurityToken: credential.credentials.sessionToken,
+          StartTime: credential.startTime,
+          ExpiredTime: credential.expiredTime,
+        });
+      },
+    });
+
+    // 3. 生成唯一的文件名
+    const fileExtension = file.name.split(".").pop() || "jpg";
+    const fileName = `images/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+
+    // 4. 上传图片
+    await new Promise<void>((resolve, reject) => {
+      cosClient.putObject(
+        {
+          Bucket: credential.bucket,
+          Region: credential.region,
+          Key: fileName,
+          Body: file,
+        },
+        function (err, _data) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        },
+      );
+    });
+
+    // 5. 返回图片URL
+    const imageUrl = `https://${credential.bucket}.cos.${credential.region}.myqcloud.com/${fileName}`;
+    return imageUrl;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "未知错误";
+    error("上传失败", msg);
+    throw new Error(msg);
+  }
+};
+
+const pickImage = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0] ?? null;
-  itemImage.value = file;
-  info("图片上传待接入", "已保留选择入口，后续将接入 COS 上传服务");
+
+  if (!file) {
+    // 清空文件输入
+    target.value = "";
+    return;
+  }
+
+  // 验证文件类型
+  if (!file.type.startsWith("image/")) {
+    error("上传失败", "请选择图片文件");
+    // 清空文件输入
+    target.value = "";
+    return;
+  }
+
+  // 验证文件大小（限制为5MB）
+  if (file.size > 5 * 1024 * 1024) {
+    error("上传失败", "图片大小不能超过5MB");
+    // 清空文件输入
+    target.value = "";
+    return;
+  }
+
+  try {
+    // 显示上传中状态
+    info("上传中", "正在上传图片，请稍候...");
+
+    // 上传到COS并获取URL
+    const imageUrl = await uploadImageToCos(file);
+
+    // 保存图片和URL
+    itemImage.value = file;
+    itemImageUrl.value = imageUrl;
+
+    success("上传成功", "图片已成功上传到腾讯云COS");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "图片上传失败";
+    error("上传失败", msg);
+    // 清空文件输入和状态
+    target.value = "";
+    itemImage.value = null;
+  }
 };
 
 const validateActivityForm = () => {
@@ -174,9 +290,9 @@ const submitActivityImport = async () => {
       status: activityForm.status,
       pointsPerHour: activityForm.pointsPerHour,
       maxParticipants: activityForm.maxParticipants,
-    }
+    };
 
-    await postJson("/api/admin/activity/import", request);
+    await postJson("/api/admin/activities/import", request);
     success("导入活动数据成功", `已导入活动 ${activityForm.title}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "未知错误";
@@ -184,15 +300,53 @@ const submitActivityImport = async () => {
   }
 };
 
-const submitItemImport = () => {
+const submitItemImport = async () => {
   if (!validateItemForm()) {
     return;
   }
 
-  success(
-    "商品导入表单已提交",
-    "当前仅完成前端录入结构，后续可直接接入后端导入接口",
-  );
+  try {
+    const request = {
+      name: itemForm.name,
+      description: itemForm.description,
+      price: itemForm.price,
+      stock: itemForm.stock,
+      category: itemForm.category,
+      status: itemForm.status,
+      sortWeight: itemForm.sortWeight,
+      imageUrl: itemImageUrl.value || "", // 添加图片URL
+    };
+
+    await postJson("/api/admin/item/import", request);
+    success("导入商品数据成功", `已导入商品 ${itemForm.name}`);
+
+    // 重置表单
+    resetItemForm();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "未知错误";
+    error("导入商品数据失败", msg);
+  }
+};
+
+// 重置商品表单
+const resetItemForm = () => {
+  itemForm.name = "";
+  itemForm.description = "";
+  itemForm.price = 100;
+  itemForm.stock = 10;
+  itemForm.category = "DAILY_NECESSITIES";
+  itemForm.status = "AVAILABLE";
+  itemForm.sortWeight = 0;
+  itemImage.value = null;
+  itemImageUrl.value = "";
+
+  // 清空文件输入
+  const fileInput = document.querySelector(
+    'input[type="file"]',
+  ) as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = "";
+  }
 };
 </script>
 
@@ -304,7 +458,12 @@ const submitItemImport = () => {
               />
             </label>
           </div>
-          <button class="submit-button" type="submit">提交活动导入</button>
+          <button
+            class="submit-button"
+            type="submit"
+          >
+            提交活动导入
+          </button>
         </form>
 
         <form v-else class="form-card" @submit.prevent="submitItemImport">
@@ -371,7 +530,7 @@ const submitItemImport = () => {
             </label>
 
             <div class="form-item full-width image-upload">
-              <span>商品图片（预留）</span>
+              <span>商品图片</span>
               <label class="upload-trigger">
                 <input
                   type="file"
@@ -381,10 +540,16 @@ const submitItemImport = () => {
                 选择图片
               </label>
               <p>{{ itemImageText }}</p>
-              <small>当前后端尚未接入 COS，暂不执行真实上传。</small>
+              <div v-if="itemImageUrl" class="image-preview">
+                <img :src="itemImageUrl" alt="商品图片预览" />
+                <p>图片URL: {{ itemImageUrl }}</p>
+              </div>
+              <small>支持jpg、png等常见图片格式，大小不超过5MB</small>
             </div>
           </div>
-          <button class="submit-button" type="submit">提交商品导入</button>
+          <button class="submit-button" type="submit">
+            提交商品导入
+          </button>
         </form>
       </div>
     </section>
@@ -529,5 +694,28 @@ const submitItemImport = () => {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+}
+
+.image-preview {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f9fafb;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 6px;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.image-preview p {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  word-break: break-all;
 }
 </style>

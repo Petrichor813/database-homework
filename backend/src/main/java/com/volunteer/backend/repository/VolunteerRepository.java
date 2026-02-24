@@ -19,6 +19,4 @@ public interface VolunteerRepository extends JpaRepository<Volunteer, Long> {
     Page<Volunteer> findByStatusAndDeletedFalse(VolunteerStatus status, Pageable pageable);
 
     Page<Volunteer> findByStatusNotAndDeletedFalse(VolunteerStatus status, Pageable pageable);
-    
-    Optional<Volunteer> findByUserId(Long userId);
 }

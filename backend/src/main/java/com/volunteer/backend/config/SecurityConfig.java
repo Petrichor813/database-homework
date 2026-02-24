@@ -1,6 +1,5 @@
 package com.volunteer.backend.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,19 +10,23 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.volunteer.backend.security.TokenAuthenticationFilter;
+import com.volunteer.backend.service.AuthService;
 
 @Configuration
 public class SecurityConfig {
-    @Autowired
-    private TokenAuthenticationFilter tokenAuthenticationFilter;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public TokenAuthenticationFilter tokenAuthenticationFilter(AuthService authService) {
+        return new TokenAuthenticationFilter(authService);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, TokenAuthenticationFilter tokenAuthenticationFilter)
+            throws Exception {
         // @formatter:off
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth

@@ -20,11 +20,45 @@ public class AdminActivityService {
             throw new IllegalArgumentException("活动导入请求不能为空");
         }
 
+        String title = request.getTitle();
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("活动名称不能为空");
+        }
+
+        String location = request.getLocation();
+        if (location == null || location.trim().isEmpty()) {
+            throw new IllegalArgumentException("活动地点不能为空");
+        }
+
+        if (request.getStartTime() == null) {
+            throw new IllegalArgumentException("活动开始时间不能为空");
+        }
+
+        if (request.getEndTime() == null) {
+            throw new IllegalArgumentException("活动结束时间不能为空");
+        }
+
+        if (!request.getStartTime().isBefore(request.getEndTime())) {
+            throw new IllegalArgumentException("活动结束时间必须晚于开始时间");
+        }
+
+        if (request.getPointsPerHour() == null || request.getPointsPerHour() <= 0) {
+            throw new IllegalArgumentException("每小时积分必须大于0");
+        }
+
+        if (request.getMaxParticipants() == null || request.getMaxParticipants() <= 0) {
+            throw new IllegalArgumentException("活动人数上限必须大于0");
+        }
+
+        if (request.getType() == null) {
+            throw new IllegalArgumentException("活动类型不能为空");
+        }
+
         // @formatter:off
         Activity activity = new Activity(
-            request.getTitle(),
+            title.trim(),
             request.getType(),
-            request.getLocation().trim(),
+            location.trim(),
             request.getStartTime(),
             request.getEndTime(),
             request.getPointsPerHour(),
