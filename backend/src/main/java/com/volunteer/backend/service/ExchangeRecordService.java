@@ -1,5 +1,6 @@
 package com.volunteer.backend.service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.entity.Product;
 import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.Volunteer;
+import com.volunteer.backend.enums.ExchangeStatus;
 import com.volunteer.backend.repository.ProductRepository;
 import com.volunteer.backend.repository.ExchangeRecordRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
@@ -76,5 +78,35 @@ public class ExchangeRecordService {
         }
 
         return new PageResponse<>(content, page, size, recordPage.getTotalElements(), recordPage.getTotalPages());
+    }
+
+    public void cancelExchangeRecord(Long volunteerId, Long recordId) {
+        // 验证志愿者是否存在
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
+        if (v.isEmpty()) {
+            throw new IllegalArgumentException("未找到志愿者信息");
+        }
+
+        // 验证兑换记录是否存在，并且属于该志愿者
+        Optional<ExchangeRecord> recordOptional = exchangeRecordRepository.findById(recordId);
+        if (recordOptional.isEmpty()) {
+            throw new IllegalArgumentException("未找到兑换记录");
+        }
+
+        ExchangeRecord record = recordOptional.get();
+        if (!record.getVolunteerId().equals(volunteerId)) {
+            throw new IllegalArgumentException("无权操作此兑换记录");
+        }
+
+        // 验证兑换记录是否可以取消
+        if (!record.isCancellable()) {
+            throw new IllegalArgumentException("该兑换记录不可取消");
+        }
+
+        // 取消兑换记录
+        record.setStatus(ExchangeStatus.CANCELLED);
+        record.setProcessTime(LocalDateTime.now());
+        record.setNote("用户主动取消兑换");
+        exchangeRecordRepository.save(record);
     }
 }

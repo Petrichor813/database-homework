@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { getJson } from "../../utils/api";
+import { deleteJson, getJson } from "../../utils/api";
 import type { PageResponse } from "../../utils/page";
 import { usePagination } from "../../utils/page";
 import { useToast } from "../../utils/toast";
 import Pagination from "../utils/Pagination.vue";
 
-const { error } = useToast();
+const { error, success } = useToast();
 const {
   pageObject,
   updatePageState,
@@ -30,26 +30,56 @@ interface ExchangeRecord {
 
 const records = ref<ExchangeRecord[]>([]);
 const loading = ref(false);
+const cancelLoading = ref(false);
 
-// 兑换记录详情弹窗
 const showDetailDialog = ref(false);
 const curRecord = ref<ExchangeRecord | null>(null);
 
-// 打开详情弹窗
+const getStatusClass = (status: string) => {
+  switch (status) {
+    case "REVIEWING":
+      return "reviewing";
+    case "PROCESSING":
+      return "processing";
+    case "COMPLETED":
+      return "done";
+    case "CANCELLED":
+    case "REJECTED":
+      return "done";
+    default:
+      return "";
+  }
+};
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "REVIEWING":
+      return "待处理";
+    case "PROCESSING":
+      return "处理中";
+    case "COMPLETED":
+      return "已完成";
+    case "CANCELLED":
+      return "已取消";
+    case "REJECTED":
+      return "已拒绝";
+    default:
+      return status;
+  }
+};
+
 const openDetailDialog = (record: ExchangeRecord) => {
   curRecord.value = record;
   showDetailDialog.value = true;
 };
 
-// 关闭详情弹窗
 const closeDetailDialog = () => {
   curRecord.value = null;
   showDetailDialog.value = false;
 };
 
-// 获取兑换记录
 const fetchExchangeRecords = async (
-  page: number = pageObject.value.curPage,
+  page: number = pageObject.value.curPage
 ) => {
   const userStr = localStorage.getItem("user");
   if (!userStr) {
@@ -74,7 +104,7 @@ const fetchExchangeRecords = async (
     loading.value = true;
 
     const data = await getJson<PageResponse<ExchangeRecord>>(
-      `/api/volunteer/${user.volunteerId}/exchange-records?page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/volunteer/${user.volunteerId}/exchange-records?page=${page}&size=${pageObject.value.pageSize}`
     );
 
     records.value = data.content;
@@ -92,42 +122,48 @@ const fetchExchangeRecords = async (
   }
 };
 
-// 获取状态对应的CSS类
-const getStatusClass = (status: string) => {
-  switch (status) {
-    case "REVIEWING":
-      return "reviewing";
-    case "PROCESSING":
-      return "processing";
-    case "COMPLETED":
-      return "done";
-    case "CANCELLED":
-    case "REJECTED":
-      return "done";
-    default:
-      return "";
+const canCancel = (status: string) => {
+  return status === "REVIEWING";
+};
+
+const cancelExchange = async (record: ExchangeRecord) => {
+  const userStr = localStorage.getItem("user");
+  if (!userStr) {
+    error("用户未登录");
+    return;
+  }
+
+  let user: { volunteerId?: number | string };
+  try {
+    user = JSON.parse(userStr);
+  } catch (err) {
+    error("用户信息解析失败");
+    return;
+  }
+
+  if (!user.volunteerId) {
+    error("您还未申请成为志愿者");
+    return;
+  }
+
+  try {
+    cancelLoading.value = true;
+
+    await deleteJson(
+      `/api/volunteer/${user.volunteerId}/exchange-records/${record.id}`
+    );
+
+    success("取消兑换成功");
+    // 重新获取兑换记录
+    fetchExchangeRecords();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "取消兑换失败";
+    error("取消兑换失败", msg);
+  } finally {
+    cancelLoading.value = false;
   }
 };
 
-// 获取状态文本
-const getStatusText = (status: string) => {
-  switch (status) {
-    case "REVIEWING":
-      return "待处理";
-    case "PROCESSING":
-      return "处理中";
-    case "COMPLETED":
-      return "已完成";
-    case "CANCELLED":
-      return "已取消";
-    case "REJECTED":
-      return "已拒绝";
-    default:
-      return status;
-  }
-};
-
-// 显示处理时间
 const displayProcessTime = (time: string | null) => {
   return time || "未处理";
 };
@@ -176,6 +212,15 @@ onMounted(() => {
             <td>
               <button type="button" @click="openDetailDialog(record)">
                 查看详情
+              </button>
+              <button
+                type="button"
+                class="cancel-button"
+                @click="cancelExchange(record)"
+                :disabled="cancelLoading"
+                v-if="canCancel(record.status)"
+              >
+                取消兑换
               </button>
             </td>
           </tr>
@@ -309,6 +354,31 @@ td button:hover {
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
+.cancel-button {
+  background: #dc2626;
+  cursor: pointer;
+  color: white;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.cancel-button:hover {
+  background: red;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.cancel-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .loading,
 .no-data {
   text-align: center;
@@ -316,7 +386,6 @@ td button:hover {
   color: #6b7280;
 }
 
-/* 弹窗样式 */
 .dialog-bg {
   display: flex;
   justify-content: center;

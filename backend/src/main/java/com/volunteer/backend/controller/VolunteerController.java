@@ -1,6 +1,7 @@
 package com.volunteer.backend.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,5 +66,16 @@ public class VolunteerController {
     ) {
         // @formatter:on
         return ResponseEntity.ok(exchangeRecordService.getExchangeRecords(volunteerId, page, size));
+    }
+
+    // @formatter:off
+    @DeleteMapping("/{volunteerId}/exchange-records/{recordId}")
+    public ResponseEntity<Void> cancelExchangeRecord(
+        @PathVariable Long volunteerId,
+        @PathVariable Long recordId
+    ) {
+        // @formatter:on
+        exchangeRecordService.cancelExchangeRecord(volunteerId, recordId);
+        return ResponseEntity.noContent().build();
     }
 }

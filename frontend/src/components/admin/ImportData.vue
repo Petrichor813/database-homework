@@ -33,7 +33,6 @@ type ProductType =
   | "COUPON"
   | "OTHER";
 
-// 定义COS凭证类型
 interface CosCredentials {
   tmpSecretId: string;
   tmpSecretKey: string;
@@ -127,12 +126,10 @@ const productImageText = computed(() => {
 
 const uploadImageToCos = async (file: File): Promise<string> => {
   try {
-    // 1. 获取临时凭证
     const credential = (await getJson(
       "/api/cos-sts/credential"
     )) as StsCredentialResponse;
 
-    // 2. 使用临时凭证初始化COS客户端
     const cosClient = new COS({
       getAuthorization: function (_options, callback) {
         callback({
@@ -145,13 +142,11 @@ const uploadImageToCos = async (file: File): Promise<string> => {
       },
     });
 
-    // 3. 生成唯一的文件名
     const fileExtension = file.name.split(".").pop() || "jpg";
     const fileName = `images/${Date.now()}-${Math.random()
       .toString(36)
       .substring(2)}.${fileExtension}`;
 
-    // 4. 上传图片
     await new Promise<void>((resolve, reject) => {
       cosClient.putObject(
         {
@@ -170,7 +165,6 @@ const uploadImageToCos = async (file: File): Promise<string> => {
       );
     });
 
-    // 5. 返回图片URL
     const imageUrl = `https://${credential.bucket}.cos.${credential.region}.myqcloud.com/${fileName}`;
     return imageUrl;
   } catch (err) {
@@ -185,7 +179,6 @@ const pickImage = async (event: Event) => {
   const file = target.files?.[0] ?? null;
 
   if (!file) {
-    // 清空文件输入
     target.value = "";
     return;
   }
@@ -193,35 +186,25 @@ const pickImage = async (event: Event) => {
   // 验证文件类型
   if (!file.type.startsWith("image/")) {
     error("上传失败", "请选择图片文件");
-    // 清空文件输入
     target.value = "";
     return;
   }
 
-  // 验证文件大小（限制为5MB）
   if (file.size > 5 * 1024 * 1024) {
     error("上传失败", "图片大小不能超过5MB");
-    // 清空文件输入
     target.value = "";
     return;
   }
 
   try {
-    // 显示上传中状态
     info("上传中", "正在上传图片，请稍候...");
-
-    // 上传到COS并获取URL
     const imageUrl = await uploadImageToCos(file);
-
-    // 保存图片和URL
     productImage.value = file;
     productImageUrl.value = imageUrl;
-
     success("上传成功", "图片已成功上传到腾讯云COS");
   } catch (err) {
     const msg = err instanceof Error ? err.message : "图片上传失败";
     error("上传失败", msg);
-    // 清空文件输入和状态
     target.value = "";
     productImage.value = null;
   }
@@ -315,13 +298,11 @@ const submitProductImport = async () => {
       category: productForm.category,
       status: productForm.status,
       sortWeight: productForm.sortWeight,
-      imageUrl: productImageUrl.value || "", // 添加图片URL
+      imageUrl: productImageUrl.value || "",
     };
 
     await postJson("/api/admin/product/import", request);
     success("导入商品数据成功", `已导入商品 ${productForm.name}`);
-
-    // 重置表单
     resetProductForm();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "未知错误";
@@ -329,7 +310,6 @@ const submitProductImport = async () => {
   }
 };
 
-// 重置商品表单
 const resetProductForm = () => {
   productForm.name = "";
   productForm.description = "";
@@ -341,7 +321,6 @@ const resetProductForm = () => {
   productImage.value = null;
   productImageUrl.value = "";
 
-  // 清空文件输入
   const fileInput = document.querySelector(
     'input[type="file"]'
   ) as HTMLInputElement;

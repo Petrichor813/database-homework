@@ -96,23 +96,23 @@ const orders = ref<ExchangeOrder[]>([
   },
 ]);
 
-// 兑换订单详情弹窗
+
 const showDetailDialog = ref(false);
 const curOrder = ref<ExchangeOrder | null>(null);
 
-// 打开详情弹窗
+
 const openDetailDialog = (order: ExchangeOrder) => {
   curOrder.value = order;
   showDetailDialog.value = true;
 };
 
-// 关闭详情弹窗
+
 const closeDetailDialog = () => {
   curOrder.value = null;
   showDetailDialog.value = false;
 };
 
-// 获取状态文本
+
 const getStatusText = (status: string) => {
   switch (status) {
     case "REVIEWING":
