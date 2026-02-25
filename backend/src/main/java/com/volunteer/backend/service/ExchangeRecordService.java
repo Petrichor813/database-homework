@@ -24,18 +24,18 @@ public class ExchangeRecordService {
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final VolunteerRepository volunteerRepository;
-    private final ProductRepository exchangeItemRepository;
+    private final ProductRepository productRepository;
     private final ExchangeRecordRepository exchangeRecordRepository;
 
     // @formatter:off
     public ExchangeRecordService(
         VolunteerRepository volunteerRepository,
-        ProductRepository exchangeItemRepository,
+        ProductRepository productRepository,
         ExchangeRecordRepository exchangeRecordRepository
     ) {
         // @formatter:on
         this.volunteerRepository = volunteerRepository;
-        this.exchangeItemRepository = exchangeItemRepository;
+        this.productRepository = productRepository;
         this.exchangeRecordRepository = exchangeRecordRepository;
     }
 
@@ -53,17 +53,16 @@ public class ExchangeRecordService {
         List<ExchangeRecord> records = recordPage.getContent();
 
         for (ExchangeRecord r : records) {
-            Optional<Product> ei = exchangeItemRepository.findById(r.getItemId());
-            if (ei.isEmpty()) {
+            Optional<Product> product = productRepository.findById(r.getProductId());
+            if (product.isEmpty()) {
                 throw new IllegalArgumentException("商品不存在");
             }
-            Product item = ei.get();
 
             // @formatter:off
             content.add(
                 new ExchangeRecordResponse(
                     r.getId(),
-                    item.getName(),
+                    product.get().getName(),
                     r.getNumber(),
                     r.getTotalPoints(),
                     r.getStatus().toString(),

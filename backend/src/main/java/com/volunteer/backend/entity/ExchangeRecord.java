@@ -24,7 +24,7 @@ public class ExchangeRecord {
     private Long volunteerId;
 
     @Column(nullable = false)
-    private Long itemId;
+    private Long productId;
 
     @Column(nullable = false)
     private Long number; // 兑换的数量
@@ -58,7 +58,7 @@ public class ExchangeRecord {
     // @formatter:off
     public ExchangeRecord(
         Long volunteerId,
-        Long itemId,
+        Long productId,
         Long number,
         Double totalPoints
     ) {
@@ -73,7 +73,7 @@ public class ExchangeRecord {
         }
 
         this.volunteerId = volunteerId;
-        this.itemId = itemId;
+        this.productId = productId;
         this.number = number;
         this.totalPoints = totalPoints;
     }
@@ -95,12 +95,12 @@ public class ExchangeRecord {
         this.volunteerId = volunteerId;
     }
 
-    public Long getItemId() {
-        return itemId;
+    public Long getProductId() {
+        return productId;
     }
 
-    public void setItemId(Long itemId) {
-        this.itemId = itemId;
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
     public Long getNumber() {

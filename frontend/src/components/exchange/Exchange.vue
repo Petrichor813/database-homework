@@ -49,7 +49,7 @@ const {
 } = usePagination(8); // 每页8个商品，4*2布局
 
 const loading = ref(false);
-const items = ref<Product[]>([]);
+const products = ref<Product[]>([]);
 const keyword = ref("");
 const typeFilter = ref("ALL");
 
@@ -67,10 +67,10 @@ const fetchProducts = async (page = 0) => {
     }
 
     const response = await getJson<PageResponse<Product>>(
-      `/api/items/get-items?${query.toString()}`
+      `/api/product/get-products?${query.toString()}`
     );
 
-    items.value = response.content;
+    products.value = response.content;
     updatePageState({
       curPage: response.curPage,
       pageSize: response.pageSize,
@@ -89,13 +89,13 @@ const handleSearch = async () => {
   await fetchProducts(0);
 };
 
-const handleExchange = async (item: Product) => {
+const handleExchange = async (prod: Product) => {
   try {
-    await postJson<{ id: number; message: string }>("/api/items/exchange", {
-      itemId: item.id,
+    await postJson<{ id: number; message: string }>("/api/product/exchange", {
+      productId: prod.id,
       number: 1,
     });
-    success("兑换成功", `您成功兑换了${item.name}`);
+    success("兑换成功", `您成功兑换了${prod.name}`);
     await fetchProducts(pageObject.value.curPage);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "兑换失败";
@@ -153,25 +153,25 @@ onMounted(() => {
 
     <section class="product-grid">
       <p v-if="loading" class="empty">商品加载中...</p>
-      <p v-else-if="items.length === 0" class="empty">暂无匹配商品</p>
+      <p v-else-if="products.length === 0" class="empty">暂无匹配商品</p>
 
       <article
-        v-for="item in items"
-        :key="item.id"
+        v-for="prod in products"
+        :key="prod.id"
         class="product-card"
-        :class="{ 'sold-out': item.status === 'SOLD_OUT' }"
+        :class="{ 'sold-out': prod.status === 'SOLD_OUT' }"
       >
         <div class="image-placeholder">商品图片占位</div>
         <div class="product-body">
-          <h3>{{ item.name }}</h3>
-          <p class="category">{{ getCategoryLabel(item.category) }}</p>
-          <p class="points">{{ item.price }} 积分</p>
-          <p class="stock">{{ item.stock }} 件库存</p>
+          <h3>{{ prod.name }}</h3>
+          <p class="category">{{ getCategoryLabel(prod.category) }}</p>
+          <p class="points">{{ prod.price }} 积分</p>
+          <p class="stock">{{ prod.stock }} 件库存</p>
           <button
-            :disabled="item.status === 'SOLD_OUT'"
-            @click="handleExchange(item)"
+            :disabled="prod.status === 'SOLD_OUT'"
+            @click="handleExchange(prod)"
           >
-            {{ item.status === "SOLD_OUT" ? "已售罄" : "兑换" }}
+            {{ prod.status === "SOLD_OUT" ? "已售罄" : "兑换" }}
           </button>
         </div>
       </article>
@@ -179,7 +179,7 @@ onMounted(() => {
 
     <Pagination
       :page-object="pageObject"
-      :items="items"
+      :items="products"
       :loading="loading"
       :page-ranges="pageRanges"
       :go-to-page="(page: number) => goToPage(page, fetchProducts)"

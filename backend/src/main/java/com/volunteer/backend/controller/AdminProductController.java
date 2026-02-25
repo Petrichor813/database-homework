@@ -14,15 +14,15 @@ import com.volunteer.backend.service.AdminProductService;
 @RestController
 @RequestMapping("/api/admin/product")
 public class AdminProductController {
-    private final AdminProductService adminExchangeItemService;
+    private final AdminProductService adminProductService;
 
-    public AdminProductController(AdminProductService adminExchangeItemService) {
-        this.adminExchangeItemService = adminExchangeItemService;
+    public AdminProductController(AdminProductService adminProductService) {
+        this.adminProductService = adminProductService;
     }
 
     @PostMapping("/import")
-    public ResponseEntity<Product> importItem(@RequestBody AdminProductImportRequest request) {
-        Product item = adminExchangeItemService.importItem(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(item);
+    public ResponseEntity<Product> importProduct(@RequestBody AdminProductImportRequest request) {
+        Product product = adminProductService.importProduct(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 }

@@ -2,7 +2,7 @@ package com.volunteer.backend.dto;
 
 public class ExchangeRecordResponse {
     private Long id;
-    private String itemName;
+    private String productName;
     private Long number;
     private Double totalPoints;
     private String status;
@@ -17,7 +17,7 @@ public class ExchangeRecordResponse {
     // @formatter:off
     public ExchangeRecordResponse(
         Long id,
-        String itemName,
+        String productName,
         Long number,
         Double totalPoints,
         String status,
@@ -28,7 +28,7 @@ public class ExchangeRecordResponse {
     ) {
         // @formatter:on
         this.id = id;
-        this.itemName = itemName;
+        this.productName = productName;
         this.number = number;
         this.totalPoints = totalPoints;
         this.status = status;
@@ -46,12 +46,12 @@ public class ExchangeRecordResponse {
         this.id = id;
     }
 
-    public String getItemName() {
-        return itemName;
+    public String getProductName() {
+        return productName;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public Long getNumber() {

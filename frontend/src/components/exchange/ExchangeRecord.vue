@@ -18,7 +18,7 @@ const {
 
 interface ExchangeRecord {
   id: number;
-  itemName: string;
+  productName: string;
   number: number;
   totalPoints: number;
   status: string;
@@ -164,7 +164,7 @@ onMounted(() => {
             <td colspan="6" class="no-data">暂无兑换记录</td>
           </tr>
           <tr v-else v-for="record in records" :key="record.id">
-            <td>{{ record.itemName }}</td>
+            <td>{{ record.productName }}</td>
             <td>{{ record.number }}</td>
             <td>{{ record.orderTime }}</td>
             <td>
@@ -198,7 +198,7 @@ onMounted(() => {
     <div v-if="showDetailDialog" class="dialog-bg">
       <div class="dialog-area">
         <h3>兑换详情</h3>
-        <p><strong>商品名称：</strong>{{ curRecord?.itemName }}</p>
+        <p><strong>商品名称：</strong>{{ curRecord?.productName }}</p>
         <p><strong>兑换数量：</strong>{{ curRecord?.number }}</p>
         <p><strong>消耗积分：</strong>{{ curRecord?.totalPoints }}</p>
         <p><strong>下单时间：</strong>{{ curRecord?.orderTime }}</p>

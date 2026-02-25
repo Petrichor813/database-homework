@@ -8,13 +8,13 @@ import com.volunteer.backend.repository.ProductRepository;
 
 @Service
 public class AdminProductService {
-    private final ProductRepository exchangeItemRepository;
+    private final ProductRepository productRepository;
 
-    public AdminProductService(ProductRepository exchangeItemRepository) {
-        this.exchangeItemRepository = exchangeItemRepository;
+    public AdminProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
-    public Product importItem(AdminProductImportRequest request) throws IllegalArgumentException {
+    public Product importProduct(AdminProductImportRequest request) throws IllegalArgumentException {
         if (request == null) {
             throw new IllegalArgumentException("商品导入请求不能为空");
         }
@@ -44,7 +44,7 @@ public class AdminProductService {
             throw new IllegalArgumentException("商品状态不能为空");
         }
 
-        Product item = new Product(name.trim(), request.getPrice(), request.getStock());
+        Product product = new Product(name.trim(), request.getPrice(), request.getStock());
 
         String desc = request.getDescription();
         if (desc == null || desc.trim().isEmpty()) {
@@ -53,10 +53,10 @@ public class AdminProductService {
             desc = desc.trim();
         }
 
-        item.setDescription(desc);
-        item.setCategory(request.getCategory());
-        item.setStatus(request.getStatus());
-        item.setSortWeight(request.getSortWeight());
+        product.setDescription(desc);
+        product.setCategory(request.getCategory());
+        product.setStatus(request.getStatus());
+        product.setSortWeight(request.getSortWeight());
 
         String imageUrl = request.getImageUrl();
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
@@ -64,8 +64,8 @@ public class AdminProductService {
         } else {
             imageUrl = imageUrl.trim();
         }
-        item.setImageUrl(imageUrl);
+        product.setImageUrl(imageUrl);
 
-        return exchangeItemRepository.save(item);
+        return productRepository.save(product);
     }
 }

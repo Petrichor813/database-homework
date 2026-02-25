@@ -4,7 +4,7 @@ import { useToast } from "../../utils/toast";
 import { getJson, postJson } from "../../utils/api";
 import COS from "cos-js-sdk-v5";
 
-type ImportTab = "ACTIVITY" | "ITEM";
+type ImportTab = "ACTIVITY" | "PRODUCT";
 
 type ActivityType =
   | "COMMUNITY_SERVICE"
@@ -23,7 +23,9 @@ type ActivityStatus =
   | "COMPLETED"
   | "CANCELLED";
 
-type ItemCategory =
+type ProductStatus = "AVAILABLE" | "SOLD_OUT" | "DELETED";
+
+type ProductType =
   | "DAILY_NECESSITIES"
   | "BOOKS"
   | "STATIONARY"
@@ -46,14 +48,12 @@ interface StsCredentialResponse {
   region: string;
 }
 
-type ItemStatus = "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" | "DELETED";
-
 const { success, error, info } = useToast();
 
 const activeTab = ref<ImportTab>("ACTIVITY");
 const tabs: { label: string; value: ImportTab }[] = [
   { label: "活动导入", value: "ACTIVITY" },
-  { label: "商品导入", value: "ITEM" },
+  { label: "商品导入", value: "PRODUCT" },
 ];
 
 const activityTypeOptions: { label: string; value: ActivityType }[] = [
@@ -75,7 +75,7 @@ const activityStatusOptions: { label: string; value: ActivityStatus }[] = [
   { label: "已取消", value: "CANCELLED" },
 ];
 
-const itemCategoryOptions: { label: string; value: ItemCategory }[] = [
+const productTypeOptions: { label: string; value: ProductType }[] = [
   { label: "日用品", value: "DAILY_NECESSITIES" },
   { label: "书籍", value: "BOOKS" },
   { label: "文具", value: "STATIONARY" },
@@ -84,9 +84,8 @@ const itemCategoryOptions: { label: string; value: ItemCategory }[] = [
   { label: "其他", value: "OTHER" },
 ];
 
-const itemStatusOptions: { label: string; value: ItemStatus }[] = [
+const productStatusOptions: { label: string; value: ProductStatus }[] = [
   { label: "可兑换", value: "AVAILABLE" },
-  { label: "下架", value: "UNAVAILABLE" },
   { label: "售罄", value: "SOLD_OUT" },
   { label: "已删除", value: "DELETED" },
 ];
@@ -103,24 +102,24 @@ const activityForm = reactive({
   maxParticipants: 20,
 });
 
-const itemForm = reactive({
+const productForm = reactive({
   name: "",
   description: "",
   price: 100,
   stock: 10,
-  category: "DAILY_NECESSITIES" as ItemCategory,
-  status: "AVAILABLE" as ItemStatus,
+  category: "DAILY_NECESSITIES" as ProductType,
+  status: "AVAILABLE" as ProductStatus,
   sortWeight: 0,
 });
 
-const itemImage = ref<File | null>(null);
-const itemImageUrl = ref<string>("");
+const productImage = ref<File | null>(null);
+const productImageUrl = ref<string>("");
 
-const itemImageText = computed(() => {
-  if (itemImageUrl.value) {
-    return `已上传: ${itemImage.value?.name || "图片"}`;
-  } else if (itemImage.value) {
-    return `已选择: ${itemImage.value.name}`;
+const productImageText = computed(() => {
+  if (productImageUrl.value) {
+    return `已上传: ${productImage.value?.name || "图片"}`;
+  } else if (productImage.value) {
+    return `已选择: ${productImage.value.name}`;
   } else {
     return "未选择图片";
   }
@@ -130,7 +129,7 @@ const uploadImageToCos = async (file: File): Promise<string> => {
   try {
     // 1. 获取临时凭证
     const credential = (await getJson(
-      "/api/cos-sts/credential",
+      "/api/cos-sts/credential"
     )) as StsCredentialResponse;
 
     // 2. 使用临时凭证初始化COS客户端
@@ -148,7 +147,9 @@ const uploadImageToCos = async (file: File): Promise<string> => {
 
     // 3. 生成唯一的文件名
     const fileExtension = file.name.split(".").pop() || "jpg";
-    const fileName = `images/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+    const fileName = `images/${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2)}.${fileExtension}`;
 
     // 4. 上传图片
     await new Promise<void>((resolve, reject) => {
@@ -165,7 +166,7 @@ const uploadImageToCos = async (file: File): Promise<string> => {
           } else {
             resolve();
           }
-        },
+        }
       );
     });
 
@@ -213,8 +214,8 @@ const pickImage = async (event: Event) => {
     const imageUrl = await uploadImageToCos(file);
 
     // 保存图片和URL
-    itemImage.value = file;
-    itemImageUrl.value = imageUrl;
+    productImage.value = file;
+    productImageUrl.value = imageUrl;
 
     success("上传成功", "图片已成功上传到腾讯云COS");
   } catch (err) {
@@ -222,7 +223,7 @@ const pickImage = async (event: Event) => {
     error("上传失败", msg);
     // 清空文件输入和状态
     target.value = "";
-    itemImage.value = null;
+    productImage.value = null;
   }
 };
 
@@ -254,20 +255,20 @@ const validateActivityForm = () => {
   return true;
 };
 
-const validateItemForm = () => {
-  if (!itemForm.name.trim()) {
+const validateProductForm = () => {
+  if (!productForm.name.trim()) {
     error("导入失败", "请填写商品名称");
     return false;
   }
-  if (itemForm.price <= 0) {
+  if (productForm.price <= 0) {
     error("导入失败", "兑换积分必须大于 0");
     return false;
   }
-  if (itemForm.stock < 0) {
+  if (productForm.stock < 0) {
     error("导入失败", "库存不能为负数");
     return false;
   }
-  if (itemForm.sortWeight < 0) {
+  if (productForm.sortWeight < 0) {
     error("导入失败", "排序权重不能为负数");
     return false;
   }
@@ -300,28 +301,28 @@ const submitActivityImport = async () => {
   }
 };
 
-const submitItemImport = async () => {
-  if (!validateItemForm()) {
+const submitProductImport = async () => {
+  if (!validateProductForm()) {
     return;
   }
 
   try {
     const request = {
-      name: itemForm.name,
-      description: itemForm.description,
-      price: itemForm.price,
-      stock: itemForm.stock,
-      category: itemForm.category,
-      status: itemForm.status,
-      sortWeight: itemForm.sortWeight,
-      imageUrl: itemImageUrl.value || "", // 添加图片URL
+      name: productForm.name,
+      description: productForm.description,
+      price: productForm.price,
+      stock: productForm.stock,
+      category: productForm.category,
+      status: productForm.status,
+      sortWeight: productForm.sortWeight,
+      imageUrl: productImageUrl.value || "", // 添加图片URL
     };
 
     await postJson("/api/admin/product/import", request);
-    success("导入商品数据成功", `已导入商品 ${itemForm.name}`);
+    success("导入商品数据成功", `已导入商品 ${productForm.name}`);
 
     // 重置表单
-    resetItemForm();
+    resetProductForm();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "未知错误";
     error("导入商品数据失败", msg);
@@ -329,20 +330,20 @@ const submitItemImport = async () => {
 };
 
 // 重置商品表单
-const resetItemForm = () => {
-  itemForm.name = "";
-  itemForm.description = "";
-  itemForm.price = 100;
-  itemForm.stock = 10;
-  itemForm.category = "DAILY_NECESSITIES";
-  itemForm.status = "AVAILABLE";
-  itemForm.sortWeight = 0;
-  itemImage.value = null;
-  itemImageUrl.value = "";
+const resetProductForm = () => {
+  productForm.name = "";
+  productForm.description = "";
+  productForm.price = 100;
+  productForm.stock = 10;
+  productForm.category = "DAILY_NECESSITIES";
+  productForm.status = "AVAILABLE";
+  productForm.sortWeight = 0;
+  productImage.value = null;
+  productImageUrl.value = "";
 
   // 清空文件输入
   const fileInput = document.querySelector(
-    'input[type="file"]',
+    'input[type="file"]'
   ) as HTMLInputElement;
   if (fileInput) {
     fileInput.value = "";
@@ -458,27 +459,22 @@ const resetItemForm = () => {
               />
             </label>
           </div>
-          <button
-            class="submit-button"
-            type="submit"
-          >
-            提交活动导入
-          </button>
+          <button class="submit-button" type="submit">提交活动导入</button>
         </form>
 
-        <form v-else class="form-card" @submit.prevent="submitItemImport">
+        <form v-else class="form-card" @submit.prevent="submitProductImport">
           <h3>商品导入</h3>
           <div class="form-grid">
             <label class="form-item">
               <span>商品名称</span>
-              <input v-model="itemForm.name" type="text" maxlength="50" />
+              <input v-model="productForm.name" type="text" maxlength="50" />
             </label>
 
             <label class="form-item">
               <span>商品分类</span>
-              <select v-model="itemForm.category">
+              <select v-model="productForm.category">
                 <option
-                  v-for="option in itemCategoryOptions"
+                  v-for="option in productTypeOptions"
                   :key="option.value"
                   :value="option.value"
                 >
@@ -490,7 +486,7 @@ const resetItemForm = () => {
             <label class="form-item full-width">
               <span>商品描述</span>
               <textarea
-                v-model="itemForm.description"
+                v-model="productForm.description"
                 rows="4"
                 maxlength="1000"
                 placeholder="选填：商品说明、兑换须知等"
@@ -499,19 +495,19 @@ const resetItemForm = () => {
 
             <label class="form-item">
               <span>兑换积分</span>
-              <input v-model.number="itemForm.price" type="number" min="1" />
+              <input v-model.number="productForm.price" type="number" min="1" />
             </label>
 
             <label class="form-item">
               <span>库存</span>
-              <input v-model.number="itemForm.stock" type="number" min="0" />
+              <input v-model.number="productForm.stock" type="number" min="0" />
             </label>
 
             <label class="form-item">
               <span>商品状态</span>
-              <select v-model="itemForm.status">
+              <select v-model="productForm.status">
                 <option
-                  v-for="option in itemStatusOptions"
+                  v-for="option in productStatusOptions"
                   :key="option.value"
                   :value="option.value"
                 >
@@ -523,7 +519,7 @@ const resetItemForm = () => {
             <label class="form-item">
               <span>排序权重</span>
               <input
-                v-model.number="itemForm.sortWeight"
+                v-model.number="productForm.sortWeight"
                 type="number"
                 min="0"
               />
@@ -539,17 +535,15 @@ const resetItemForm = () => {
                 />
                 选择图片
               </label>
-              <p>{{ itemImageText }}</p>
-              <div v-if="itemImageUrl" class="image-preview">
-                <img :src="itemImageUrl" alt="商品图片预览" />
-                <p>图片URL: {{ itemImageUrl }}</p>
+              <p>{{ productImageText }}</p>
+              <div v-if="productImageUrl" class="image-preview">
+                <img :src="productImageUrl" alt="商品图片预览" />
+                <p>图片URL: {{ productImageUrl }}</p>
               </div>
               <small>支持jpg、png等常见图片格式，大小不超过5MB</small>
             </div>
           </div>
-          <button class="submit-button" type="submit">
-            提交商品导入
-          </button>
+          <button class="submit-button" type="submit">提交商品导入</button>
         </form>
       </div>
     </section>

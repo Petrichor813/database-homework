@@ -1,4 +1,3 @@
-// AdminItemImportRequest.java
 package com.volunteer.backend.dto;
 
 import com.volunteer.backend.enums.ProductType;
