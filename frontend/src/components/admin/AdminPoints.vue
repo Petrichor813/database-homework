@@ -1,5 +1,5 @@
 <template>
-  <div class="page-shell">
+  <div class="admin-points">
     <header class="page-header">
       <h2>积分管理</h2>
       <p>审核积分发放与调整记录（占位）。</p>
@@ -167,7 +167,7 @@ const formatDateTime = (dateString: string) => {
 </script>
 
 <style scoped>
-.page-shell {
+.admin-points {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -188,12 +188,27 @@ const formatDateTime = (dateString: string) => {
   padding: 8px 12px;
   background: white;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar button:hover {
+  background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .toolbar .primary {
   background: #2563eb;
   color: white;
   border: none;
+}
+
+.toolbar .primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .table-card {
@@ -231,9 +246,18 @@ const formatDateTime = (dateString: string) => {
 .actions button {
   border: 1px solid #e5e7eb;
   background: white;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 6px 10px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actions button:hover {
+  background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 /* 弹窗样式 */

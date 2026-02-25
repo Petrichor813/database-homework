@@ -788,6 +788,13 @@ const handleReviewAction = async (
   border-radius: 8px;
   padding: 0 20px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-wrap button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .filters-wrap {
@@ -839,6 +846,16 @@ const handleReviewAction = async (
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.row-actions button:hover {
+  background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .row-actions button:disabled {
@@ -850,6 +867,12 @@ const handleReviewAction = async (
   background: #ef4444;
   border: none;
   color: white;
+}
+
+.row-actions .danger:hover {
+  background: red;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .row-actions .danger:disabled {
@@ -1008,6 +1031,16 @@ const handleReviewAction = async (
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.signup-actions button:hover {
+  background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .signup-actions .success {
@@ -1016,9 +1049,21 @@ const handleReviewAction = async (
   color: white;
 }
 
+.signup-actions .success:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
 .signup-actions .danger {
   background: #ef4444;
   border: none;
   color: white;
+}
+
+.signup-actions .danger:hover {
+  background: red;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 </style>

@@ -375,11 +375,13 @@ form {
   border-radius: 8px;
   cursor: pointer;
   margin-top: 10px;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
 }
 
 .register-button:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .register-button:disabled {

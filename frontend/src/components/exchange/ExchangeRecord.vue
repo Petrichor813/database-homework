@@ -298,10 +298,15 @@ td button {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 6px 12px;
+  transition: all 0.2s ease;
 }
 
 td button:hover {
   background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .loading,

@@ -1074,6 +1074,7 @@ const handleDeleteAccount = async () => {
   padding: 12px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .edit-profile-button:hover {
@@ -1082,7 +1083,6 @@ const handleDeleteAccount = async () => {
   border-color: #d1d5db;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
-  transition: all 0.2s ease;
 }
 
 .basic-info {
@@ -1141,13 +1141,13 @@ const handleDeleteAccount = async () => {
   border: none;
   border-radius: 8px;
   padding: 10px 14px;
+  transition: all 0.2s ease;
 }
 
 .apply-volunteer-button:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-  transition: all 0.2s ease;
 }
 
 .apply-volunteer-button:disabled {
@@ -1315,6 +1315,7 @@ const handleDeleteAccount = async () => {
   padding: 8px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .logout-button:hover {
@@ -1323,7 +1324,6 @@ const handleDeleteAccount = async () => {
   border-color: #cdcdcd;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
-  transition: all 0.2s ease;
 }
 
 .delete-button {
@@ -1334,13 +1334,13 @@ const handleDeleteAccount = async () => {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .delete-button:hover {
   background: red;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-  transition: all 0.2s ease;
 }
 
 .dialog-bg {
@@ -1476,13 +1476,13 @@ const handleDeleteAccount = async () => {
   padding: 10px 20px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .cancel-button:hover {
   background: #efefef;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
-  transition: all 0.2s ease;
 }
 
 .dialog-tip {
@@ -1502,13 +1502,13 @@ const handleDeleteAccount = async () => {
   border: none;
   border-radius: 8px;
   padding: 10px 14px;
+  transition: all 0.2s ease;
 }
 
 .logout-confirm-button:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-  transition: all 0.2s ease;
 }
 
 .delete-confirm-button {
@@ -1520,12 +1520,12 @@ const handleDeleteAccount = async () => {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .delete-confirm-button:hover {
   background: red;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-  transition: all 0.2s ease;
 }
 </style>

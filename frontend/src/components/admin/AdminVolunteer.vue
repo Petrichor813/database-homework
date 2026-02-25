@@ -345,16 +345,28 @@ const submitReview = async () => {
   padding: 6px 14px;
   border: 2px solid #e5e7eb;
   border-radius: 20px;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border 0.2s ease;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .filter-button.active {
   background: #2563eb;
   color: white;
   border: none;
+}
+
+.filter-button.active:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .table-card {

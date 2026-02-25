@@ -1,5 +1,5 @@
 <template>
-  <div class="page-shell">
+  <div class="admin-exchange">
     <header class="page-header">
       <h2>兑换管理</h2>
       <p>处理兑换订单与库存管理（占位）。</p>
@@ -163,7 +163,7 @@ const formatDateTime = (dateString: string) => {
 </script>
 
 <style scoped>
-.page-shell {
+.admin-exchange {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -208,9 +208,18 @@ const formatDateTime = (dateString: string) => {
 .actions button {
   border: 1px solid #e5e7eb;
   background: white;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 6px 10px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actions button:hover {
+  background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 /* 弹窗样式 */

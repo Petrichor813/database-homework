@@ -595,10 +595,24 @@ const resetItemForm = () => {
   transition: all 0.2s ease;
 }
 
+.tab-button:hover {
+  background: #f8fafc;
+  color: black;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+}
+
 .tab-button.active {
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
+}
+
+.tab-button.active:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .tab-page {
@@ -693,7 +707,7 @@ const resetItemForm = () => {
 .submit-button:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .image-preview {
