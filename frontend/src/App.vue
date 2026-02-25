@@ -93,7 +93,7 @@ const handleClickOutside = (event: MouseEvent) => {
 
 const displayName = computed(() => curUser.value?.username || "游客");
 const userCircleText = computed(() =>
-  displayName.value ? displayName.value.slice(0, 1) : "游",
+  displayName.value ? displayName.value.slice(0, 1) : "游"
 );
 
 const displayPoints = computed(() => curUser.value?.points ?? 0);
@@ -199,27 +199,49 @@ const refreshProfile = async (userId: number | string) => {
     curUser.value = newUser;
     localStorage.setItem("user", JSON.stringify(newUser));
   } catch (err) {
-    error("用户资料获取失败！");
+    const msg = err instanceof Error ? err.message : "用户资料获取失败";
+    error("用户资料获取失败", msg);
+    
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    curUser.value = null;
+    
+    if (route.path !== "/login" && route.path !== "/register") {
+      info("用户不存在或账号已注销", "请重新登录");
+      router.push("/login");
+    }
   }
 };
 
-const checkAuth = () => {
+const checkAuth = async () => {
   try {
     const localUser = localStorage.getItem("user");
-    if (localUser) {
-      const parsedUser = JSON.parse(localUser);
-      curUser.value = parsedUser;
-      if (parsedUser.id) {
-        refreshProfile(parsedUser.id);
-      }
+    if (!localUser) {
+      curUser.value = null;
       return;
     }
+
+    const parsedUser = JSON.parse(localUser);
+    if (!parsedUser.id) {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      curUser.value = null;
+      return;
+    }
+
+    await refreshProfile(parsedUser.id);
   } catch (err) {
-    error("用户信息读取失败！");
+    const msg = err instanceof Error ? err.message : "用户信息验证失败";
+    error("用户信息验证失败", msg);
+
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    curUser.value = null;
+
+    if (route.path !== "/login" && route.path !== "/register") {
+      router.push("/login");
+    }
   }
-  curUser.value = null;
 };
 
 // 个人中心用户信息修改之后，页面要及时修改
@@ -235,8 +257,8 @@ const handleUserProfileUpdate = (event: Event) => {
   checkAuth();
 };
 
-onMounted(() => {
-  checkAuth();
+onMounted(async () => {
+  await checkAuth();
   loading.value = false;
   document.addEventListener("click", handleClickOutside);
   window.addEventListener("user-updated", handleUserProfileUpdate);

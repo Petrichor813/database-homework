@@ -323,6 +323,21 @@ form {
   color: #374151;
 }
 
+.input-box {
+  width: 100%;
+  font-size: 14px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+.input-box:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
 .check-role {
   display: flex;
   gap: 15px;

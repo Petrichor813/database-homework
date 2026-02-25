@@ -8,7 +8,7 @@ import { useToast } from "../utils/toast";
 import Pagination from "./utils/Pagination.vue";
 
 const router = useRouter();
-const { success, error } = useToast();
+const { success, info, error } = useToast();
 const {
   pageObject,
   pageRanges,
@@ -68,10 +68,10 @@ const profile = ref<UserProfile | null>(null);
 
 const displayUserName = computed(() => profile.value?.username || "游客");
 const userCircleText = computed(() =>
-  displayUserName.value ? displayUserName.value.slice(0, 1) : "游",
+  displayUserName.value ? displayUserName.value.slice(0, 1) : "游"
 );
 const displayRealName = computed(
-  () => profile.value?.realName?.trim() || "未填写",
+  () => profile.value?.realName?.trim() || "未填写"
 );
 
 const roleMap: Record<UserRole, string> = {
@@ -81,8 +81,8 @@ const roleMap: Record<UserRole, string> = {
 };
 const roleLabel = computed(() =>
   profile.value?.role
-    ? (roleMap[profile.value.role] ?? profile.value.role)
-    : "游客",
+    ? roleMap[profile.value.role] ?? profile.value.role
+    : "游客"
 );
 
 const maskPhone = (phone?: string) => {
@@ -172,14 +172,14 @@ const saveProfile = async () => {
       {
         username,
         phone: editForm.phone.trim(),
-      },
+      }
     );
     profile.value = updated;
     updateLocalUser(updated);
     dispatchEvent(
       new CustomEvent("user-updated", {
         detail: { username: updated.username ?? username },
-      }),
+      })
     );
     success("保存成功", "用户资料已更新");
     showEditDialog.value = false;
@@ -220,7 +220,7 @@ const canApply = computed(() => {
 const applyLabel = computed(() =>
   profile.value?.volunteerStatus === "REJECTED"
     ? "重新提交申请"
-    : "申请认证为志愿者",
+    : "申请认证为志愿者"
 );
 
 const openApplyDialog = () => {
@@ -265,7 +265,7 @@ const applyVolunteer = async () => {
         realName,
         phone,
         applyReason: applyForm.applyReason.trim(),
-      },
+      }
     );
     profile.value = updated;
     updateLocalUser(updated);
@@ -280,7 +280,7 @@ const applyVolunteer = async () => {
 const showModify = computed(
   () =>
     profile.value?.role === "USER" &&
-    profile.value?.volunteerStatus === "REVIEWING",
+    profile.value?.volunteerStatus === "REVIEWING"
 );
 
 const openModifyDialog = () => {
@@ -328,7 +328,7 @@ const modifyApply = async () => {
         realName,
         phone,
         applyReason: modifyForm.applyReason.trim(),
-      },
+      }
     );
     profile.value = updated;
     updateLocalUser(updated);
@@ -402,7 +402,7 @@ const fetchPointsRecords = async (page: number) => {
 
     recordLoading.value = true;
     const data = await getJson<PageResponse<PointsChangeRecord>>(
-      `/api/volunteer/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/volunteer/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`
     );
     records.value = data.content;
     updatePageState(data);
@@ -439,7 +439,7 @@ const formattedRecords = computed<FormattedRecord[]>(() =>
       amount: amountStr,
       note: record.note || "—",
     };
-  }),
+  })
 );
 
 const monthlyChange = computed(() => {
@@ -472,18 +472,22 @@ const loadProfile = async () => {
 
   try {
     const parsedUser = JSON.parse(localUser);
-    profile.value = parsedUser;
     if (!parsedUser.id) {
       return;
     }
 
     const data = await getJson<UserProfile>(
-      `/api/user/${parsedUser.id}/profile`,
+      `/api/user/${parsedUser.id}/profile`
     );
     profile.value = data;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "获取用户信息失败";
     error("加载失败", msg);
+    
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    info("用户不存在或账号已注销", "请重新登录");
+    router.push("/login");
   }
 };
 
@@ -528,10 +532,7 @@ const closeDeleteDialog = () => {
 
 const handleDeleteAccount = async () => {
   try {
-    await deleteJson<{ message: string }>(
-      `/api/user/${profile.value?.id}`,
-      {},
-    );
+    await deleteJson<{ message: string }>(`/api/user/${profile.value?.id}`, {});
   } catch (err) {
     const msg = err instanceof Error ? err.message : "注销账号失败";
     error("注销失败", msg);
@@ -1000,9 +1001,7 @@ const handleDeleteAccount = async () => {
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .tab-page {
@@ -1401,9 +1400,7 @@ const handleDeleteAccount = async () => {
   padding: 8px 36px 8px 10px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-row textarea:focus {
@@ -1431,9 +1428,7 @@ const handleDeleteAccount = async () => {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .clear-button:hover {
