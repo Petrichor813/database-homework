@@ -16,7 +16,7 @@ import com.volunteer.backend.service.SignupRecordService;
 import com.volunteer.backend.service.VolunteerService;
 
 @RestController
-@RequestMapping("/api/volunteers")
+@RequestMapping("/api/volunteer")
 public class VolunteerController {
     private final VolunteerService volunteerService;
     private final SignupRecordService signupRecordService;

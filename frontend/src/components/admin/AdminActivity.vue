@@ -107,7 +107,7 @@ const fetchActivities = async (page = 0) => {
     }
 
     const response = await getJson<PageResponse<Activity>>(
-      `/api/activities/get-activities?${query.toString()}`
+      `/api/activity/get-activities?${query.toString()}`
     );
 
     activities.value = response.content;
@@ -171,7 +171,7 @@ const handleDelete = async (activity: Activity) => {
   }
 
   try {
-    await deleteJson(`/api/admin/activities/${activity.id}`);
+    await deleteJson(`/api/admin/activity/${activity.id}`);
     success("删除成功", "活动已删除");
     await fetchActivities(pageObject.value.curPage);
   } catch (e) {
@@ -277,7 +277,7 @@ const handleSaveActivity = async () => {
   };
 
   try {
-    await putJson(`/api/admin/activities/${curActivity.value.id}`, payload);
+    await putJson(`/api/admin/activity/${curActivity.value.id}`, payload);
     success("保存成功", "活动信息已更新");
     closeEditDialog();
     await fetchActivities(pageObject.value.curPage);
@@ -291,7 +291,7 @@ const openSignupDialog = async (activity: Activity) => {
   curActivity.value = activity;
   try {
     const records = await getJson<SignupRecord[]>(
-      `/api/admin/activities/${activity.id}/signups`
+      `/api/admin/activity/${activity.id}/signups`
     );
     signupRecords.value = records;
     showSignupDialog.value = true;
@@ -369,7 +369,7 @@ const handleSaveSignup = async () => {
 
   try {
     await putJson(
-      `/api/admin/activities/${curActivity.value.id}/signups/${curSignupRecord.value.id}`,
+      `/api/admin/activity/${curActivity.value.id}/signups/${curSignupRecord.value.id}`,
       payload
     );
     success("保存成功", "报名记录已更新");
@@ -389,7 +389,7 @@ const handleReviewAction = async (
 
   try {
     await putJson(
-      `/api/admin/activities/${curActivity.value.id}/signups/${record.id}`,
+      `/api/admin/activity/${curActivity.value.id}/signups/${record.id}`,
       { status: action }
     );
     success("操作成功", "报名状态已更新");

@@ -74,7 +74,7 @@ const fetchExchangeRecords = async (
     loading.value = true;
 
     const data = await getJson<PageResponse<ExchangeRecord>>(
-      `/api/volunteers/${user.volunteerId}/exchange-records?page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/volunteer/${user.volunteerId}/exchange-records?page=${page}&size=${pageObject.value.pageSize}`,
     );
 
     records.value = data.content;

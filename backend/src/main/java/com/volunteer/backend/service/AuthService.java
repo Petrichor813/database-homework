@@ -19,7 +19,7 @@ import com.volunteer.backend.enums.VolunteerStatus;
 import com.volunteer.backend.repository.TokenRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
-import com.volunteer.backend.security.JWTUtil;
+import com.volunteer.backend.security.JwtUtils;
 
 import jakarta.transaction.Transactional;
 
@@ -29,7 +29,7 @@ public class AuthService {
     private final VolunteerRepository volunteerRepository;
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JWTUtil jwtUtil;
+    private final JwtUtils jwtUtil;
 
     // @formatter:off
     public AuthService(
@@ -37,7 +37,7 @@ public class AuthService {
         VolunteerRepository volunteerRepository,
         TokenRepository tokenRepository,
         PasswordEncoder passwordEncoder,
-        JWTUtil jwtUtil
+        JwtUtils jwtUtil
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;

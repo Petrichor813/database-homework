@@ -17,7 +17,7 @@ import com.volunteer.backend.entity.User;
 import com.volunteer.backend.service.ActivityService;
 
 @RestController
-@RequestMapping("/api/activities")
+@RequestMapping("/api/activity")
 public class ActivityController {
     private final ActivityService activityService;
 

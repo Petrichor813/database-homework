@@ -94,7 +94,7 @@ const fetchActivities = async (page = 0) => {
     }
 
     const response = await getJson<PageResponse<Activity>>(
-      `/api/activities/get-activities?${query.toString()}`,
+      `/api/activity/get-activities?${query.toString()}`,
     );
 
     // 设置默认报名状态为未报名
@@ -171,7 +171,7 @@ const canCancel = (activity: Activity) => {
 const handleSignup = async (activity: Activity) => {
   try {
     const response = await postJson<{ id: number; message: string }>(
-      "/api/activities/signup",
+      "/api/activity/signup",
       {
         activityId: activity.id,
         volunteerStartTime: activity.startTime,
@@ -196,7 +196,7 @@ const handleSignup = async (activity: Activity) => {
 const handleCancelSignup = async (activity: Activity) => {
   try {
     const response = await postJson<{ id: number; message: string }>(
-      "/api/activities/cancel-signup",
+      "/api/activity/cancel-signup",
       {
         activityId: activity.id,
       },

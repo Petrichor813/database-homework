@@ -3,9 +3,9 @@ package com.volunteer.backend.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.volunteer.backend.entity.ExchangeItem;
+import com.volunteer.backend.entity.Product;
 
 @Repository
-public interface ExchangeItemRepository extends JpaRepository<ExchangeItem, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long> {
 
 }

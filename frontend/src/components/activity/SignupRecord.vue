@@ -57,7 +57,7 @@ const canCancelSignup = (record: SignupRecord) => {
 const handleCancelSignup = async (record: SignupRecord) => {
   try {
     const response = await postJson<{ id: number; message: string }>(
-      "/api/activities/cancel-signup",
+      "/api/activity/cancel-signup",
       {
         activityId: record.activityId,
       },
@@ -132,7 +132,7 @@ const fetchSignupRecords = async (page: number = pageObject.value.curPage) => {
     loading.value = true;
 
     const data = await getJson<PageResponse<SignupRecord>>(
-      `/api/volunteers/${user.volunteerId}/signup-records?page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/volunteer/${user.volunteerId}/signup-records?page=${page}&size=${pageObject.value.pageSize}`,
     );
 
     records.value = data.content;

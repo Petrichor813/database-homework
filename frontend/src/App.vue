@@ -189,7 +189,7 @@ router.afterEach(() => {
 
 const refreshProfile = async (userId: number | string) => {
   try {
-    const profile = await getJson<UserProfile>(`/api/users/${userId}/profile`);
+    const profile = await getJson<UserProfile>(`/api/user/${userId}/profile`);
     const oldUser = curUser.value ?? {};
     const newUser = {
       ...oldUser,

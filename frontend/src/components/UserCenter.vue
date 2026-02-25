@@ -168,7 +168,7 @@ const saveProfile = async () => {
 
   try {
     const updated = await putJson<UserProfile>(
-      `/api/users/${profile.value.id}/profile`,
+      `/api/user/${profile.value.id}/profile`,
       {
         username,
         phone: editForm.phone.trim(),
@@ -260,7 +260,7 @@ const applyVolunteer = async () => {
 
   try {
     const updated = await postJson<UserProfile>(
-      `/api/users/${profile.value.id}/volunteer-apply`,
+      `/api/user/${profile.value.id}/volunteer-apply`,
       {
         realName,
         phone,
@@ -323,7 +323,7 @@ const modifyApply = async () => {
 
   try {
     const updated = await putJson<UserProfile>(
-      `/api/users/${profile.value.id}/volunteer-application`,
+      `/api/user/${profile.value.id}/volunteer-application`,
       {
         realName,
         phone,
@@ -402,7 +402,7 @@ const fetchPointsRecords = async (page: number) => {
 
     recordLoading.value = true;
     const data = await getJson<PageResponse<PointsChangeRecord>>(
-      `/api/volunteers/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/volunteer/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`,
     );
     records.value = data.content;
     updatePageState(data);
@@ -478,7 +478,7 @@ const loadProfile = async () => {
     }
 
     const data = await getJson<UserProfile>(
-      `/api/users/${parsedUser.id}/profile`,
+      `/api/user/${parsedUser.id}/profile`,
     );
     profile.value = data;
   } catch (err) {
@@ -529,7 +529,7 @@ const closeDeleteDialog = () => {
 const handleDeleteAccount = async () => {
   try {
     await deleteJson<{ message: string }>(
-      `/api/users/${profile.value?.id}`,
+      `/api/user/${profile.value?.id}`,
       {},
     );
   } catch (err) {

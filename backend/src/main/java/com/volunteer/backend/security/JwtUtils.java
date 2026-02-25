@@ -15,14 +15,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 @Component
-public class JWTUtil {
+public class JwtUtils {
     private static final String USER_ID_CLAIM = "uid";
 
     private final long expiration; // 单位是毫秒
     private final SecretKey key;
 
     // @formatter:off
-    public JWTUtil(
+    public JwtUtils(
         @Value("${jwt.secret}") String secret,
         @Value("${jwt.expiration}") long expiration
     ) {

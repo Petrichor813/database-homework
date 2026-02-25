@@ -22,7 +22,7 @@ import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.service.AdminActivityService;
 
 @RestController
-@RequestMapping("/api/admin/activities")
+@RequestMapping("/api/admin/activity")
 public class AdminActivityController {
     private final AdminActivityService adminActivityService;
 

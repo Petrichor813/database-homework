@@ -13,7 +13,7 @@ import com.volunteer.backend.config.CosProperties;
 import com.volunteer.backend.service.CosStsService;
 
 @RestController
-@RequestMapping("/api/sts")
+@RequestMapping("/api/cos-sts")
 public class CosStsController {
     private final CosProperties cosProperties;
     private final CosStsService cosStsService;

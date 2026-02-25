@@ -15,7 +15,7 @@ import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.service.AdminVolunteerService;
 
 @RestController
-@RequestMapping("/api/admin/volunteers")
+@RequestMapping("/api/admin/volunteer")
 public class AdminVolunteerController {
     private final AdminVolunteerService adminVolunteerService;
 

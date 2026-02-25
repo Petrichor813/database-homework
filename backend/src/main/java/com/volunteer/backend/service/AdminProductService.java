@@ -2,19 +2,19 @@ package com.volunteer.backend.service;
 
 import org.springframework.stereotype.Service;
 
-import com.volunteer.backend.dto.AdminItemImportRequest;
-import com.volunteer.backend.entity.ExchangeItem;
-import com.volunteer.backend.repository.ExchangeItemRepository;
+import com.volunteer.backend.dto.AdminProductImportRequest;
+import com.volunteer.backend.entity.Product;
+import com.volunteer.backend.repository.ProductRepository;
 
 @Service
-public class AdminExchangeItemService {
-    private final ExchangeItemRepository exchangeItemRepository;
+public class AdminProductService {
+    private final ProductRepository exchangeItemRepository;
 
-    public AdminExchangeItemService(ExchangeItemRepository exchangeItemRepository) {
+    public AdminProductService(ProductRepository exchangeItemRepository) {
         this.exchangeItemRepository = exchangeItemRepository;
     }
 
-    public ExchangeItem importItem(AdminItemImportRequest request) throws IllegalArgumentException {
+    public Product importItem(AdminProductImportRequest request) throws IllegalArgumentException {
         if (request == null) {
             throw new IllegalArgumentException("商品导入请求不能为空");
         }
@@ -44,7 +44,7 @@ public class AdminExchangeItemService {
             throw new IllegalArgumentException("商品状态不能为空");
         }
 
-        ExchangeItem item = new ExchangeItem(name.trim(), request.getPrice(), request.getStock());
+        Product item = new Product(name.trim(), request.getPrice(), request.getStock());
 
         String desc = request.getDescription();
         if (desc == null || desc.trim().isEmpty()) {

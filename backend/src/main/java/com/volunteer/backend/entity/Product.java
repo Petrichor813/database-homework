@@ -2,8 +2,8 @@ package com.volunteer.backend.entity;
 
 import java.time.LocalDateTime;
 
-import com.volunteer.backend.enums.ItemCategory;
-import com.volunteer.backend.enums.ItemStatus;
+import com.volunteer.backend.enums.ProductType;
+import com.volunteer.backend.enums.ProductStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,8 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "exchange_item")
-public class ExchangeItem {
+@Table(name = "product")
+public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,11 +38,11 @@ public class ExchangeItem {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private ItemCategory category;
+    private ProductType category;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ItemStatus status;
+    private ProductStatus status;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createTime;
@@ -53,15 +53,15 @@ public class ExchangeItem {
     @Column(nullable = false)
     private Integer sortWeight;
 
-    public ExchangeItem() {
+    public Product() {
         this.stock = 0;
         this.sortWeight = 0;
-        this.status = ItemStatus.AVAILABLE;
+        this.status = ProductStatus.AVAILABLE;
         this.createTime = LocalDateTime.now();
     }
 
     // @formatter:off
-    public ExchangeItem
+    public Product
     (
         String name,
         Double price,
@@ -121,19 +121,19 @@ public class ExchangeItem {
         this.imageUrl = imageUrl;
     }
 
-    public ItemCategory getCategory() {
+    public ProductType getCategory() {
         return category;
     }
 
-    public void setCategory(ItemCategory category) {
+    public void setCategory(ProductType category) {
         this.category = category;
     }
 
-    public ItemStatus getStatus() {
+    public ProductStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ItemStatus status) {
+    public void setStatus(ProductStatus status) {
         this.status = status;
     }
 

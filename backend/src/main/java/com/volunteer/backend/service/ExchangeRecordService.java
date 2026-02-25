@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.volunteer.backend.dto.ExchangeRecordResponse;
 import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.entity.ExchangeItem;
+import com.volunteer.backend.entity.Product;
 import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.Volunteer;
-import com.volunteer.backend.repository.ExchangeItemRepository;
+import com.volunteer.backend.repository.ProductRepository;
 import com.volunteer.backend.repository.ExchangeRecordRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
 
@@ -24,13 +24,13 @@ public class ExchangeRecordService {
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final VolunteerRepository volunteerRepository;
-    private final ExchangeItemRepository exchangeItemRepository;
+    private final ProductRepository exchangeItemRepository;
     private final ExchangeRecordRepository exchangeRecordRepository;
 
     // @formatter:off
     public ExchangeRecordService(
         VolunteerRepository volunteerRepository,
-        ExchangeItemRepository exchangeItemRepository,
+        ProductRepository exchangeItemRepository,
         ExchangeRecordRepository exchangeRecordRepository
     ) {
         // @formatter:on
@@ -53,11 +53,11 @@ public class ExchangeRecordService {
         List<ExchangeRecord> records = recordPage.getContent();
 
         for (ExchangeRecord r : records) {
-            Optional<ExchangeItem> ei = exchangeItemRepository.findById(r.getItemId());
+            Optional<Product> ei = exchangeItemRepository.findById(r.getItemId());
             if (ei.isEmpty()) {
                 throw new IllegalArgumentException("商品不存在");
             }
-            ExchangeItem item = ei.get();
+            Product item = ei.get();
 
             // @formatter:off
             content.add(

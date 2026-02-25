@@ -1,6 +1,6 @@
 package com.volunteer.backend.enums;
 
-public enum ItemCategory {
+public enum ProductType {
     DAILY_NECESSITIES, // 日用品
     BOOKS, // 书籍
     STATIONARY, // 文具

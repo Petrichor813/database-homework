@@ -1,30 +1,30 @@
 // AdminItemImportRequest.java
 package com.volunteer.backend.dto;
 
-import com.volunteer.backend.enums.ItemCategory;
-import com.volunteer.backend.enums.ItemStatus;
+import com.volunteer.backend.enums.ProductType;
+import com.volunteer.backend.enums.ProductStatus;
 
-public class AdminItemImportRequest {
+public class AdminProductImportRequest {
     private String name;
     private String description;
     private Double price;
     private Integer stock;
-    private ItemCategory category;
-    private ItemStatus status;
+    private ProductType category;
+    private ProductStatus status;
     private Integer sortWeight;
     private String imageUrl;
 
-    public AdminItemImportRequest() {
+    public AdminProductImportRequest() {
     }
 
     // @formatter:off
-    public AdminItemImportRequest(
+    public AdminProductImportRequest(
         String name,
         String description,
         Double price,
         Integer stock,
-        ItemCategory category,
-        ItemStatus status,
+        ProductType category,
+        ProductStatus status,
         Integer sortWeight,
         String imageUrl
     ) {
@@ -71,19 +71,19 @@ public class AdminItemImportRequest {
         this.stock = stock;
     }
 
-    public ItemCategory getCategory() {
+    public ProductType getCategory() {
         return category;
     }
 
-    public void setCategory(ItemCategory category) {
+    public void setCategory(ProductType category) {
         this.category = category;
     }
 
-    public ItemStatus getStatus() {
+    public ProductStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ItemStatus status) {
+    public void setStatus(ProductStatus status) {
         this.status = status;
     }
 

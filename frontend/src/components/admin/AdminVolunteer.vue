@@ -75,7 +75,7 @@ const fetchVolunteers = async (page: number) => {
   loading.value = true;
   try {
     const data = await getJson<PageResponse<Volunteer>>(
-      `/api/admin/volunteers?status=${curFilter.value}&page=${page}&size=${pageObject.value.pageSize}`,
+      `/api/admin/volunteer?status=${curFilter.value}&page=${page}&size=${pageObject.value.pageSize}`,
     );
     volunteers.value = data.content;
     updatePageState(data);
@@ -161,7 +161,7 @@ const submitReview = async () => {
   }
 
   try {
-    await postJson(`/api/admin/volunteers/${curVolunteer.value.id}/review`, {
+    await postJson(`/api/admin/volunteer/${curVolunteer.value.id}/review`, {
       action: curAction.value,
       note,
     });

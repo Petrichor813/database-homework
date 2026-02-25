@@ -130,7 +130,7 @@ const uploadImageToCos = async (file: File): Promise<string> => {
   try {
     // 1. 获取临时凭证
     const credential = (await getJson(
-      "/api/sts/credential",
+      "/api/cos-sts/credential",
     )) as StsCredentialResponse;
 
     // 2. 使用临时凭证初始化COS客户端
@@ -292,7 +292,7 @@ const submitActivityImport = async () => {
       maxParticipants: activityForm.maxParticipants,
     };
 
-    await postJson("/api/admin/activities/import", request);
+    await postJson("/api/admin/activity/import", request);
     success("导入活动数据成功", `已导入活动 ${activityForm.title}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "未知错误";
@@ -317,7 +317,7 @@ const submitItemImport = async () => {
       imageUrl: itemImageUrl.value || "", // 添加图片URL
     };
 
-    await postJson("/api/admin/item/import", request);
+    await postJson("/api/admin/product/import", request);
     success("导入商品数据成功", `已导入商品 ${itemForm.name}`);
 
     // 重置表单
