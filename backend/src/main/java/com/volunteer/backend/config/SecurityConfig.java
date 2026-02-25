@@ -30,10 +30,10 @@ public class SecurityConfig {
         // @formatter:off
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**") // 允许访问的路径
+                .requestMatchers("/api/auth/**", "/api/product/get-products", "/api/activity/get-activities")
                 .permitAll()
                 .anyRequest()
-                .authenticated() // 其他请求需要认证
+                .authenticated()
             )
             .addFilterBefore(
                 tokenAuthenticationFilter,

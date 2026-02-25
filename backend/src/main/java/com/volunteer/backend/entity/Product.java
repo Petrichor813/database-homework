@@ -31,7 +31,7 @@ public class Product {
     private Double price; // 兑换商品所需的积分
 
     @Column(nullable = false)
-    private Integer stock;
+    private Long stock;
 
     @Column(nullable = false, length = 200)
     private String imageUrl;
@@ -54,7 +54,7 @@ public class Product {
     private Integer sortWeight;
 
     public Product() {
-        this.stock = 0;
+        this.stock = 0L;
         this.sortWeight = 0;
         this.status = ProductStatus.AVAILABLE;
         this.createTime = LocalDateTime.now();
@@ -65,7 +65,7 @@ public class Product {
     (
         String name,
         Double price,
-        Integer stock
+        Long stock
     ) {
         this.name = name;
         this.price = price;
@@ -105,11 +105,11 @@ public class Product {
         this.price = requirePoints;
     }
 
-    public Integer getStock() {
+    public Long getStock() {
         return stock;
     }
 
-    public void setStock(Integer stock) {
+    public void setStock(Long stock) {
         this.stock = stock;
     }
 

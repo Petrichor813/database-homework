@@ -56,7 +56,6 @@ const routes = [
     path: "/exchange",
     name: "Exchange",
     component: Exchange,
-    meta: { requiresAuth: true },
   },
   {
     path: "/exchange-records",

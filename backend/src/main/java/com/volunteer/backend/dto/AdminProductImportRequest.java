@@ -7,7 +7,7 @@ public class AdminProductImportRequest {
     private String name;
     private String description;
     private Double price;
-    private Integer stock;
+    private Long stock;
     private ProductType category;
     private ProductStatus status;
     private Integer sortWeight;
@@ -21,7 +21,7 @@ public class AdminProductImportRequest {
         String name,
         String description,
         Double price,
-        Integer stock,
+        Long stock,
         ProductType category,
         ProductStatus status,
         Integer sortWeight,
@@ -62,11 +62,11 @@ public class AdminProductImportRequest {
         this.price = price;
     }
 
-    public Integer getStock() {
+    public Long getStock() {
         return stock;
     }
 
-    public void setStock(Integer stock) {
+    public void setStock(Long stock) {
         this.stock = stock;
     }
 
