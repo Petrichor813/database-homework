@@ -141,4 +141,36 @@ public class AdminVolunteerService {
         Volunteer saved = volunteerRepository.save(volunteer);
         return buildResponse(saved);
     }
+
+    public PageResponse<AdminVolunteerResponse> searchVolunteers(String keyword, int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("页码不能小于0");
+        }
+        if (size <= 0) {
+            throw new IllegalArgumentException("每页展示记录的数量不能小于等于0");
+        }
+
+        String trimmedKeyword = (keyword != null) ? keyword.trim() : "";
+        if (trimmedKeyword.isEmpty()) {
+            throw new IllegalArgumentException("搜索关键词不能为空");
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Volunteer> volunteerPage = volunteerRepository.findByKeyword(trimmedKeyword, pageable);
+
+        List<Volunteer> volunteers = volunteerPage.getContent();
+        List<AdminVolunteerResponse> responses = new ArrayList<>();
+
+        for (Volunteer v : volunteers) {
+            responses.add(buildResponse(v));
+        }
+
+        return new PageResponse<>(
+            responses,
+            volunteerPage.getNumber(),
+            volunteerPage.getSize(),
+            volunteerPage.getTotalElements(),
+            volunteerPage.getTotalPages()
+        );
+    }
 }
