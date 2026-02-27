@@ -108,6 +108,18 @@ const getCategoryLabel = (category: ProductType) => {
   return option ? option.label : category;
 };
 
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  img.style.display = 'none';
+  const parent = img.parentElement;
+  if (parent) {
+    const placeholder = parent.querySelector('.image-placeholder');
+    if (placeholder) {
+      (placeholder as HTMLElement).style.display = 'flex';
+    }
+  }
+};
+
 onMounted(() => {
   fetchProducts(0);
 });
@@ -161,7 +173,15 @@ onMounted(() => {
         class="product-card"
         :class="{ 'sold-out': prod.status === 'SOLD_OUT' }"
       >
-        <div class="image-placeholder">商品图片占位</div>
+        <div class="product-image">
+          <img
+            v-if="prod.imageUrl"
+            :src="prod.imageUrl"
+            :alt="prod.name"
+            @error="handleImageError"
+          />
+          <div v-else class="image-placeholder">暂无图片</div>
+        </div>
         <div class="product-body">
           <h3>{{ prod.name }}</h3>
           <p class="category">{{ getCategoryLabel(prod.category) }}</p>
@@ -302,6 +322,20 @@ onMounted(() => {
 .product-card.sold-out {
   opacity: 0.7;
   background: #f9fafb;
+}
+
+.product-image {
+  height: 160px;
+  background: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .image-placeholder {
