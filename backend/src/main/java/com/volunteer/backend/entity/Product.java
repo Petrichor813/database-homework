@@ -33,7 +33,7 @@ public class Product {
     @Column(nullable = false)
     private Long stock;
 
-    @Column(nullable = false, length = 200)
+    @Column(length = 200)
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
@@ -54,7 +54,6 @@ public class Product {
     private Integer sortWeight;
 
     public Product() {
-        this.stock = 0L;
         this.sortWeight = 0;
         this.status = ProductStatus.AVAILABLE;
         this.createTime = LocalDateTime.now();
@@ -67,6 +66,7 @@ public class Product {
         Double price,
         Long stock
     ) {
+        this();
         this.name = name;
         this.price = price;
         this.stock = stock;

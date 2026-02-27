@@ -799,6 +799,7 @@ const deleteProduct = async () => {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 20px;
 }
 
 .filter-button {
@@ -989,15 +990,16 @@ const deleteProduct = async () => {
 
 .toolbar {
   display: flex;
-  gap: 12px;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .search-box {
   position: relative;
   flex: 1;
-  max-width: 320px;
+  max-width: 500px;
 }
 
 .search-box input {
