@@ -101,6 +101,7 @@ public class AuthService {
         return user;
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = authenticate(request.getUsername(), request.getPassword(), request.getRole());
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());

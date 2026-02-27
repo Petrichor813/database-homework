@@ -2,12 +2,18 @@ package com.volunteer.backend.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.volunteer.backend.enums.SignupStatus;
 
 public class AdminSignupUpdateRequest {
     private SignupStatus status;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime volunteerStartTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime volunteerEndTime;
+
     private Integer actualHours;
     private Double points;
     private String note;

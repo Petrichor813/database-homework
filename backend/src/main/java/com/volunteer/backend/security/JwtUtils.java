@@ -1,5 +1,6 @@
 package com.volunteer.backend.security;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
@@ -27,7 +28,12 @@ public class JwtUtils {
         @Value("${jwt.expiration}") long expiration
     ) {
         // @formatter:on
-        byte[] decodedKey = Base64.getUrlDecoder().decode(secret);
+        byte[] decodedKey;
+        try {
+            decodedKey = Base64.getUrlDecoder().decode(secret);
+        } catch (IllegalArgumentException e) {
+            decodedKey = secret.getBytes(StandardCharsets.UTF_8);
+        }
         this.key = Keys.hmacShaKeyFor(decodedKey);
         this.expiration = expiration;
     }

@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 
 import com.volunteer.backend.security.TokenAuthenticationFilter;
 import com.volunteer.backend.service.AuthService;
@@ -29,6 +30,7 @@ public class SecurityConfig {
             throws Exception {
         // @formatter:off
         http.csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/product/get-products", "/api/activity/get-activities")
                 .permitAll()

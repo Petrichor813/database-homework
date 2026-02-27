@@ -4,3 +4,5 @@ backup/
 
 tsconfig.json
 package*.json
+*.md
+!README.md

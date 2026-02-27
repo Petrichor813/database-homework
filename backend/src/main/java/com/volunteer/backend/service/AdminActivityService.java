@@ -148,8 +148,10 @@ public class AdminActivityService {
             activity.setStatus(request.getStatus());
         }
 
-        if (activity.getStartTime().isAfter(activity.getEndTime())) {
-            throw new IllegalArgumentException("活动结束时间必须晚于开始时间");
+        if (activity.getStartTime() != null && activity.getEndTime() != null) {
+            if (activity.getStartTime().isAfter(activity.getEndTime())) {
+                throw new IllegalArgumentException("活动结束时间必须晚于开始时间");
+            }
         }
 
         return activityRepository.save(activity);

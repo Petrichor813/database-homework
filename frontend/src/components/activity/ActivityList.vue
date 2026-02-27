@@ -94,7 +94,7 @@ const fetchActivities = async (page = 0) => {
     }
 
     const response = await getJson<PageResponse<Activity>>(
-      `/api/activity/get-activities?${query.toString()}`,
+      `/api/activity/get-activities?${query.toString()}`
     );
 
     // 设置默认报名状态为未报名
@@ -176,7 +176,7 @@ const handleSignup = async (activity: Activity) => {
         activityId: activity.id,
         volunteerStartTime: activity.startTime,
         volunteerEndTime: activity.endTime,
-      },
+      }
     );
 
     // 更新活动报名状态
@@ -199,7 +199,7 @@ const handleCancelSignup = async (activity: Activity) => {
       "/api/activity/cancel-signup",
       {
         activityId: activity.id,
-      },
+      }
     );
 
     // 更新活动报名状态
@@ -299,10 +299,12 @@ onMounted(() => {
         </div>
 
         <div class="row-actions">
-          <button type="button" @click="showDetail(item)">详细信息</button>
+          <button type="button" class="detail-button" @click="showDetail(item)">
+            详细信息
+          </button>
           <button
             type="button"
-            class="primary"
+            class="signup-button"
             :disabled="
               !canSignup(item.status) ||
               (item.signupStatus !== undefined &&
@@ -321,7 +323,7 @@ onMounted(() => {
           </button>
           <button
             type="button"
-            class="danger"
+            class="cancel-button"
             :disabled="!canCancel(item)"
             @click="handleCancelSignup(item)"
           >
@@ -456,20 +458,26 @@ onMounted(() => {
 }
 
 .row-actions button {
-  background: white;
   color: #111827;
-  border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.row-actions .primary {
+.row-actions .detail-button {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: black;
+}
+
+.row-actions .signup-button {
   background: #2563eb;
   border: none;
   color: white;
 }
 
-.row-actions .danger {
+.row-actions .cancel-button {
   background: #ef4444;
   border: none;
   color: white;
@@ -486,7 +494,6 @@ onMounted(() => {
   padding: 18px 0;
 }
 
-/* 弹窗样式 */
 .dialog-bg {
   display: flex;
   justify-content: center;
