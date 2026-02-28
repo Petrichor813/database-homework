@@ -51,7 +51,7 @@ const handleJoin = () => {
     return;
   }
 
-  info("您尚未认证为志愿者，完成认证后即可报名参与活动");
+  info("您尚未认证为志愿者", "完成认证后即可报名参与活动");
 };
 
 const mockStats = [

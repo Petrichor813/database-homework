@@ -216,7 +216,9 @@ const editSignupForm = ref({
   note: "",
 });
 
-const parseDateTime = (dateTimeStr: string | null | undefined): { date: string; time: string } => {
+const parseDateTime = (
+  dateTimeStr: string | null | undefined
+): { date: string; time: string } => {
   if (!dateTimeStr) {
     return { date: "", time: "" };
   }
@@ -231,7 +233,7 @@ const parseDateTime = (dateTimeStr: string | null | undefined): { date: string; 
   if (!time) {
     return { date, time: "" };
   }
-  
+
   const timeParts = time.split(":");
   if (timeParts.length < 2) {
     return { date, time: "" };
@@ -408,7 +410,7 @@ const handleReviewAction = async (
       <p>发布、编辑、删除活动，管理志愿者报名</p>
     </header>
 
-    <section class="search-wrap">
+    <section class="search-box">
       <input
         v-model.trim="keyword"
         type="text"
@@ -418,7 +420,7 @@ const handleReviewAction = async (
       <button type="button" @click="handleSearch">搜索</button>
     </section>
 
-    <section class="filters-wrap">
+    <section class="filters">
       <label class="filter-item">
         <span>日期</span>
         <input v-model="filterDate" type="date" @change="handleSearch" />
@@ -484,17 +486,22 @@ const handleReviewAction = async (
         <div class="row-actions">
           <button
             type="button"
+            class="edit-button"
             :disabled="!canEdit(item.status)"
             @click="openEditDialog(item)"
           >
             编辑
           </button>
-          <button type="button" @click="openSignupDialog(item)">
+          <button
+            type="button"
+            class="lookup-button"
+            @click="openSignupDialog(item)"
+          >
             查看报名
           </button>
           <button
             type="button"
-            class="danger"
+            class="delete-button"
             :disabled="!canDelete(item.status)"
             @click="handleDelete(item)"
           >
@@ -758,8 +765,8 @@ const handleReviewAction = async (
   color: #6b7280;
 }
 
-.search-wrap,
-.filters-wrap,
+.search-box,
+.filters,
 .activity-list {
   background: white;
   border: 1px solid #e5e7eb;
@@ -767,21 +774,35 @@ const handleReviewAction = async (
   padding: 14px;
 }
 
-.search-wrap {
+.search-box {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
 }
 
-.search-wrap input,
-.filters-wrap select,
-.filters-wrap input {
+.search-box input,
+.filters select,
+.filters input {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
+  cursor: pointer;
+  transition: all 0.1s ease;
 }
 
-.search-wrap button {
+.search-box input:hover,
+.filters select:hover,
+.filters input:hover {
+  outline: 1px solid #2563eb;
+}
+
+.search-box input:focus,
+.filters select:focus,
+.filters input:focus {
+  outline: 2px solid #2563eb;
+}
+
+.search-box button {
   background: #2563eb;
   color: white;
   border: none;
@@ -791,13 +812,13 @@ const handleReviewAction = async (
   transition: all 0.2s ease;
 }
 
-.search-wrap button:hover {
+.search-box button:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.filters-wrap {
+.filters {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
@@ -841,21 +862,15 @@ const handleReviewAction = async (
 }
 
 .row-actions button {
-  background: white;
-  color: #111827;
-  border: 1px solid #d1d5db;
+  min-width: 80px;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.row-actions button:hover {
-  background: #f8fafc;
-  color: black;
-  border-color: #cdcdcd;
+.row-actions button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .row-actions button:disabled {
@@ -863,21 +878,40 @@ const handleReviewAction = async (
   cursor: not-allowed;
 }
 
-.row-actions .danger {
+.row-actions .edit-button {
+  background: white;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.row-actions .edit-button:hover:not(:disabled) {
+  background: #f8fafc;
+  color: black;
+  border-color: #cdcdcd;
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+}
+
+.row-actions .lookup-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.row-actions .lookup-button:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.row-actions .delete-button {
   background: #ef4444;
   border: none;
   color: white;
 }
 
-.row-actions .danger:hover {
+.row-actions .delete-button:hover:not(:disabled) {
   background: red;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-}
-
-.row-actions .danger:disabled {
-  background: #ef4444;
-  opacity: 0.45;
 }
 
 .empty {

@@ -969,7 +969,7 @@ const deleteProduct = async () => {
   background: #2563eb;
 }
 
-.edit-button:hover:not(:disabled) {
+.edit-button:hover(:disabled) {
   background: #1d4ed8;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }

@@ -226,7 +226,7 @@ onMounted(() => {
       <h2>活动列表</h2>
     </header>
 
-    <section class="search-wrap">
+    <section class="search-box">
       <input
         v-model.trim="keyword"
         type="text"
@@ -236,7 +236,7 @@ onMounted(() => {
       <button type="button" @click="handleSearch">搜索</button>
     </section>
 
-    <section class="filters-wrap">
+    <section class="filters">
       <label class="filter-item">
         <span>日期</span>
         <input v-model="filterDate" type="date" @change="handleSearch" />
@@ -386,8 +386,8 @@ onMounted(() => {
   gap: 14px;
 }
 
-.search-wrap,
-.filters-wrap,
+.search-box,
+.filters,
 .activity-list {
   background: white;
   border: 1px solid #e5e7eb;
@@ -395,21 +395,21 @@ onMounted(() => {
   padding: 14px;
 }
 
-.search-wrap {
+.search-box {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
 }
 
-.search-wrap input,
-.filters-wrap select,
-.filters-wrap input {
+.search-box input,
+.filters select,
+.filters input {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
 }
 
-.search-wrap button {
+.search-box button {
   background: #2563eb;
   color: white;
   border: none;
@@ -418,7 +418,7 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.filters-wrap {
+.filters {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
