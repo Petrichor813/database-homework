@@ -8,7 +8,12 @@ import Pagination from "../utils/Pagination.vue";
 
 type AdminExchangeTab = "EXCHANGE_RECORDS" | "PRODUCTS";
 
-type ExchangeStatus = "REVIEWING" | "PROCESSING" | "COMPLETED" | "CANCELLED" | "REJECTED";
+type ExchangeStatus =
+  | "REVIEWING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "REJECTED";
 
 interface ExchangeRecord {
   id: number;
@@ -36,7 +41,13 @@ interface Product {
 }
 
 type ProductStatus = "AVAILABLE" | "SOLD_OUT" | "DELETED";
-type ProductType = "DAILY_NECESSITIES" | "BOOKS" | "STATIONARY" | "FOOD" | "COUPON" | "OTHER";
+type ProductType =
+  | "DAILY_NECESSITIES"
+  | "BOOKS"
+  | "STATIONARY"
+  | "FOOD"
+  | "COUPON"
+  | "OTHER";
 
 const { success, error } = useToast();
 
@@ -110,7 +121,9 @@ const fetchProducts = async (page: number) => {
   try {
     const keyword = productSearchKeyword.value.trim();
     const url = keyword
-      ? `/api/admin/products?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${productPagination.pageObject.value.pageSize}`
+      ? `/api/admin/products?keyword=${encodeURIComponent(
+          keyword
+        )}&page=${page}&size=${productPagination.pageObject.value.pageSize}`
       : `/api/admin/products?page=${page}&size=${productPagination.pageObject.value.pageSize}`;
     const data = await getJson<PageResponse<Product>>(url);
     products.value = data.content;
@@ -186,9 +199,12 @@ const approveExchange = async () => {
 
   isProcessing.value = true;
   try {
-    await postJson(`/api/admin/exchange-records/${currentExchangeRecord.value.id}/approve`, {
-      note: processNote.value.trim() || "管理员批准兑换",
-    });
+    await postJson(
+      `/api/admin/exchange-records/${currentExchangeRecord.value.id}/approve`,
+      {
+        note: processNote.value.trim() || "管理员批准兑换",
+      }
+    );
     success("批准成功", "兑换申请已批准");
     closeApproveDialog();
     await fetchExchangeRecords(exchangePagination.pageObject.value.curPage);
@@ -205,9 +221,12 @@ const rejectExchange = async () => {
 
   isProcessing.value = true;
   try {
-    await postJson(`/api/admin/exchange-records/${currentExchangeRecord.value.id}/reject`, {
-      note: processNote.value.trim() || "管理员拒绝兑换",
-    });
+    await postJson(
+      `/api/admin/exchange-records/${currentExchangeRecord.value.id}/reject`,
+      {
+        note: processNote.value.trim() || "管理员拒绝兑换",
+      }
+    );
     success("拒绝成功", "兑换申请已拒绝，积分已退还");
     closeRejectDialog();
     await fetchExchangeRecords(exchangePagination.pageObject.value.curPage);
@@ -388,7 +407,10 @@ const deleteProduct = async () => {
       </aside>
 
       <div class="tab-page">
-        <section v-if="activeTab === 'EXCHANGE_RECORDS'" class="exchange-records">
+        <section
+          v-if="activeTab === 'EXCHANGE_RECORDS'"
+          class="exchange-records"
+        >
           <div class="filter-bar">
             <button
               type="button"
@@ -431,7 +453,10 @@ const deleteProduct = async () => {
                   <td>{{ record.totalPoints }}</td>
                   <td>{{ record.orderTime }}</td>
                   <td>
-                    <span class="status-badge" :class="record.status.toLowerCase()">
+                    <span
+                      class="status-badge"
+                      :class="record.status.toLowerCase()"
+                    >
                       {{ statusLabelMap[record.status] || record.status }}
                     </span>
                   </td>
@@ -464,8 +489,12 @@ const deleteProduct = async () => {
               :loading="exchangeLoading"
               :page-ranges="exchangePagination.pageRanges.value"
               :go-to-page="(page: number) => exchangePagination.goToPage(page, fetchExchangeRecords)"
-              :prev-page="() => exchangePagination.prevPage(fetchExchangeRecords)"
-              :next-page="() => exchangePagination.nextPage(fetchExchangeRecords)"
+              :prev-page="
+                () => exchangePagination.prevPage(fetchExchangeRecords)
+              "
+              :next-page="
+                () => exchangePagination.nextPage(fetchExchangeRecords)
+              "
             />
           </section>
         </section>
@@ -491,7 +520,11 @@ const deleteProduct = async () => {
             <button type="button" class="search-button" @click="searchProducts">
               搜索
             </button>
-            <button type="button" class="add-button" @click="openAddProductDialog">
+            <button
+              type="button"
+              class="add-button"
+              @click="openAddProductDialog"
+            >
               新增商品
             </button>
           </div>
@@ -513,16 +546,29 @@ const deleteProduct = async () => {
                   <td colspan="6">正在加载...</td>
                 </tr>
                 <tr v-else-if="products.length === 0" class="empty-row">
-                  <td colspan="6">{{ productSearchKeyword ? '未找到匹配商品' : '暂无商品' }}</td>
+                  <td colspan="6">
+                    {{ productSearchKeyword ? "未找到匹配商品" : "暂无商品" }}
+                  </td>
                 </tr>
                 <tr v-else v-for="product in products" :key="product.id">
                   <td>{{ product.name }}</td>
                   <td>{{ product.price }}</td>
                   <td>{{ product.stock }}</td>
-                  <td>{{ productTypeMap[product.category as ProductType] || product.category }}</td>
                   <td>
-                    <span class="status-badge" :class="product.status.toLowerCase()">
-                      {{ productStatusMap[product.status as ProductStatus] || product.status }}
+                    {{
+                      productTypeMap[product.category as ProductType] ||
+                      product.category
+                    }}
+                  </td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      :class="product.status.toLowerCase()"
+                    >
+                      {{
+                        productStatusMap[product.status as ProductStatus] ||
+                        product.status
+                      }}
                     </span>
                   </td>
                   <td>
@@ -564,7 +610,9 @@ const deleteProduct = async () => {
     <div v-if="showApproveDialog" class="dialog-bg">
       <div class="dialog-body" role="dialog" aria-modal="true">
         <h3>批准兑换申请</h3>
-        <p class="dialog-tip">确定要批准此兑换申请吗？批准后将自动扣减商品库存。</p>
+        <p class="dialog-tip">
+          确定要批准此兑换申请吗？批准后将自动扣减商品库存。
+        </p>
         <div class="form-row">
           <label>备注（可选）</label>
           <textarea
@@ -596,7 +644,9 @@ const deleteProduct = async () => {
     <div v-if="showRejectDialog" class="dialog-bg">
       <div class="dialog-body" role="dialog" aria-modal="true">
         <h3>拒绝兑换申请</h3>
-        <p class="dialog-tip">确定要拒绝此兑换申请吗？拒绝后积分将退还给志愿者。</p>
+        <p class="dialog-tip">
+          确定要拒绝此兑换申请吗？拒绝后积分将退还给志愿者。
+        </p>
         <div class="form-row">
           <label>拒绝原因（可选）</label>
           <textarea
@@ -627,7 +677,7 @@ const deleteProduct = async () => {
 
     <div v-if="showProductDialog" class="dialog-bg">
       <div class="dialog-body product-dialog" role="dialog" aria-modal="true">
-        <h3>{{ isEditMode ? '编辑商品' : '新增商品' }}</h3>
+        <h3>{{ isEditMode ? "编辑商品" : "新增商品" }}</h3>
         <div class="product-form">
           <div class="form-row">
             <label>商品名称 <span class="required">*</span></label>
@@ -708,7 +758,7 @@ const deleteProduct = async () => {
             :disabled="isProductSaving"
             @click="saveProduct"
           >
-            {{ isEditMode ? '保存修改' : '创建商品' }}
+            {{ isEditMode ? "保存修改" : "创建商品" }}
           </button>
           <button
             type="button"
@@ -724,7 +774,9 @@ const deleteProduct = async () => {
     <div v-if="showDeleteProductDialog" class="dialog-bg">
       <div class="dialog-body" role="dialog" aria-modal="true">
         <h3>确认删除商品</h3>
-        <p class="dialog-tip">确定要删除商品「{{ currentProduct?.name }}」吗？此操作不可恢复。</p>
+        <p class="dialog-tip">
+          确定要删除商品「{{ currentProduct?.name }}」吗？此操作不可恢复。
+        </p>
         <div class="dialog-actions">
           <button
             type="button"
@@ -1008,13 +1060,18 @@ const deleteProduct = async () => {
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.search-box input:hover,
+.search-box input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .search-box input:focus {
-  border-color: #2563eb;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-width: 2px;
 }
 
 .clear-search {

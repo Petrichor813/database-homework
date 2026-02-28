@@ -16,7 +16,7 @@ const {
   goToPage,
   prevPage,
   nextPage,
-} = usePagination(10);
+} = usePagination(8);
 
 type UserCenterTab = "PROFILE" | "POINT" | "SECURITY";
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
@@ -27,19 +27,12 @@ type VolunteerStatus =
   | "SUSPENDED"
   | null;
 
-interface PointsChangeRecord {
+interface PointChangeRecord {
   time: string;
   type: string;
   amount?: number;
+  reason?: string;
   note?: string;
-}
-
-interface FormattedRecord {
-  key: string;
-  time: string;
-  typeLabel: string;
-  amount: string;
-  note: string;
 }
 
 interface UserProfile {
@@ -385,7 +378,7 @@ const volunteerStatus = computed(() => {
 });
 
 // 积分变动记录
-const records = ref<PointsChangeRecord[]>([]);
+const records = ref<PointChangeRecord[]>([]);
 const recordLoading = ref(false);
 
 const fetchPointsRecords = async (page: number) => {
@@ -401,7 +394,7 @@ const fetchPointsRecords = async (page: number) => {
     }
 
     recordLoading.value = true;
-    const data = await getJson<PageResponse<PointsChangeRecord>>(
+    const data = await getJson<PageResponse<PointChangeRecord>>(
       `/api/volunteer/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`
     );
     records.value = data.content;
@@ -421,31 +414,10 @@ watch(activeTab, (newTab: UserCenterTab) => {
   }
 });
 
-const pointsChangeMap: Record<string, string> = {
-  ACTIVITY_EARN: "活动结算",
-  EXCHANGE_USE: "兑换消耗",
-  ADMIN_ADJUST: "管理员调整",
-  SYSTEM_BONUS: "系统奖励",
-};
-
-const formattedRecords = computed<FormattedRecord[]>(() =>
-  records.value.map((record: PointsChangeRecord) => {
-    const amount = Number(record.amount ?? 0);
-    const amountStr = amount >= 0 ? `+${amount}` : `${amount}`;
-    return {
-      key: `${record.time}-${record.type}-${record.amount}`,
-      time: record.time,
-      typeLabel: pointsChangeMap[record.type] || "积分变动",
-      amount: amountStr,
-      note: record.note || "—",
-    };
-  })
-);
-
 const monthlyChange = computed(() => {
   const now = new Date();
-  const monthlyTotal = formattedRecords.value
-    .filter((record: FormattedRecord) => {
+  const monthlyTotal = records.value
+    .filter((record: PointChangeRecord) => {
       const recordDate = new Date(record.time);
       if (Number.isNaN(recordDate.getTime())) {
         return false;
@@ -455,13 +427,36 @@ const monthlyChange = computed(() => {
         recordDate.getMonth() === now.getMonth()
       );
     })
-    .reduce((sum: number, record: FormattedRecord) => {
-      const amount = Number(record.amount);
+    .reduce((sum: number, record: PointChangeRecord) => {
+      const amount = Number(record.amount ?? 0);
       return sum + amount;
     }, 0);
 
   return monthlyTotal >= 0 ? `+${monthlyTotal}` : `${monthlyTotal}`;
 });
+
+const showDetailDialog = ref(false);
+const currentRecord = ref<PointChangeRecord | null>(null);
+
+const openDetailDialog = (record: PointChangeRecord) => {
+  currentRecord.value = record;
+  showDetailDialog.value = true;
+};
+
+const closeDetailDialog = () => {
+  showDetailDialog.value = false;
+  currentRecord.value = null;
+};
+
+const getAmountClass = (amount?: number) => {
+  const num = Number(amount ?? 0);
+  return num >= 0 ? "positive" : "negative";
+};
+
+const formatAmount = (amount?: number) => {
+  const num = Number(amount ?? 0);
+  return num >= 0 ? `+${num}` : `${num}`;
+};
 
 // 加载用户信息
 const loadProfile = async () => {
@@ -483,7 +478,7 @@ const loadProfile = async () => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "获取用户信息失败";
     error("加载失败", msg);
-    
+
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     info("用户不存在或账号已注销", "请重新登录");
@@ -624,7 +619,7 @@ const handleDeleteAccount = async () => {
               type="button"
               v-if="showModify"
               :disabled="isModifying"
-              class="show-modify-button"
+              class="modify-button"
               @click="openModifyDialog"
             >
               修改志愿者申请
@@ -661,28 +656,44 @@ const handleDeleteAccount = async () => {
             <p>正在加载积分记录...</p>
           </section>
 
-          <section v-else-if="records.length" class="record-table">
-            <table>
+          <section v-else-if="records.length" class="table-card">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>时间</th>
-                  <th>类型</th>
-                  <th>变动</th>
-                  <th>备注</th>
+                  <th>变动类型</th>
+                  <th>变动数量</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="record in formattedRecords" :key="record.key">
+                <tr v-if="recordLoading" class="loading-row">
+                  <td colspan="4">正在加载...</td>
+                </tr>
+                <tr v-else-if="records.length === 0" class="empty-row">
+                  <td colspan="4">暂无积分变动记录</td>
+                </tr>
+                <tr
+                  v-else
+                  v-for="record in records"
+                  :key="`${record.time}-${record.type}-${record.amount}`"
+                >
                   <td>{{ record.time }}</td>
-                  <td>{{ record.typeLabel }}</td>
-                  <td
-                    :class="
-                      record.amount.startsWith('+') ? 'positive' : 'negative'
-                    "
-                  >
-                    {{ record.amount }}
+                  <td>{{ record.type }}</td>
+                  <td :class="getAmountClass(record.amount)">
+                    {{ formatAmount(record.amount) }}
                   </td>
-                  <td>{{ record.note }}</td>
+                  <td>
+                    <div class="actions">
+                      <button
+                        type="button"
+                        class="info-button"
+                        @click="openDetailDialog(record)"
+                      >
+                        详细信息
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -959,6 +970,29 @@ const handleDeleteAccount = async () => {
         </div>
       </div>
     </div>
+
+    <div v-if="showDetailDialog" class="dialog-bg">
+      <div class="dialog-body" role="dialog" aria-modal="true">
+        <h3>积分变动详情</h3>
+        <div class="detail-content">
+          <p><strong>变动时间：</strong>{{ currentRecord?.time }}</p>
+          <p><strong>变动类型：</strong>{{ currentRecord?.type }}</p>
+          <p>
+            <strong>变动积分数量：</strong
+            ><span :class="getAmountClass(currentRecord?.amount)">{{
+              formatAmount(currentRecord?.amount)
+            }}</span>
+          </p>
+          <p><strong>变动原因：</strong>{{ currentRecord?.reason || "无" }}</p>
+          <p><strong>备注：</strong>{{ currentRecord?.note || "无" }}</p>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="close-button" @click="closeDetailDialog">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1068,17 +1102,18 @@ const handleDeleteAccount = async () => {
 
 .edit-profile-button {
   background: white;
-  color: #2563eb;
-  cursor: pointer;
+  font-weight: 500;
+  color: #374151;
   padding: 12px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .edit-profile-button:hover {
   background: #f8fafc;
-  color: #1d4ed8;
+  color: black;
   border-color: #d1d5db;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
@@ -1114,7 +1149,7 @@ const handleDeleteAccount = async () => {
   margin-top: -15px;
 }
 
-.show-modify-button {
+.modify-button {
   background: #22c55e;
   color: white;
   font-weight: 500;
@@ -1125,7 +1160,7 @@ const handleDeleteAccount = async () => {
   transition: all 0.2s ease;
 }
 
-.show-modify-button:hover {
+.modify-button:hover {
   background: #16a34a;
   border-color: #d1d5db;
   transform: translateY(-1px);
@@ -1231,32 +1266,77 @@ const handleDeleteAccount = async () => {
   text-decoration: none;
   border-radius: 8px;
   padding: 8px 12px;
+  transition: all 0.2s ease;
 }
 
 .exchange-record-link:hover {
   text-decoration: underline;
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.record-table table {
+.table-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.data-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.record-table th,
-.record-table td {
-  padding: 8px 12px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+.data-table th,
+.data-table td {
+  padding: 14px 16px;
+  text-align: center;
 }
 
-.record-table th {
+.data-table th {
+  background: #f8fafc;
+  color: #6b7280;
+  font-size: 16px;
   font-weight: 600;
-  color: #374151;
-  background-color: #f9fafb;
 }
 
-.record-table tr:hover {
-  background-color: #f9fafb;
+.data-table tbody tr {
+  border-top: 1px solid #e5e7eb;
+}
+
+.data-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.loading-row td,
+.empty-row td {
+  color: #6b7280;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.info-button {
+  background: #2563eb;
+  color: white;
+  font-weight: 500;
+  min-width: 80px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .positive {
@@ -1353,14 +1433,18 @@ const handleDeleteAccount = async () => {
 }
 
 .dialog-body {
-  display: grid;
-  background: white;
   min-width: 320px;
   max-width: 400px;
+  display: grid;
+  background: white;
   padding: 20px;
   gap: 16px;
   border-radius: 16px;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+}
+
+.dialog-body h3 {
+  text-align: center;
 }
 
 .edit-form {
@@ -1381,32 +1465,30 @@ const handleDeleteAccount = async () => {
   font-weight: 500;
 }
 
-.form-row input {
-  font-size: 14px;
-  padding: 8px 36px 8px 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  transition: border-color 0.2s ease;
-}
-
-.form-row input:focus {
-  border-color: #2563eb;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
+.form-row input,
 .form-row textarea {
   font-size: 14px;
   padding: 8px 36px 8px 10px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.form-row textarea:focus {
-  border-color: #2563eb;
+.form-row input:hover,
+.form-row input:focus,
+.form-row textarea:hover .form-row textarea:focus {
   outline: none;
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-row input:focus,
+.form-row textarea:focus {
+  border-width: 2px;
+}
+
+.form-row textarea {
+  resize: vertical;
 }
 
 .clear-button {
@@ -1424,7 +1506,7 @@ const handleDeleteAccount = async () => {
   border-radius: 50%;
   cursor: pointer;
   padding: 0;
-  margin-top: 13px;
+  margin-top: 14px;
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
@@ -1522,5 +1604,44 @@ const handleDeleteAccount = async () => {
   background: red;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.detail-content {
+  display: grid;
+  gap: 12px;
+}
+
+.detail-content p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.detail-content strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.close-button {
+  min-width: 100px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 </style>

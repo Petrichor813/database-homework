@@ -355,29 +355,32 @@ const getRelatedRecordTypeText = (type: string) => {
   <div class="admin-points">
     <header class="page-header">
       <h2>积分管理</h2>
+      <p>管理系统中志愿者的积分变动记录，包括积分调整、奖励和扣减等</p>
     </header>
 
-    <section class="search-wrap">
-      <input
-        v-model.trim="keyword"
-        type="text"
-        placeholder="搜索志愿者姓名"
-        @keyup.enter="handleSearch"
-      />
-      <button
-        v-if="keyword"
-        type="button"
-        class="clear-button"
-        @click="clearSearch"
-      >
-        ×
-      </button>
+    <section class="search-box">
+      <div class="input-area">
+        <input
+          v-model.trim="keyword"
+          type="text"
+          placeholder="搜索志愿者姓名"
+          @keyup.enter="handleSearch"
+        />
+        <button
+          v-if="keyword"
+          type="button"
+          class="clear-button"
+          @click="clearSearch"
+        >
+          ×
+        </button>
+      </div>
       <button type="button" class="search-button" @click="handleSearch">
         搜索
       </button>
     </section>
 
-    <section class="filters-wrap">
+    <section class="filters-and-toolbar">
       <label class="filter-item">
         <span>变动类型</span>
         <select v-model="typeFilter" @change="fetchPointChangeRecords(0)">
@@ -390,9 +393,7 @@ const getRelatedRecordTypeText = (type: string) => {
           </option>
         </select>
       </label>
-    </section>
 
-    <section class="toolbar">
       <button type="button" class="add-button" @click="openAddDialog">
         + 添加记录
       </button>
@@ -427,27 +428,24 @@ const getRelatedRecordTypeText = (type: string) => {
               <div class="actions">
                 <button
                   type="button"
-                  class="icon-button"
-                  title="详情"
-                  @click="openDetailDialog(record)"
-                >
-                  👁
-                </button>
-                <button
-                  type="button"
-                  class="icon-button"
-                  title="编辑"
+                  class="edit-button"
                   @click="openEditDialog(record)"
                 >
-                  ✎
+                  编辑
                 </button>
                 <button
                   type="button"
-                  class="icon-button"
-                  title="撤销"
+                  class="info-button"
+                  @click="openDetailDialog(record)"
+                >
+                  详细信息
+                </button>
+                <button
+                  type="button"
+                  class="delete-button"
                   @click="openDeleteDialog(record)"
                 >
-                  ↩
+                  撤销
                 </button>
               </div>
             </td>
@@ -593,7 +591,7 @@ const getRelatedRecordTypeText = (type: string) => {
             />
             <button
               type="button"
-              class="search-volunteer-btn"
+              class="search-volunteer-button"
               @click="searchVolunteers"
               :disabled="isSearchingVolunteer"
             >
@@ -668,24 +666,15 @@ const getRelatedRecordTypeText = (type: string) => {
 .admin-points {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
 }
 
-.page-header {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 14px;
+.page-header p {
+  color: #6b7280;
 }
 
-.page-header h2 {
-  margin: 0;
-  font-size: 18px;
-}
-
-.search-wrap,
-.filters-wrap,
-.toolbar,
+.search-box,
+.filters-and-toolbar,
 .table-area {
   background: white;
   border: 1px solid #e5e7eb;
@@ -693,47 +682,79 @@ const getRelatedRecordTypeText = (type: string) => {
   padding: 14px;
 }
 
-.search-wrap {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
+.search-box {
+  display: flex;
   gap: 10px;
 }
 
-.search-wrap input {
-  border: 1px solid #d1d5db;
+.input-area {
+  position: relative;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.input-area input {
+  width: 100%;
+  padding-right: 40px;
+  border: 2px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
+  transition: outline 0.1s ease;
+}
+
+.input-area input:hover,
+.input-area input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .clear-button {
-  background: #f3f4f6;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+  background: #e5e7eb;
   color: #6b7280;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 0 16px;
+  border: none;
+  border-radius: 50%;
   cursor: pointer;
+  padding: 0;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .clear-button:hover {
-  background: #e5e7eb;
+  background: #d1d5db;
+  color: #374151;
 }
 
 .search-button {
+  min-width: 80px;
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 8px;
   padding: 0 20px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .search-button:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
-.filters-wrap {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.filters-and-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 10px;
 }
 
@@ -748,25 +769,38 @@ const getRelatedRecordTypeText = (type: string) => {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
+  cursor: pointer;
+  transition: outline 0.1s ease;
 }
 
-.toolbar {
-  display: flex;
-  justify-content: flex-end;
+.filter-item select:hover,
+.filter-item select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .add-button {
-  background: #10b981;
+  min-width: 80px;
+  max-width: 120px;
+  height: 38px;
+  background: #22c55e;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 8px 16px;
   cursor: pointer;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.2s ease;
 }
 
 .add-button:hover {
-  background: #059669;
+  background: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
 }
 
 .table-area {
@@ -785,17 +819,18 @@ const getRelatedRecordTypeText = (type: string) => {
 
 .record-table th {
   padding: 14px 16px;
-  text-align: left;
-  font-size: 13px;
+  text-align: center;
+  font-size: 16px;
   font-weight: 600;
   color: #6b7280;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .record-table td {
-  padding: 14px 16px;
+  text-align: center;
+  font-size: 16px;
   border-bottom: 1px solid #e5e7eb;
-  font-size: 14px;
+  padding: 14px 16px;
 }
 
 .record-table tr:last-child td {
@@ -821,23 +856,62 @@ const getRelatedRecordTypeText = (type: string) => {
 
 .actions {
   display: flex;
+  justify-content: center;
   gap: 8px;
 }
 
-.icon-button {
+.edit-button {
   background: white;
-  color: #111827;
+  color: #374151;
+  font-weight: 500;
+  min-width: 80px;
+  padding: 6px 12px;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 6px 10px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.icon-button:hover {
+.edit-button:hover {
   background: #f8fafc;
   border-color: #9ca3af;
   transform: translateY(-1px);
+}
+
+.info-button {
+  background: #2563eb;
+  color: white;
+  font-weight: 500;
+  min-width: 80px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.delete-button {
+  background: #dc2626;
+  color: white;
+  font-weight: 500;
+  min-width: 80px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .dialog-bg {
@@ -901,8 +975,29 @@ const getRelatedRecordTypeText = (type: string) => {
   font-size: 14px;
 }
 
+.form-row select {
+  cursor: pointer;
+}
+
 .form-row textarea {
   resize: vertical;
+}
+
+.form-row input:hover
+.form-row select:hover
+.form-row textarea:hover {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+  outline: none;
+  border-width: 2px;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .volunteer-search {
@@ -911,20 +1006,43 @@ const getRelatedRecordTypeText = (type: string) => {
   gap: 10px;
 }
 
-.search-volunteer-btn {
+.volunteer-search input {
+  width: 100%;
+  padding-right: 40px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px;
+  transition: all 0.2s ease;
+}
+
+.volunteer-search input:hover,
+.volunteer-search input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.volunteer-search input:focus {
+  border-width: 2px;
+}
+
+.search-volunteer-button {
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 8px;
   padding: 0 16px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.search-volunteer-btn:hover {
+.search-volunteer-button:hover:not(:disabled) {
   background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.search-volunteer-btn:disabled {
+.search-volunteer-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

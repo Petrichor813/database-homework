@@ -390,7 +390,6 @@ onMounted(() => {
 .filters,
 .activity-list {
   background: white;
-  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 14px;
 }
@@ -407,6 +406,28 @@ onMounted(() => {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
+  transition: all 0.2s ease;
+}
+
+.filters select {
+  cursor: pointer;
+}
+
+.search-box input:hover,
+.search-box input:focus,
+.filters select:hover,
+.filters select:focus,
+.filters input:hover,
+.filters input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-box input:focus,
+.filters select:focus,
+.filters input:focus {
+  border-width: 2px;
 }
 
 .search-box button {
@@ -416,6 +437,13 @@ onMounted(() => {
   border-radius: 8px;
   padding: 0 20px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-box button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .filters {
@@ -465,10 +493,26 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
+.row-actions button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.row-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .row-actions .detail-button {
   background: white;
   border: 1px solid #d1d5db;
   color: black;
+}
+
+.row-actions .detail-button:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111827;
+  box-shadow: 0 4px 12px rgba(209, 213, 219, 0.3);
 }
 
 .row-actions .signup-button {
@@ -477,15 +521,20 @@ onMounted(() => {
   color: white;
 }
 
+.row-actions .signup-button:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
 .row-actions .cancel-button {
   background: #ef4444;
   border: none;
   color: white;
 }
 
-.row-actions button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.row-actions .cancel-button:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .empty {
@@ -528,11 +577,11 @@ onMounted(() => {
   min-width: 80px;
   padding: 10px 20px;
   border-radius: 8px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .dialog-actions button:hover {
-  cursor: pointer;
   transform: translateY(-1px);
 }
 

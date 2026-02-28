@@ -4,15 +4,17 @@ public class PointChangeRecordResponse {
     private String time;
     private String type;
     private Double amount;
+    private String reason;
     private String note;
 
     public PointChangeRecordResponse() {
     }
 
-    public PointChangeRecordResponse(String time, String type, Double amount, String note) {
+    public PointChangeRecordResponse(String time, String type, Double amount, String reason, String note) {
         this.time = time;
         this.type = type;
         this.amount = amount;
+        this.reason = reason;
         this.note = note;
     }
 
@@ -38,6 +40,14 @@ public class PointChangeRecordResponse {
 
     public void setAmount(Double amount) {
         this.amount = amount;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public String getNote() {

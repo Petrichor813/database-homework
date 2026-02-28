@@ -59,6 +59,7 @@ public class VolunteerService {
                     formattedTime,
                     getPointChangeTypeLabel(record.getChangeType()),
                     record.getChangePoints(),
+                    record.getReason(),
                     record.getNote()
                 )
             );

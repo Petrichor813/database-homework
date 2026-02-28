@@ -137,7 +137,7 @@ onMounted(() => {
       >
     </header>
 
-    <section class="search-wrap">
+    <section class="search-box">
       <input
         v-model.trim="keyword"
         type="text"
@@ -147,7 +147,7 @@ onMounted(() => {
       <button type="button" @click="handleSearch">搜索</button>
     </section>
 
-    <section class="filters-wrap">
+    <section class="filters">
       <label class="filter-item">
         <span>商品分类</span>
         <select v-model="typeFilter" @change="handleSearch">
@@ -229,43 +229,66 @@ onMounted(() => {
 }
 
 .record-entry {
+  min-width: 80px;
   background: #2563eb;
   color: white;
   border-radius: 8px;
   padding: 8px 14px;
   text-decoration: none;
-  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-.search-wrap {
+.record-entry:hover {
+  text-decoration: underline;
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+.search-box {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
 }
 
-.search-wrap input {
+.search-box input {
   flex: 1;
-  padding: 8px 12px;
+  font-size: 14px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
 }
 
-.search-wrap button {
-  padding: 8px 16px;
+.search-box input:hover,
+.search-box input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.search-box input:focus {
+  border-width: 2px;
+}
+
+.search-box button {
+  min-width: 80px;
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 8px;
+  padding: 8px 16px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.search-wrap button:hover {
+.search-box button:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
 }
 
-.filters-wrap {
+.filters {
   display: flex;
   gap: 20px;
   margin-bottom: 20px;
@@ -291,6 +314,18 @@ onMounted(() => {
   font-size: 14px;
   background: white;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-item select:hover,
+.filter-item select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.filter-item select:focus {
+  border-width: 2px;
 }
 
 .product-grid {

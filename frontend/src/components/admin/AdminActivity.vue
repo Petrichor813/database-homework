@@ -792,14 +792,13 @@ const handleReviewAction = async (
 
 .search-box input:hover,
 .filters select:hover,
-.filters input:hover {
-  outline: 1px solid #2563eb;
-}
-
+.filters input:hover,
 .search-box input:focus,
 .filters select:focus,
 .filters input:focus {
-  outline: 2px solid #2563eb;
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .search-box button {

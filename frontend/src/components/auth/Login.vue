@@ -34,10 +34,14 @@ const handleLogin = async () => {
   loading.value = true;
 
   try {
-    const response = await postJson<LoginResponse>("/api/auth/login", {
-      username: account_info.username,
-      password: account_info.password,
-    }, false);
+    const response = await postJson<LoginResponse>(
+      "/api/auth/login",
+      {
+        username: account_info.username,
+        password: account_info.password,
+      },
+      false
+    );
 
     const userInfo = {
       id: response.id,
@@ -244,10 +248,6 @@ const handleLogin = async () => {
   position: relative;
 }
 
-.input-area .input-box {
-  padding-right: 40px;
-}
-
 .clear-button {
   display: inline-flex;
   justify-content: center;
@@ -265,9 +265,7 @@ const handleLogin = async () => {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .clear-button:hover {
@@ -278,16 +276,21 @@ const handleLogin = async () => {
 .input-box {
   width: 100%;
   font-size: 14px;
-  padding: 12px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: border-color 0.3s;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
 }
 
+.input-box:hover,
 .input-box:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.input-box:focus {
+  border-width: 2px;
 }
 
 .login-button {

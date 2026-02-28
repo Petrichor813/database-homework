@@ -512,7 +512,7 @@ const resetProductForm = () => {
                   accept="image/*"
                   @change="pickImage($event)"
                 />
-                选择图片
+                <span>选择图片</span>
               </label>
               <p>{{ productImageText }}</p>
               <div v-if="productImageUrl" class="image-preview">
@@ -629,11 +629,28 @@ const resetProductForm = () => {
   transition: all 0.2s ease;
 }
 
+.form-item input:hover,
 .form-item input:focus,
+.form-item select:hover,
 .form-item select:focus,
+.form-item textarea:hover,
 .form-item textarea:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-item input:focus,
+.form-item select:focus,
+.form-item textarea:focus {
+  border-width: 2px;
+}
+
+.form-item select {
+  cursor: pointer;
+}
+
+.form-item textarea {
+  resize: vertical;
 }
 
 .image-upload p {
@@ -649,10 +666,9 @@ const resetProductForm = () => {
   position: relative;
   width: fit-content;
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   background: #f8fafc;
-  cursor: pointer;
   color: #334155;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -664,6 +680,10 @@ const resetProductForm = () => {
   inset: 0;
   opacity: 0;
   cursor: pointer;
+}
+
+.upload-trigger span {
+  font-size: 16px;
 }
 
 .submit-button {

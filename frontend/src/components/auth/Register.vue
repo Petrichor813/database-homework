@@ -202,7 +202,7 @@ const handleRegister = async () => {
             </label>
           </div>
 
-          <div v-if="account_info.isVolunteer" class="form-row">
+          <div v-if="account_info.isVolunteer" class="form-row real-name">
             <label for="real-name">真实姓名</label>
             <div class="input-area">
               <input
@@ -280,6 +280,10 @@ form {
   gap: 8px;
 }
 
+.form-row.real-name {
+  margin-top: 16px;
+}
+
 .form-row label {
   font-size: 16px;
   color: #374151;
@@ -291,12 +295,7 @@ form {
   position: relative;
 }
 
-.input-area .input-box {
-  flex: 1;
-  padding-right: 40px;
-}
-
-.input-area .clear-button {
+.clear-button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -318,7 +317,7 @@ form {
     color 0.2s ease;
 }
 
-.input-area .clear-button:hover {
+.clear-button:hover {
   background: #d1d5db;
   color: #374151;
 }
@@ -329,13 +328,18 @@ form {
   padding: 12px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: border-color 0.3s;
+  transition: all 0.3s ease;
 }
 
+.input-box:hover,
 .input-box:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.input-box:focus {
+  border-width: 2px;
 }
 
 .check-role {
