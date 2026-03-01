@@ -10,16 +10,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.ExchangeRecordResponse;
 import com.volunteer.backend.dto.PageResponse;
+import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.entity.Product;
 import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.enums.ExchangeStatus;
+import com.volunteer.backend.enums.PointChangeType;
+import com.volunteer.backend.enums.RelatedRecordType;
 import com.volunteer.backend.repository.ProductRepository;
 import com.volunteer.backend.repository.ExchangeRecordRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
+import com.volunteer.backend.repository.PointChangeRecordRepository;
 
 @Service
 public class ExchangeRecordService {
@@ -28,17 +33,20 @@ public class ExchangeRecordService {
     private final VolunteerRepository volunteerRepository;
     private final ProductRepository productRepository;
     private final ExchangeRecordRepository exchangeRecordRepository;
+    private final PointChangeRecordRepository pointChangeRecordRepository;
 
     // @formatter:off
     public ExchangeRecordService(
         VolunteerRepository volunteerRepository,
         ProductRepository productRepository,
-        ExchangeRecordRepository exchangeRecordRepository
+        ExchangeRecordRepository exchangeRecordRepository,
+        PointChangeRecordRepository pointChangeRecordRepository
     ) {
         // @formatter:on
         this.volunteerRepository = volunteerRepository;
         this.productRepository = productRepository;
         this.exchangeRecordRepository = exchangeRecordRepository;
+        this.pointChangeRecordRepository = pointChangeRecordRepository;
     }
 
     public PageResponse<ExchangeRecordResponse> getExchangeRecords(Long volunteerId, int page, int size) {
@@ -80,6 +88,7 @@ public class ExchangeRecordService {
         return new PageResponse<>(content, page, size, recordPage.getTotalElements(), recordPage.getTotalPages());
     }
 
+    @Transactional
     public void cancelExchangeRecord(Long volunteerId, Long recordId) {
         // 验证志愿者是否存在
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
@@ -108,5 +117,16 @@ public class ExchangeRecordService {
         record.setProcessTime(LocalDateTime.now());
         record.setNote("用户主动取消兑换");
         exchangeRecordRepository.save(record);
+
+        // 退还积分
+        PointChangeRecord refundRecord = new PointChangeRecord(
+            volunteerId,
+            record.getTotalPoints(),
+            PointChangeType.ADMIN_ADJUST,
+            "取消兑换，积分退还: " + record.getNote(),
+            record.getId(),
+            RelatedRecordType.EXCHANGE
+        );
+        pointChangeRecordRepository.save(refundRecord);
     }
 }

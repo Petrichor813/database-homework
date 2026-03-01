@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.ExchangeRequest;
 import com.volunteer.backend.dto.ExchangeResponse;
@@ -152,6 +153,7 @@ public class ProductService {
         return new PageResponse<>(pagedContent, page, size, totalElements, totalPages);
     }
 
+    @Transactional
     public ExchangeResponse exchangeProduct(Long userId, ExchangeRequest request) {
         if (request.getProductId() == null) {
             throw new IllegalArgumentException("商品ID不能为空");

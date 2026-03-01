@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.AdminActivityImportRequest;
 import com.volunteer.backend.dto.AdminActivityUpdateRequest;
@@ -157,6 +158,7 @@ public class AdminActivityService {
         return activityRepository.save(activity);
     }
 
+    @Transactional
     public void deleteActivity(Long activityId) {
         if (!activityRepository.existsById(activityId)) {
             throw new IllegalArgumentException("活动不存在");
@@ -192,13 +194,12 @@ public class AdminActivityService {
             String volunteerEndTimeStr = record.getVolunteerEndTime() != null
                     ? record.getVolunteerEndTime().format(DATETIME_FORMATTER)
                     : null;
-            String signupTimeStr = record.getSignupTime() != null
-                    ? record.getSignupTime().format(DATETIME_FORMATTER)
+            String signupTimeStr = record.getSignupTime() != null ? record.getSignupTime().format(DATETIME_FORMATTER)
                     : null;
 
             // @formatter:off
             AdminSignupRecordResponse response = new AdminSignupRecordResponse(
-                record.getId(),
+                activityId,
                 record.getId(),
                 volunteer.getId(),
                 volunteer.getName(),
@@ -218,6 +219,7 @@ public class AdminActivityService {
         return responses;
     }
 
+    @Transactional
     public SignupRecord updateSignupRecord(Long activityId, Long signupId, AdminSignupUpdateRequest request) {
         Optional<Activity> a = activityRepository.findById(activityId);
         if (a.isEmpty()) {

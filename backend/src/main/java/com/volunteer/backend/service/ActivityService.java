@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.ActivityResponse;
 import com.volunteer.backend.dto.PageResponse;
@@ -226,6 +227,7 @@ public class ActivityService {
         return new PageResponse<>(pagedContent, page, size, totalElements, totalPages);
     }
 
+    @Transactional
     public SignupResponse signupActivity(Long userId, SignupRequest request) {
         Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         if (v.isEmpty()) {
@@ -296,6 +298,7 @@ public class ActivityService {
         return new SignupResponse(signupRecord.getId(), "报名成功");
     }
 
+    @Transactional
     public SignupResponse cancelSignupActivity(Long userId, SignupRequest request) {
         Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
         if (v.isEmpty()) {
