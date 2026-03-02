@@ -278,10 +278,23 @@ const submitActivityImport = async () => {
 
     await postJson("/api/admin/activity/import", request);
     success("导入活动数据成功", `已导入活动 ${activityForm.title}`);
+    resetActivityForm();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "未知错误";
     error("导入活动数据失败", msg);
   }
+};
+
+const resetActivityForm = () => {
+  activityForm.title = "";
+  activityForm.description = "";
+  activityForm.type = "COMMUNITY_SERVICE";
+  activityForm.location = "";
+  activityForm.startTime = "";
+  activityForm.endTime = "";
+  activityForm.status = "RECRUITING";
+  activityForm.pointsPerHour = 1;
+  activityForm.maxParticipants = 20;
 };
 
 const submitProductImport = async () => {
@@ -438,7 +451,7 @@ const resetProductForm = () => {
               />
             </label>
           </div>
-          <button class="submit-button" type="submit">提交活动导入</button>
+          <button class="submit-button" type="submit">提交</button>
         </form>
 
         <form v-else class="form-card" @submit.prevent="submitProductImport">
@@ -522,7 +535,7 @@ const resetProductForm = () => {
               <small>支持jpg、png等常见图片格式，大小不超过5MB</small>
             </div>
           </div>
-          <button class="submit-button" type="submit">提交商品导入</button>
+          <button class="submit-button" type="submit">提交</button>
         </form>
       </div>
     </section>
@@ -688,6 +701,7 @@ const resetProductForm = () => {
 
 .submit-button {
   width: fit-content;
+  min-width: 80px;
   background: #2563eb;
   cursor: pointer;
   color: white;
