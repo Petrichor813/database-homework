@@ -1,5 +1,7 @@
 package com.volunteer.backend.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -46,4 +48,10 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
         @Param("date") String date,
         Pageable pageable
     );
+
+    @Query("SELECT a FROM Activity a WHERE " +
+           "a.status IN ('RECRUITING', 'CONFIRMED') AND " +
+           "a.maxParticipants > 0 " +
+           "ORDER BY (a.curParticipants * 1.0 / a.maxParticipants) DESC, a.startTime ASC")
+    List<Activity> findHotActivities(Pageable pageable);
 }

@@ -297,4 +297,41 @@ public class ActivityService {
 
         return new SignupResponse(signupRecord.getId(), "取消报名成功");
     }
+
+    public List<ActivityResponse> getHotActivities(Long userId) {
+        Pageable pageable = PageRequest.of(0, 3);
+        List<Activity> activities = activityRepository.findHotActivities(pageable);
+
+        LocalDateTime now = LocalDateTime.now();
+        List<ActivityResponse> content = new ArrayList<>();
+
+        Map<Long, SignupStatus> signupStatusMap = new HashMap<>();
+        if (userId != null) {
+            Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
+            if (v.isPresent()) {
+                Volunteer volunteer = v.get();
+                if (volunteer.getStatus() == VolunteerStatus.CERTIFIED) {
+                    List<Long> activityIds = new ArrayList<>();
+                    for (Activity activity : activities) {
+                        activityIds.add(activity.getId());
+                    }
+                    if (!activityIds.isEmpty()) {
+                        List<SignupRecord> signupRecords = signupRecordRepository.findByVolunteerIdAndActivityIds(
+                            volunteer.getId(), activityIds);
+                        for (SignupRecord record : signupRecords) {
+                            signupStatusMap.put(record.getActivityId(), record.getStatus());
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Activity activity : activities) {
+            refreshActivityStatus(activity, now);
+            SignupStatus signupStatus = signupStatusMap.get(activity.getId());
+            content.add(buildResponse(activity, signupStatus));
+        }
+
+        return content;
+    }
 }

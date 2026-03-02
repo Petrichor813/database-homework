@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { useToast } from "../utils/toast";
-import { getJson } from "../utils/api";
 import volunteer1 from "../assets/volunteer-1.jpg";
 import volunteer2 from "../assets/volunteer-2.jpg";
 import volunteer3 from "../assets/volunteer-3.jpg";
+import { getJson } from "../utils/api";
+import { useToast } from "../utils/toast";
 
 interface User {
   role?: string | null;
@@ -40,11 +40,27 @@ interface SignupRecord {
   note: string | null;
 }
 
+interface Activity {
+  id: number;
+  title: string;
+  description: string;
+  type: string;
+  location: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  pointsPerHour: number;
+  maxParticipants: number;
+  curParticipants: number;
+  signupStatus: string | null;
+}
+
 const router = useRouter();
 const { info, error } = useToast();
 
 const userProfile = ref<UserProfile | null>(null);
 const signupRecords = ref<SignupRecord[]>([]);
+const hotActivities = ref<Activity[]>([]);
 const loading = ref(false);
 
 const images = [volunteer1, volunteer2, volunteer3];
@@ -135,32 +151,61 @@ const handleJoin = () => {
   info("您尚未认证为志愿者", "完成认证后即可报名参与活动");
 };
 
-const mockActivities = [
-  {
-    title: "社区环境清洁行动",
-    type: "社区治理",
-    time: "本周六 08:30",
-    location: "朝阳社区",
-    desc: "一起清理公共区域，提升社区环境品质。",
-  },
-  {
-    title: "银龄陪伴计划",
-    type: "关爱服务",
-    time: "本周日 14:00",
-    location: "幸福敬老院",
-    desc: "陪伴老人聊天、读书与文娱互动。",
-  },
-  {
-    title: "防诈宣传志愿行动",
-    type: "安全宣传",
-    time: "下周一 19:00",
-    location: "社区广场",
-    desc: "协助派发宣传资料与现场讲解。",
-  },
-];
+const fetchHotActivities = async () => {
+  try {
+    const activities = await getJson<Activity[]>("/api/activity/hot-activities");
+    hotActivities.value = activities;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络后重试";
+    error("获取热门活动失败", msg);
+  }
+};
+
+const formatActivityTime = (startTime: string) => {
+  const date = new Date(startTime);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${month}月${day}日 ${hours}:${minutes}`;
+};
+
+const formatActivityType = (type: string) => {
+  const typeMap: Record<string, string> = {
+    COMMUNITY_SERVICE: "社区服务",
+    CULTURAL_EVENTS: "文化活动",
+    CHILDREN_TUTORING: "儿童辅导",
+    DISABILITIES_SUPPORT: "助残服务",
+    ELDERLY_CARE: "养老服务",
+    ENVIRONMENTAL_PROTECTION: "环保活动",
+    EDUCATION_SUPPORT: "教育支持",
+    HEALTH_CARE: "医疗健康",
+    EMERGENCY_RELIEF: "应急救援",
+    OTHER: "其他",
+  };
+  return typeMap[type] || type;
+};
+
+const handleSignupActivity = (activityId: number) => {
+  const { isLoggedIn, volunteerStatus } = getUserStatus();
+
+  if (!isLoggedIn) {
+    info("请先登录/注册");
+    router.push("/login");
+    return;
+  }
+
+  if (volunteerStatus !== "CERTIFIED") {
+    info("您尚未认证为志愿者", "完成认证后即可报名参与活动");
+    return;
+  }
+
+  router.push(`/activities?signup=${activityId}`);
+};
 
 onMounted(() => {
   fetchUserData();
+  fetchHotActivities();
   startImagePlay();
 });
 </script>
@@ -248,16 +293,23 @@ onMounted(() => {
       <div class="activity-grid">
         <article
           class="activity-content"
-          v-for="activity in mockActivities"
-          :key="activity.title"
+          v-for="activity in hotActivities"
+          :key="activity.id"
         >
-          <span class="activity-type">{{ activity.type }}</span>
+          <span class="activity-type">{{ formatActivityType(activity.type) }}</span>
           <h4>{{ activity.title }}</h4>
           <p class="activity-info">
-            {{ activity.time }} · {{ activity.location }}
+            {{ formatActivityTime(activity.startTime) }} · {{ activity.location }}
           </p>
-          <p class="activity-desc">{{ activity.desc }}</p>
-          <button type="button" class="join-button">报名参与</button>
+          <p class="activity-desc">{{ activity.description }}</p>
+          <button
+            type="button"
+            class="join-button"
+            :disabled="!!activity.signupStatus"
+            @click="handleSignupActivity(activity.id)"
+          >
+            {{ activity.signupStatus ? "已报名" : "报名参与" }}
+          </button>
         </article>
       </div>
     </section>
@@ -325,10 +377,17 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.join-button:hover {
+.join-button:hover:not(:disabled) {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.join-button:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .lookup-button {
@@ -477,6 +536,10 @@ onMounted(() => {
   text-decoration: none;
 }
 
+.activity-link:hover {
+  text-decoration: underline;
+}
+
 .activity-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -490,6 +553,11 @@ onMounted(() => {
   padding: 16px;
   border: 2px solid #eef2f7;
   border-radius: 12px;
+  min-height: 200px;
+}
+
+.activity-content .join-button {
+  margin-top: auto;
 }
 
 .activity-type {

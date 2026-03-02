@@ -1,5 +1,7 @@
 package com.volunteer.backend.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,5 +62,13 @@ public class ActivityController {
     ) {
         // @formatter:on
         return ResponseEntity.ok(activityService.cancelSignupActivity(user.getId(), request));
+    }
+
+    @GetMapping("/hot-activities")
+    public ResponseEntity<List<ActivityResponse>> getHotActivities(
+        @AuthenticationPrincipal User user
+    ) {
+        Long userId = user != null ? user.getId() : null;
+        return ResponseEntity.ok(activityService.getHotActivities(userId));
     }
 }
