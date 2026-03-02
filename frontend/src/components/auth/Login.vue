@@ -71,7 +71,7 @@ const handleLogin = async () => {
     <section class="intro">
       <p class="intro-tag">社区志愿服务平台</p>
       <h2>欢迎回到志愿服务平台</h2>
-      <p class="intro-description">
+      <p class="intro-desc">
         统一管理志愿活动、积分与数据统计，帮助社区服务更高效。
       </p>
       <div class="intro-list">
@@ -183,7 +183,7 @@ const handleLogin = async () => {
   color: #1f2937;
 }
 
-.intro-description {
+.intro-desc {
   color: #4b5563;
   line-height: 1.7;
   margin-bottom: 20px;

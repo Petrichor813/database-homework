@@ -14,6 +14,8 @@ import com.volunteer.backend.entity.SignupRecord;
 public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long> {
     Page<SignupRecord> findByVolunteerIdOrderBySignupTimeDesc(Long volunteerId, Pageable pageable);
 
+    List<SignupRecord> findByVolunteerId(Long volunteerId);
+
     List<SignupRecord> findByActivityIdOrderBySignupTimeDesc(Long activityId);
 
     @Query("SELECT COALESCE(SUM(s.actualHours), 0) FROM SignupRecord s WHERE s.volunteerId = :volunteerId")
@@ -22,4 +24,7 @@ public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long
     boolean existsByVolunteerIdAndActivityId(Long volunteerId, Long activityId);
     
     Optional<SignupRecord> findByVolunteerIdAndActivityId(Long volunteerId, Long activityId);
+
+    @Query("SELECT s FROM SignupRecord s WHERE s.volunteerId = :volunteerId AND s.activityId IN :activityIds")
+    List<SignupRecord> findByVolunteerIdAndActivityIds(@Param("volunteerId") Long volunteerId, @Param("activityIds") List<Long> activityIds);
 }

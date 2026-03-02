@@ -1,14 +1,48 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../utils/toast";
+import { getJson } from "../utils/api";
 
 interface User {
   role?: string | null;
   volunteerStatus?: string | null;
+  id?: number | null;
+}
+
+interface UserProfile {
+  id: number;
+  volunteerId: number | null;
+  username: string;
+  role: string;
+  phone: string | null;
+  realName: string | null;
+  volunteerStatus: string | null;
+  applyReason: string | null;
+  points: number | null;
+  serviceHours: number | null;
+}
+
+interface SignupRecord {
+  id: number;
+  volunteerId: number;
+  activityId: number;
+  status: string;
+  actualHours: number | null;
+  points: number | null;
+  signupTime: string;
+  volunteerStartTime: string | null;
+  volunteerEndTime: string | null;
+  updateTime: string | null;
+  note: string | null;
 }
 
 const router = useRouter();
-const { info } = useToast();
+const { info, error } = useToast();
+
+const userProfile = ref<UserProfile | null>(null);
+const signupRecords = ref<SignupRecord[]>([]);
+const loading = ref(false);
 
 const getUserStatus = () => {
   const localUser = localStorage.getItem("user");
@@ -17,6 +51,7 @@ const getUserStatus = () => {
       isLoggedIn: false,
       role: null,
       volunteerStatus: null,
+      userId: null,
     };
   }
 
@@ -27,13 +62,45 @@ const getUserStatus = () => {
       isLoggedIn: true,
       role: parsedUser?.role ?? null,
       volunteerStatus: parsedUser?.volunteerStatus ?? null,
+      userId: parsedUser?.id ?? null,
     };
   } catch (err) {
     return {
       isLoggedIn: false,
       role: null,
       volunteerStatus: null,
+      userId: null,
     };
+  }
+};
+
+const fetchUserData = async () => {
+  const { isLoggedIn, userId, volunteerStatus } = getUserStatus();
+
+  if (!isLoggedIn || !userId) {
+    return;
+  }
+
+  if (volunteerStatus !== "CERTIFIED") {
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const profile = await getJson<UserProfile>(`/api/user/${userId}/profile`);
+    userProfile.value = profile;
+
+    if (profile.volunteerId) {
+      const records = await getJson<SignupRecord[]>(
+        `/api/volunteer/${profile.volunteerId}/signup-records/all`
+      );
+      signupRecords.value = records;
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络后重试";
+    error("获取用户数据失败", msg);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -53,13 +120,6 @@ const handleJoin = () => {
 
   info("您尚未认证为志愿者", "完成认证后即可报名参与活动");
 };
-
-const mockStats = [
-  { label: "累计志愿时长", value: "12,580 小时" },
-  { label: "服务居民人次", value: "8,960 人次" },
-  { label: "累计活动场次", value: "320 场" },
-  { label: "在线志愿者", value: "1,250 名" },
-];
 
 const mockActivities = [
   {
@@ -84,6 +144,10 @@ const mockActivities = [
     desc: "协助派发宣传资料与现场讲解。",
   },
 ];
+
+onMounted(() => {
+  fetchUserData();
+});
 </script>
 
 <template>
@@ -92,7 +156,7 @@ const mockActivities = [
       <div class="header-content">
         <p class="header-tag">社区志愿服务平台</p>
         <h2>让公益更加高效，让志愿更有温度</h2>
-        <p class="header-description">
+        <p class="header-desc">
           统一入口、活动管理、积分激励与数据看板，帮助社区更好组织志愿服务。
         </p>
         <div class="activity-actions">
@@ -120,10 +184,45 @@ const mockActivities = [
     </section>
 
     <section class="stats">
-      <div class="stat-content" v-for="data in mockStats" :key="data.label">
-        <p class="stat-value">{{ data.value }}</p>
-        <p class="stat-label">{{ data.label }}</p>
+      <div v-if="loading" class="loading-state">加载中...</div>
+      <div
+        v-else-if="!getUserStatus().isLoggedIn"
+        class="stat-card login-prompt"
+      >
+        <p class="login-text">请登录后查看数据</p>
       </div>
+      <div
+        v-else-if="getUserStatus().volunteerStatus !== 'CERTIFIED'"
+        class="stat-card volunteer-prompt"
+      >
+        <p class="volunteer-title">您暂时还不是志愿者</p>
+        <p class="volunteer-desc">
+          成为志愿者，参与社区服务，用行动传递温暖，让爱心点亮生活。每一次志愿服务都是对社会的贡献，也是对自我的提升。立即申请，开启您的志愿之旅！
+        </p>
+      </div>
+      <template v-else>
+        <div class="stat-content">
+          <p class="stat-label">累计志愿服务时长</p>
+          <p class="stat-value">{{ userProfile?.serviceHours ?? 0 }} 小时</p>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">当前积分</p>
+          <p class="stat-value">{{ userProfile?.points ?? 0 }} 分</p>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">已报名活动数</p>
+          <p class="stat-value">{{ signupRecords.length }} 个</p>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">已参与活动数</p>
+          <p class="stat-value">
+            {{
+              signupRecords.filter((r) => r.status === "PARTICIPATED").length
+            }}
+            个
+          </p>
+        </div>
+      </template>
     </section>
 
     <section class="activity">
@@ -144,8 +243,8 @@ const mockActivities = [
           <p class="activity-info">
             {{ activity.time }} · {{ activity.location }}
           </p>
-          <p class="activity-description">{{ activity.desc }}</p>
-          <button type="button" class="lookup-button">报名参与</button>
+          <p class="activity-desc">{{ activity.desc }}</p>
+          <button type="button" class="join-button">报名参与</button>
         </article>
       </div>
     </section>
@@ -190,7 +289,7 @@ const mockActivities = [
   margin-bottom: 12px;
 }
 
-.header-description {
+.header-desc {
   color: #4b5563;
   line-height: 1.7;
   margin-bottom: 20px;
@@ -268,6 +367,49 @@ const mockActivities = [
   gap: 16px;
 }
 
+.loading-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.stat-card {
+  grid-column: 1 / -1;
+  background: white;
+  padding: 40px;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.login-text {
+  font-size: 18px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.volunteer-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.volunteer-desc {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 600px;
+}
+
 .stat-content {
   background: white;
   padding: 18px;
@@ -275,15 +417,16 @@ const mockActivities = [
   border-radius: 12px;
 }
 
-.stat-value {
-  font-size: 22px;
+.stat-label {
+  font-size: 20px;
   font-weight: 700;
-  color: #1f2937;
+  color: black;
+  margin-top: 6px;
 }
 
-.stat-label {
-  color: #6b7280;
-  margin-top: 6px;
+.stat-value {
+  font-size: 18px;
+  color: #1f2937;
 }
 
 .activity {
@@ -322,7 +465,7 @@ const mockActivities = [
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  border: 1px solid #eef2f7;
+  border: 2px solid #eef2f7;
   border-radius: 12px;
 }
 
@@ -340,7 +483,7 @@ const mockActivities = [
   color: #6b7280;
 }
 
-.activity-description {
+.activity-desc {
   flex: 1;
   font-size: 14px;
   color: #4b5563;

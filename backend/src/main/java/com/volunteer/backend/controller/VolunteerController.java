@@ -1,5 +1,7 @@
 package com.volunteer.backend.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,7 +56,12 @@ public class VolunteerController {
         @RequestParam(defaultValue = "10") int size
     ) {
         // @formatter:on
-        return ResponseEntity.ok(signupRecordService.getSignupRecords(volunteerId, page, size));
+        return ResponseEntity.ok(signupRecordService.getPaginatedSignupRecords(volunteerId, page, size));
+    }
+
+    @GetMapping("/{volunteerId}/signup-records/all")
+    public ResponseEntity<List<SignupRecordResponse>> getAllSignupRecords(@PathVariable Long volunteerId) {
+        return ResponseEntity.ok(signupRecordService.getAllSignupRecords(volunteerId));
     }
 
     // @formatter:off

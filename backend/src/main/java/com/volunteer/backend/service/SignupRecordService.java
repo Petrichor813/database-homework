@@ -39,7 +39,7 @@ public class SignupRecordService {
     }
     // @formatter:on
 
-    public PageResponse<SignupRecordResponse> getSignupRecords(Long volunteerId, int page, int size) {
+    public PageResponse<SignupRecordResponse> getPaginatedSignupRecords(Long volunteerId, int page, int size) {
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
         if (v.isEmpty()) {
             throw new IllegalArgumentException("未找到志愿者信息");
@@ -87,5 +87,43 @@ public class SignupRecordService {
             recordPage.getTotalPages()
         );
         // @formatter:on
+    }
+
+    public List<SignupRecordResponse> getAllSignupRecords(Long volunteerId) {
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
+        if (v.isEmpty()) {
+            throw new IllegalArgumentException("未找到志愿者信息");
+        }
+
+        List<SignupRecord> records = signupRecordRepository.findByVolunteerId(volunteerId);
+        List<SignupRecordResponse> content = new ArrayList<>();
+
+        for (SignupRecord r : records) {
+            Optional<Activity> a = activityRepository.findById(r.getActivityId());
+            if (a.isEmpty()) {
+                throw new IllegalArgumentException("活动不存在");
+            }
+            Activity activity = a.get();
+            // @formatter:off
+            content.add(
+                new SignupRecordResponse(
+                    r.getId(),
+                    activity.getId(), // 添加活动ID
+                    activity.getTitle(),
+                    activity.getStartTime().format(DATETIME_FORMATTER),
+                    activity.getEndTime().format(DATETIME_FORMATTER),
+                    r.getVolunteerStartTime() != null ? r.getVolunteerStartTime().format(DATETIME_FORMATTER) : null,
+                    r.getVolunteerEndTime() != null ? r.getVolunteerEndTime().format(DATETIME_FORMATTER) : null,
+                    r.getStatus().toString(),
+                    r.getSignupTime().format(DATETIME_FORMATTER),
+                    r.getActualHours(),
+                    r.getPoints(),
+                    r.getNote()
+                )
+            );
+            // @formatter:on
+        }
+
+        return content;
     }
 }
