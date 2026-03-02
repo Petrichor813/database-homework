@@ -2,7 +2,6 @@ package com.volunteer.backend.dto;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.volunteer.backend.enums.ActivityStatus;
 import com.volunteer.backend.enums.ActivityType;
 
@@ -11,13 +10,8 @@ public class AdminActivityImportRequest {
     private String description;
     private ActivityType type;
     private String location;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
-
     private ActivityStatus status;
     private Double pointsPerHour;
     private Integer maxParticipants;

@@ -19,7 +19,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "activity")
+@Table(name = "activity", indexes = {
+    @jakarta.persistence.Index(name = "idx_activity_start_time", columnList = "start_time")
+})
 public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,14 +1,17 @@
 package com.volunteer.backend.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +23,7 @@ import com.volunteer.backend.entity.Activity;
 import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.enums.ActivityStatus;
+import com.volunteer.backend.enums.ActivityType;
 import com.volunteer.backend.enums.SignupStatus;
 import com.volunteer.backend.enums.VolunteerStatus;
 import com.volunteer.backend.repository.ActivityRepository;
@@ -46,50 +50,6 @@ public class ActivityService {
     }
     // @formatter:on
 
-    private int statusOrder(ActivityStatus status) {
-        int weight;
-        switch (status) {
-        case RECRUITING, CONFIRMED:
-            weight = 0;
-            break;
-        case ONGOING:
-            weight = 1;
-            break;
-        case COMPLETED, CANCELLED:
-            weight = 2;
-            break;
-        default:
-            weight = 3;
-        }
-        return weight;
-    }
-
-    private Comparator<Activity> buildComparator(String sort) {
-        // 使用匿名内部类代替lambda表达式
-        if ("status".equalsIgnoreCase(sort)) {
-            return new Comparator<Activity>() {
-                @Override
-                public int compare(Activity a1, Activity a2) {
-                    // 先按状态排序
-                    int statusCompare = Integer.compare(statusOrder(a1.getStatus()), statusOrder(a2.getStatus()));
-                    if (statusCompare != 0) {
-                        return statusCompare;
-                    }
-                    // 状态相同则按开始时间倒序
-                    return a2.getStartTime().compareTo(a1.getStartTime());
-                }
-            };
-        }
-
-        // 默认按开始时间倒序排序
-        return new Comparator<Activity>() {
-            @Override
-            public int compare(Activity a1, Activity a2) {
-                return a2.getStartTime().compareTo(a1.getStartTime());
-            }
-        };
-    }
-
     private void refreshActivityStatus(Activity activity, LocalDateTime now) {
         if (activity.getStatus() == ActivityStatus.CANCELLED) {
             return;
@@ -107,24 +67,7 @@ public class ActivityService {
         }
     }
 
-    private ActivityResponse buildResponse(Activity activity, Long userId) {
-        // 获取用户的报名状态
-        SignupStatus signupStatus = null;
-
-        if (userId != null) {
-            Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
-            if (v.isPresent()) {
-                Volunteer volunteer = v.get();
-                if (volunteer.getStatus() == VolunteerStatus.CERTIFIED) {
-                    Optional<SignupRecord> sr = signupRecordRepository.findByVolunteerIdAndActivityId(volunteer.getId(),
-                            activity.getId());
-                    if (sr.isPresent()) {
-                        signupStatus = sr.get().getStatus();
-                    }
-                }
-            }
-        }
-
+    private ActivityResponse buildResponse(Activity activity, SignupStatus signupStatus) {
         // @formatter:off
         return new ActivityResponse(
             activity.getId(),
@@ -162,69 +105,87 @@ public class ActivityService {
             throw new IllegalArgumentException("每页记录数必须大于0");
         }
 
-        List<Activity> allActivities = new ArrayList<>(activityRepository.findAll());
+        Pageable pageable;
+        if ("status".equalsIgnoreCase(sort)) {
+            pageable = PageRequest.of(page, size);
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startTime"));
+        }
+
+        ActivityType activityType = null;
+        if (type != null && !type.isEmpty() && !"ALL".equalsIgnoreCase(type)) {
+            try {
+                activityType = ActivityType.valueOf(type);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("无效的活动类型: " + type);
+            }
+        }
+
+        ActivityStatus activityStatus = null;
+        if (status != null && !status.isEmpty() && !"ALL".equalsIgnoreCase(status)) {
+            try {
+                activityStatus = ActivityStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("无效的活动状态: " + status);
+            }
+        }
+
+        Page<Activity> activityPage;
+        if ("status".equalsIgnoreCase(sort)) {
+            activityPage = activityRepository.findActivitiesByStatusOrder(
+                keyword != null ? keyword : "",
+                activityType,
+                activityStatus,
+                date != null ? date : "",
+                pageable
+            );
+        } else {
+            activityPage = activityRepository.findActivities(
+                keyword != null ? keyword : "",
+                activityType,
+                activityStatus,
+                date != null ? date : "",
+                pageable
+            );
+        }
+
         LocalDateTime now = LocalDateTime.now();
-
-        // 使用一般循环代替流式写法
-        List<Activity> filtered = new ArrayList<>();
-        for (Activity activity : allActivities) {
-            refreshActivityStatus(activity, now);
-            boolean shouldInclude = true;
-
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                String lowerKeyword = keyword.trim().toLowerCase(Locale.ROOT);
-                String title = activity.getTitle() == null ? "" : activity.getTitle().toLowerCase(Locale.ROOT);
-                String description = activity.getDescription() == null ? ""
-                        : activity.getDescription().toLowerCase(Locale.ROOT);
-                if (!title.contains(lowerKeyword) && !description.contains(lowerKeyword)) {
-                    shouldInclude = false;
-                }
-            }
-
-            if (shouldInclude && type != null && !type.isBlank() && !"ALL".equalsIgnoreCase(type)) {
-                if (!activity.getType().name().equalsIgnoreCase(type)) {
-                    shouldInclude = false;
-                }
-            }
-
-            if (shouldInclude && status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
-                if (!activity.getStatus().name().equalsIgnoreCase(status)) {
-                    shouldInclude = false;
-                }
-            }
-
-            if (shouldInclude && date != null && !date.isBlank()) {
-                LocalDate filterDate = LocalDate.parse(date);
-                LocalDate activityDate = activity.getStartTime().toLocalDate();
-                if (!filterDate.equals(activityDate)) {
-                    shouldInclude = false;
-                }
-            }
-
-            if (shouldInclude) {
-                filtered.add(activity);
-            }
-        }
-
-        // 使用一般循环代替流式排序和映射
-        Comparator<Activity> comparator = buildComparator(sort);
-        filtered.sort(comparator);
-
         List<ActivityResponse> content = new ArrayList<>();
-        for (Activity activity : filtered) {
-            content.add(buildResponse(activity, userId));
+
+        Map<Long, SignupStatus> signupStatusMap = new HashMap<>();
+        if (userId != null) {
+            Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
+            if (v.isPresent()) {
+                Volunteer volunteer = v.get();
+                if (volunteer.getStatus() == VolunteerStatus.CERTIFIED) {
+                    List<Long> activityIds = new ArrayList<>();
+                    for (Activity activity : activityPage.getContent()) {
+                        activityIds.add(activity.getId());
+                    }
+                    if (!activityIds.isEmpty()) {
+                        List<SignupRecord> signupRecords = signupRecordRepository.findByVolunteerIdAndActivityIds(
+                            volunteer.getId(), activityIds);
+                        for (SignupRecord record : signupRecords) {
+                            signupStatusMap.put(record.getActivityId(), record.getStatus());
+                        }
+                    }
+                }
+            }
         }
 
-        int totalElements = content.size();
-        int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / size);
-        int start = page * size;
-        if (start >= totalElements) {
-            return new PageResponse<>(new ArrayList<>(), page, size, totalElements, totalPages);
+        for (Activity activity : activityPage.getContent()) {
+            refreshActivityStatus(activity, now);
+            SignupStatus signupStatus = signupStatusMap.get(activity.getId());
+            content.add(buildResponse(activity, signupStatus));
         }
-        int end = Math.min(start + size, totalElements);
-        List<ActivityResponse> pagedContent = content.subList(start, end);
 
-        return new PageResponse<>(pagedContent, page, size, totalElements, totalPages);
+        return new PageResponse<>(
+            content,
+            page,
+            size,
+            (int) activityPage.getTotalElements(),
+            activityPage.getTotalPages()
+        );
     }
 
     @Transactional
