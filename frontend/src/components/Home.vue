@@ -3,6 +3,9 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../utils/toast";
 import { getJson } from "../utils/api";
+import volunteer1 from "../assets/volunteer-1.jpg";
+import volunteer2 from "../assets/volunteer-2.jpg";
+import volunteer3 from "../assets/volunteer-3.jpg";
 
 interface User {
   role?: string | null;
@@ -43,6 +46,17 @@ const { info, error } = useToast();
 const userProfile = ref<UserProfile | null>(null);
 const signupRecords = ref<SignupRecord[]>([]);
 const loading = ref(false);
+
+const images = [volunteer1, volunteer2, volunteer3];
+
+const curImageIndex = ref(0);
+const imagePlayInterval = ref<number | null>(null);
+
+const startImagePlay = () => {
+  imagePlayInterval.value = window.setInterval(() => {
+    curImageIndex.value = (curImageIndex.value + 1) % images.length;
+  }, 3000);
+};
 
 const getUserStatus = () => {
   const localUser = localStorage.getItem("user");
@@ -147,6 +161,7 @@ const mockActivities = [
 
 onMounted(() => {
   fetchUserData();
+  startImagePlay();
 });
 </script>
 
@@ -173,13 +188,11 @@ onMounted(() => {
         </div>
       </div>
       <div class="header-panel">
-        <h3>平台能力概览</h3>
-        <ul>
-          <li>活动发布 / 报名 / 审核</li>
-          <li>志愿时长与积分结算</li>
-          <li>积分兑换与公益激励</li>
-          <li>数据导入、看板分析与导出</li>
-        </ul>
+        <div class="image-container">
+          <transition name="slide" mode="out-in">
+            <img :key="curImageIndex" :src="images[curImageIndex]" alt="" />
+          </transition>
+        </div>
       </div>
     </section>
 
@@ -261,8 +274,8 @@ onMounted(() => {
 .header {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  padding: 30px;
+  gap: 20px;
+  padding: 10px 25px;
   background: linear-gradient(135deg, #e9f2ff 0%, #f8fbff 100%);
   border-radius: 16px;
   border: 1px solid #e0e7ff;
@@ -272,7 +285,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: flex-start;
+  justify-content: center;
   text-align: left;
 }
 
@@ -292,7 +305,7 @@ onMounted(() => {
 .header-desc {
   color: #4b5563;
   line-height: 1.7;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .activity-actions {
@@ -338,27 +351,37 @@ onMounted(() => {
 }
 
 .header-panel {
-  display: flex;
-  align-items: center;
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(30, 64, 175, 0.08);
+  margin: 1rem auto;
+  overflow: hidden;
+  position: relative;
+  height: 320px;
 }
 
-.header-panel h3 {
-  color: #1e3a8a;
-  margin-bottom: 12px;
-  margin-right: 20px;
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-.header-panel ul {
-  display: grid;
-  color: #374151;
-  list-style: none;
-  gap: 10px;
-  padding: 0;
-  margin: 0;
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.5s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(100%);
+}
+
+.slide-leave-to {
+  transform: translateX(-100%);
 }
 
 .stats {
