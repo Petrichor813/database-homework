@@ -217,11 +217,14 @@ public class ProductService {
         );
         pointChangeRecordRepository.save(pointChangeRecord);
 
+        volunteer.setPoints(volunteer.getPoints() - totalPoints);
+        volunteerRepository.save(volunteer);
+
         return new ExchangeResponse(exchangeRecord.getId(), "兑换成功");
     }
 
     private double getCurrentPoints(Long volunteerId) {
-        Double total = pointChangeRecordRepository.sumPointsByVolunteerId(volunteerId);
-        return total != null ? total : 0.0;
+        Volunteer volunteer = volunteerRepository.findById(volunteerId).orElseThrow();
+        return volunteer.getPoints() != null ? volunteer.getPoints() : 0.0;
     }
 }

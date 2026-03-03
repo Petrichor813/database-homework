@@ -128,5 +128,10 @@ public class ExchangeRecordService {
             RelatedRecordType.EXCHANGE
         );
         pointChangeRecordRepository.save(refundRecord);
+
+        // 更新志愿者积分
+        Volunteer volunteer = v.get();
+        volunteer.setPoints(volunteer.getPoints() + record.getTotalPoints());
+        volunteerRepository.save(volunteer);
     }
 }

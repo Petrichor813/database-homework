@@ -51,6 +51,9 @@ public class Volunteer {
     @Column(nullable = false)
     private Boolean deleted;
 
+    @Column(nullable = false)
+    private Double points = 0.0;
+
     // 申请原因
     @Column(length = 200)
     private String applyReason;
@@ -68,6 +71,7 @@ public class Volunteer {
 
     public Volunteer() {
         this.status = VolunteerStatus.REVIEWING;
+        this.points = 0.0;
         this.deleted = false;
         this.createTime = LocalDateTime.now();
     }
@@ -125,6 +129,14 @@ public class Volunteer {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public Double getPoints() {
+        return points;
+    }
+
+    public void setPoints(Double points) {
+        this.points = points;
     }
 
     public String getApplyReason() {

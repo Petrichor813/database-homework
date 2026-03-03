@@ -37,12 +37,14 @@ public class AdminExchangeService {
     private final ProductRepository productRepository;
     private final PointChangeRecordRepository pointChangeRecordRepository;
 
+    // @formatter:off
     public AdminExchangeService(
         ExchangeRecordRepository exchangeRecordRepository,
         VolunteerRepository volunteerRepository,
         ProductRepository productRepository,
         PointChangeRecordRepository pointChangeRecordRepository
     ) {
+            // @formatter:on
         this.exchangeRecordRepository = exchangeRecordRepository;
         this.volunteerRepository = volunteerRepository;
         this.productRepository = productRepository;
@@ -50,6 +52,7 @@ public class AdminExchangeService {
     }
 
     private AdminExchangeRecordResponse buildResponse(ExchangeRecord record, String volunteerName, String productName) {
+        // @formatter:off
         return new AdminExchangeRecordResponse(
             record.getId(),
             record.getVolunteerId(),
@@ -60,9 +63,9 @@ public class AdminExchangeService {
             record.getStatus().toString(),
             record.getOrderTime().format(DATETIME_FORMATTER),
             record.getProcessTime() != null ? record.getProcessTime().format(DATETIME_FORMATTER) : null,
-            record.getNote(),
-            record.getRecvInfo()
+            record.getNote(), record.getRecvInfo()
         );
+        // @formatter:on
     }
 
     public PageResponse<AdminExchangeRecordResponse> getExchangeRecords(String status, int page, int size) {
@@ -96,14 +99,15 @@ public class AdminExchangeService {
             }
 
             String productName = "";
-            Optional<Product> product = productRepository.findById(record.getProductId());
-            if (product.isPresent()) {
-                productName = product.get().getName();
+            Optional<Product> p = productRepository.findById(record.getProductId());
+            if (p.isPresent()) {
+                productName = p.get().getName();
             }
 
             content.add(buildResponse(record, volunteerName, productName));
         }
 
+        // @formatter:off
         return new PageResponse<>(
             content,
             recordPage.getNumber(),
@@ -111,27 +115,28 @@ public class AdminExchangeService {
             recordPage.getTotalElements(),
             recordPage.getTotalPages()
         );
+        // @formatter:on
     }
 
     @Transactional
     public AdminExchangeRecordResponse approveExchange(Long recordId, AdminExchangeProcessRequest request) {
-        Optional<ExchangeRecord> recordOpt = exchangeRecordRepository.findById(recordId);
-        if (recordOpt.isEmpty()) {
+        Optional<ExchangeRecord> er = exchangeRecordRepository.findById(recordId);
+        if (er.isEmpty()) {
             throw new IllegalArgumentException("兑换记录不存在");
         }
 
-        ExchangeRecord record = recordOpt.get();
+        ExchangeRecord record = er.get();
 
         if (record.getStatus() != ExchangeStatus.REVIEWING) {
             throw new IllegalArgumentException("该兑换记录已被处理，无法重复操作");
         }
 
-        Optional<Product> productOpt = productRepository.findById(record.getProductId());
-        if (productOpt.isEmpty()) {
+        Optional<Product> p = productRepository.findById(record.getProductId());
+        if (p.isEmpty()) {
             throw new IllegalArgumentException("商品不存在");
         }
 
-        Product product = productOpt.get();
+        Product product = p.get();
 
         if (product.getStock() < record.getNumber()) {
             throw new IllegalArgumentException("商品库存不足，无法批准兑换");
@@ -157,12 +162,12 @@ public class AdminExchangeService {
 
     @Transactional
     public AdminExchangeRecordResponse rejectExchange(Long recordId, AdminExchangeProcessRequest request) {
-        Optional<ExchangeRecord> recordOpt = exchangeRecordRepository.findById(recordId);
-        if (recordOpt.isEmpty()) {
+        Optional<ExchangeRecord> er = exchangeRecordRepository.findById(recordId);
+        if (er.isEmpty()) {
             throw new IllegalArgumentException("兑换记录不存在");
         }
 
-        ExchangeRecord record = recordOpt.get();
+        ExchangeRecord record = er.get();
 
         if (record.getStatus() != ExchangeStatus.REVIEWING) {
             throw new IllegalArgumentException("该兑换记录已被处理，无法重复操作");
@@ -172,6 +177,7 @@ public class AdminExchangeService {
         record.setProcessTime(LocalDateTime.now());
         record.setNote(request.getNote() != null ? request.getNote().trim() : "管理员拒绝兑换");
 
+        // @formatter:off
         PointChangeRecord refundRecord = new PointChangeRecord(
             record.getVolunteerId(),
             record.getTotalPoints(),
@@ -180,20 +186,26 @@ public class AdminExchangeService {
             record.getId(),
             RelatedRecordType.EXCHANGE
         );
+        // @formatter:on
         pointChangeRecordRepository.save(refundRecord);
+
+        // 更新志愿者积分
+        Optional<Volunteer> v = volunteerRepository.findById(record.getVolunteerId());
+        if (v.isEmpty()) {
+            throw new IllegalArgumentException("志愿者不存在");
+        }
+
+        Volunteer volunteer = v.get();
+        String volunteerName = volunteer.getName();
+        volunteer.setPoints(volunteer.getPoints() + record.getTotalPoints());
+        volunteerRepository.save(volunteer);
 
         ExchangeRecord saved = exchangeRecordRepository.save(record);
 
-        String volunteerName = "";
-        Optional<Volunteer> volunteer = volunteerRepository.findById(saved.getVolunteerId());
-        if (volunteer.isPresent()) {
-            volunteerName = volunteer.get().getName();
-        }
-
         String productName = "";
-        Optional<Product> product = productRepository.findById(saved.getProductId());
-        if (product.isPresent()) {
-            productName = product.get().getName();
+        Optional<Product> p = productRepository.findById(saved.getProductId());
+        if (p.isPresent()) {
+            productName = p.get().getName();
         }
 
         return buildResponse(saved, volunteerName, productName);

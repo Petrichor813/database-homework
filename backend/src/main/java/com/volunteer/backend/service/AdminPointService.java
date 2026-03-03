@@ -141,7 +141,7 @@ public class AdminPointService {
             throw new IllegalArgumentException("备注长度不能超过200个字符");
         }
 
-        Double currentBalance = pointChangeRecordRepository.sumPointsByVolunteerId(request.getVolunteerId());
+        Double currentBalance = volunteer.getPoints();
         Double newBalance = currentBalance + request.getChangePoints();
 
         PointChangeRecord record = new PointChangeRecord(request.getVolunteerId(), request.getChangePoints(),
@@ -150,6 +150,9 @@ public class AdminPointService {
         record.setBalanceAfter(newBalance);
 
         PointChangeRecord saved = pointChangeRecordRepository.save(record);
+
+        volunteer.setPoints(newBalance);
+        volunteerRepository.save(volunteer);
 
         return buildResponse(saved, volunteer.getName());
     }
@@ -162,6 +165,7 @@ public class AdminPointService {
         }
 
         PointChangeRecord record = recordOpt.get();
+        Volunteer volunteer = volunteerRepository.findById(record.getVolunteerId()).orElseThrow();
 
         if (request.getChangePoints() != null) {
             if (request.getChangePoints().equals(record.getChangePoints())) {
@@ -172,11 +176,14 @@ public class AdminPointService {
             Double newChangePoints = request.getChangePoints();
             Double difference = newChangePoints - oldChangePoints;
 
-            Double currentBalance = pointChangeRecordRepository.sumPointsByVolunteerId(record.getVolunteerId());
+            Double currentBalance = volunteer.getPoints();
             Double newBalance = currentBalance + difference;
 
             record.setChangePoints(newChangePoints);
             record.setBalanceAfter(newBalance);
+
+            volunteer.setPoints(newBalance);
+            volunteerRepository.save(volunteer);
         }
 
         if (request.getReason() != null) {
@@ -200,13 +207,7 @@ public class AdminPointService {
 
         PointChangeRecord saved = pointChangeRecordRepository.save(record);
 
-        String volunteerName = "";
-        Optional<Volunteer> volunteer = volunteerRepository.findById(saved.getVolunteerId());
-        if (volunteer.isPresent()) {
-            volunteerName = volunteer.get().getName();
-        }
-
-        return buildResponse(saved, volunteerName);
+        return buildResponse(saved, volunteer.getName());
     }
 
     @Transactional
@@ -217,13 +218,14 @@ public class AdminPointService {
         }
 
         PointChangeRecord originalRecord = recordOpt.get();
+        Volunteer volunteer = volunteerRepository.findById(originalRecord.getVolunteerId()).orElseThrow();
 
         Double revertAmount = -originalRecord.getChangePoints();
 
         String reason = "撤销积分记录 ID: " + recordId;
         String note = "原记录: " + originalRecord.getReason();
 
-        Double currentBalance = pointChangeRecordRepository.sumPointsByVolunteerId(originalRecord.getVolunteerId());
+        Double currentBalance = volunteer.getPoints();
         Double newBalance = currentBalance + revertAmount;
 
         PointChangeRecord revertRecord = new PointChangeRecord(originalRecord.getVolunteerId(), revertAmount,
@@ -232,5 +234,8 @@ public class AdminPointService {
         revertRecord.setBalanceAfter(newBalance);
 
         pointChangeRecordRepository.save(revertRecord);
+
+        volunteer.setPoints(newBalance);
+        volunteerRepository.save(volunteer);
     }
 }

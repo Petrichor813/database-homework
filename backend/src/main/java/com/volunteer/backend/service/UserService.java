@@ -13,7 +13,6 @@ import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.enums.UserRole;
 import com.volunteer.backend.enums.VolunteerStatus;
-import com.volunteer.backend.repository.PointChangeRecordRepository;
 import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.UserRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
@@ -23,19 +22,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final VolunteerRepository volunteerRepository;
     private final SignupRecordRepository signupRecordRepository;
-    private final PointChangeRecordRepository pointChangeRecordRepository;
 
     // @formatter:off
     public UserService(
         UserRepository userRepository,
         VolunteerRepository volunteerRepository,
-        SignupRecordRepository signupRecordRepository,
-        PointChangeRecordRepository pointChangeRecordRepository
+        SignupRecordRepository signupRecordRepository
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;
         this.signupRecordRepository = signupRecordRepository;
-        this.pointChangeRecordRepository = pointChangeRecordRepository;
     }
     // @formatter:on
 
@@ -56,7 +52,7 @@ public class UserService {
         if (volunteer != null) {
             Long volunteerId = volunteer.getId();
             serviceHours = signupRecordRepository.sumHoursByVolunteerId(volunteerId);
-            points = pointChangeRecordRepository.sumPointsByVolunteerId(volunteerId);
+            points = volunteer.getPoints();
         }
 
         // @formatter:off

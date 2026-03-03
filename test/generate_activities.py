@@ -257,11 +257,14 @@ def insert_activities(
         return
     
     try:
+        cursor.execute("DELETE FROM point_change_record")
         cursor.execute("DELETE FROM signup_record")
         cursor.execute("DELETE FROM activity")
+        cursor.execute("UPDATE volunteer SET points = 0.0 WHERE deleted = FALSE")
+        cursor.execute("ALTER TABLE point_change_record AUTO_INCREMENT = 1")
         cursor.execute("ALTER TABLE signup_record AUTO_INCREMENT = 1")
         cursor.execute("ALTER TABLE activity AUTO_INCREMENT = 1")
-        print("已清空活动表和报名记录表，并重置自增ID")
+        print("已清空活动表、报名记录表、积分变动记录表，并重置志愿者积分")
         
         insert_activity_query = """
         INSERT INTO activity (title, description, type, location, start_time, end_time, status, points_per_hour, max_participants, cur_participants, create_time)
@@ -337,12 +340,15 @@ def main():
     try:
         if args.clear_only:
             cursor = conn.cursor()
+            cursor.execute("DELETE FROM point_change_record")
             cursor.execute("DELETE FROM signup_record")
             cursor.execute("DELETE FROM activity")
+            cursor.execute("UPDATE volunteer SET points = 0.0 WHERE deleted = FALSE")
+            cursor.execute("ALTER TABLE point_change_record AUTO_INCREMENT = 1")
             cursor.execute("ALTER TABLE signup_record AUTO_INCREMENT = 1")
             cursor.execute("ALTER TABLE activity AUTO_INCREMENT = 1")
             conn.commit()
-            print("已清空活动表和报名记录表，并重置自增ID")
+            print("已清空活动表、报名记录表、积分变动记录表，并重置志愿者积分")
             cursor.close()
         else:
             years_to_generate = [args.year] if args.year else YEARS

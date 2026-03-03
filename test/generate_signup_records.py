@@ -366,6 +366,39 @@ def insert_point_change_records(
         cursor.close()
 
 
+def update_volunteer_points(
+    conn: PooledMySQLConnection | MySQLConnectionAbstract,
+):
+    """更新志愿者积分字段"""
+    cursor = conn.cursor()
+
+    try:
+        # 计算每个志愿者的积分总和并更新
+        update_query = """
+        UPDATE volunteer v
+        SET v.points = (
+            SELECT COALESCE(SUM(pcr.change_points), 0)
+            FROM point_change_record pcr
+            WHERE pcr.volunteer_id = v.id
+        )
+        WHERE v.deleted = FALSE
+        """
+
+        cursor.execute(update_query)
+        conn.commit()
+
+        # 获取更新的志愿者数量
+        cursor.execute("SELECT ROW_COUNT()")
+        updated_count = cursor.fetchone()[0]
+        print(f"成功更新 {updated_count} 个志愿者的积分")
+
+    except mysql.connector.Error as err:
+        print(f"更新志愿者积分时出错: {err}")
+        conn.rollback()
+    finally:
+        cursor.close()
+
+
 def print_statistics(conn: PooledMySQLConnection | MySQLConnectionAbstract):
     """打印统计信息"""
     cursor = conn.cursor()
@@ -391,26 +424,19 @@ def print_statistics(conn: PooledMySQLConnection | MySQLConnectionAbstract):
         # 志愿者积分统计
         cursor.execute("""
             SELECT 
-                AVG(balance_after) as avg_points,
-                MAX(balance_after) as max_points,
-                MIN(balance_after) as min_points,
-                COUNT(DISTINCT volunteer_id) as volunteer_count
-            FROM (
-                SELECT volunteer_id, balance_after
-                FROM point_change_record
-                WHERE (volunteer_id, change_time) IN (
-                    SELECT volunteer_id, MAX(change_time)
-                    FROM point_change_record
-                    GROUP BY volunteer_id
-                )
-            ) as latest_balances
+                AVG(points) as avg_points,
+                MAX(points) as max_points,
+                MIN(points) as min_points,
+                COUNT(*) as volunteer_count
+            FROM volunteer
+            WHERE deleted = FALSE
         """)
         stats = cursor.fetchone()
         print(f"\n志愿者积分统计:")
         print(f"  平均积分: {stats[0]:.2f}")
         print(f"  最高积分: {stats[1]:.2f}")
         print(f"  最低积分: {stats[2]:.2f}")
-        print(f"  有积分变动的志愿者数: {stats[3]}")
+        print(f"  志愿者总数: {stats[3]}")
 
         # 积分变动类型分布
         cursor.execute("SELECT change_type, COUNT(*) FROM point_change_record GROUP BY change_type")
@@ -444,10 +470,11 @@ def main():
             cursor = conn.cursor()
             cursor.execute("DELETE FROM point_change_record")
             cursor.execute("DELETE FROM signup_record")
+            cursor.execute("UPDATE volunteer SET points = 0.0 WHERE deleted = FALSE")
             cursor.execute("ALTER TABLE point_change_record AUTO_INCREMENT = 1")
             cursor.execute("ALTER TABLE signup_record AUTO_INCREMENT = 1")
             conn.commit()
-            print("已清空报名记录表和积分变动记录表，并重置自增ID")
+            print("已清空报名记录表和积分变动记录表，并重置志愿者积分")
             cursor.close()
         else:
             print("\n获取志愿者和活动数据...")
@@ -471,10 +498,11 @@ def main():
             cursor = conn.cursor()
             cursor.execute("DELETE FROM point_change_record")
             cursor.execute("DELETE FROM signup_record")
+            cursor.execute("UPDATE volunteer SET points = 0.0 WHERE deleted = FALSE")
             cursor.execute("ALTER TABLE point_change_record AUTO_INCREMENT = 1")
             cursor.execute("ALTER TABLE signup_record AUTO_INCREMENT = 1")
             conn.commit()
-            print("已清空报名记录表和积分变动记录表，并重置自增ID")
+            print("已清空报名记录表和积分变动记录表，并重置志愿者积分")
             cursor.close()
 
             print("\n生成报名记录...")
@@ -497,6 +525,9 @@ def main():
 
             print("\n插入积分变动记录...")
             insert_point_change_records(conn, point_change_records)
+
+            print("\n更新志愿者积分字段...")
+            update_volunteer_points(conn)
 
             print("\n统计信息:")
             print_statistics(conn)

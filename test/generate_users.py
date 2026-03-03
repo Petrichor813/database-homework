@@ -140,11 +140,15 @@ def insert_users(
 
     try:
         # 清空用户表和志愿者表
+        cursor.execute("DELETE FROM point_change_record")
+        cursor.execute("DELETE FROM signup_record")
         cursor.execute("DELETE FROM volunteer")
         cursor.execute("DELETE FROM `user`")
+        cursor.execute("ALTER TABLE point_change_record AUTO_INCREMENT = 1")
+        cursor.execute("ALTER TABLE signup_record AUTO_INCREMENT = 1")
         cursor.execute("ALTER TABLE volunteer AUTO_INCREMENT = 1")
         cursor.execute("ALTER TABLE `user` AUTO_INCREMENT = 1")
-        print("已清空用户表和志愿者表，并重置自增ID")
+        print("已清空所有表（用户、志愿者、报名记录、积分变动记录），并重置自增ID")
 
         # 插入用户数据
         insert_user_query = """
@@ -175,8 +179,8 @@ def insert_users(
 
         # 插入志愿者数据
         insert_volunteer_query = """
-        INSERT INTO volunteer (user_id, name, phone, status, deleted, create_time, apply_reason, review_note, review_time)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO volunteer (user_id, name, phone, status, deleted, create_time, apply_reason, review_note, review_time, points)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         volunteer_count = 0
@@ -226,6 +230,7 @@ def insert_users(
                         apply_reason,
                         review_note,
                         review_time,  # 审核时间
+                        0.0,  # 初始积分为0
                     ),
                 )
 
@@ -294,12 +299,16 @@ def main():
         if args.clear_only:
             # 仅清空数据
             cursor = conn.cursor()
+            cursor.execute("DELETE FROM point_change_record")
+            cursor.execute("DELETE FROM signup_record")
             cursor.execute("DELETE FROM volunteer")
             cursor.execute("DELETE FROM `user`")
+            cursor.execute("ALTER TABLE point_change_record AUTO_INCREMENT = 1")
+            cursor.execute("ALTER TABLE signup_record AUTO_INCREMENT = 1")
             cursor.execute("ALTER TABLE volunteer AUTO_INCREMENT = 1")
             cursor.execute("ALTER TABLE `user` AUTO_INCREMENT = 1")
             conn.commit()
-            print("已清空用户表和志愿者表，并重置自增ID")
+            print("已清空所有表（用户、志愿者、报名记录、积分变动记录），并重置自增ID")
             cursor.close()
         else:
             # 生成用户数据

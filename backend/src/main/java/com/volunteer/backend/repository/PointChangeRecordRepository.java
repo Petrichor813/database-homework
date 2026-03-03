@@ -16,9 +16,6 @@ public interface PointChangeRecordRepository extends JpaRepository<PointChangeRe
 
     Page<PointChangeRecord> findByVolunteerIdOrderByChangeTimeDesc(Long volunteerId, Pageable pageable);
 
-    @Query("SELECT COALESCE(SUM(p.changePoints), 0) FROM PointChangeRecord p WHERE p.volunteerId = :volunteerId")
-    Double sumPointsByVolunteerId(@Param("volunteerId") Long volunteerId);
-
     Page<PointChangeRecord> findAllByOrderByChangeTimeDesc(Pageable pageable);
 
     Page<PointChangeRecord> findByChangeTypeOrderByChangeTimeDesc(PointChangeType changeType, Pageable pageable);
