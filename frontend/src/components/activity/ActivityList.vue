@@ -46,7 +46,7 @@ interface Activity {
   signupStatus?: SignupStatus; // 添加报名状态字段
 }
 
-const { success, error } = useToast();
+const { success, info, error } = useToast();
 const {
   pageObject,
   pageRanges,
@@ -155,6 +155,10 @@ const activityTypeLabel = (type: ActivityType) => {
   return option ? option.label : type;
 };
 
+const isActivityEnded = (status: ActivityStatus) => {
+  return status === "COMPLETED" || status === "CANCELLED";
+};
+
 const canSignup = (status: ActivityStatus) =>
   status === "RECRUITING" || status === "CONFIRMED";
 
@@ -188,7 +192,11 @@ const handleSignup = async (activity: Activity) => {
     success("报名成功", response.message);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "报名失败";
-    error("报名失败", msg);
+    if (msg === "您已经报名了该活动") {
+      info("提示", msg);
+    } else {
+      error("报名失败", msg);
+    }
   }
 };
 
@@ -284,6 +292,7 @@ onMounted(() => {
         v-else
         :key="item.id"
         class="activity-row"
+        :class="{ faded: isActivityEnded(item.status) }"
       >
         <div class="row-main">
           <h3>{{ item.title }}</h3>
@@ -474,6 +483,10 @@ onMounted(() => {
   padding: 14px;
 }
 
+.activity-row.faded {
+  opacity: 0.45;
+}
+
 .meta {
   font-size: 13px;
   color: #6b7280;
@@ -486,7 +499,10 @@ onMounted(() => {
 }
 
 .row-actions button {
-  color: #111827;
+  min-width: 80px;
+  font-weight: 600;
+  color: white;
+  border: none;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
@@ -502,37 +518,29 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.row-actions .detail-button {
-  background: white;
-  border: 1px solid #d1d5db;
-  color: black;
-}
-
-.row-actions .detail-button:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #111827;
-  box-shadow: 0 4px 12px rgba(209, 213, 219, 0.3);
-}
-
 .row-actions .signup-button {
-  background: #2563eb;
-  border: none;
-  color: white;
+  background: #22c55e;
 }
 
-.row-actions .signup-button:hover {
+.row-actions .signup-button:hover:not(:disabled) {
+  background: #16a34a;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.row-actions .detail-button {
+  background: #2563eb;
+}
+
+.row-actions .detail-button:hover:not(:disabled) {
   background: #1d4ed8;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .row-actions .cancel-button {
   background: #ef4444;
-  border: none;
-  color: white;
 }
 
-.row-actions .cancel-button:hover {
+.row-actions .cancel-button:hover:not(:disabled) {
   background: #dc2626;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }

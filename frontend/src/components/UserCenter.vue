@@ -715,7 +715,6 @@ const handleDeleteAccount = async () => {
         </section>
 
         <section v-else class="security">
-          <h3>账号与安全</h3>
           <p class="security-tip">管理账号的退出登录与注销，请谨慎操作。</p>
           <div class="account-actions">
             <button
@@ -1029,13 +1028,19 @@ const handleDeleteAccount = async () => {
   padding: 10px 12px;
   border: none;
   border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
+.tab-button:hover,
 .tab-button.active {
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
-  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.tab-button:hover,
+.tab-button.active:hover {
+  transform: scale(1.02);
 }
 
 .tab-page {
@@ -1101,22 +1106,20 @@ const handleDeleteAccount = async () => {
 }
 
 .edit-profile-button {
-  background: white;
-  font-weight: 500;
-  color: #374151;
+  background: #2563eb;
+  font-weight: 600;
+  color: white;
   padding: 12px 16px;
-  border: 2px solid #e5e7eb;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .edit-profile-button:hover {
-  background: #f8fafc;
-  color: black;
-  border-color: #d1d5db;
+  background: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .basic-info {
@@ -1261,7 +1264,7 @@ const handleDeleteAccount = async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #2563eb;
+  background: #22c55e;
   color: white;
   text-decoration: none;
   border-radius: 8px;
@@ -1271,9 +1274,9 @@ const handleDeleteAccount = async () => {
 
 .exchange-record-link:hover {
   text-decoration: underline;
-  background: #1d4ed8;
+  background: #16a34a;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 .table-card {
@@ -1387,22 +1390,20 @@ const handleDeleteAccount = async () => {
 }
 
 .logout-button {
-  background: white;
-  color: #111827;
-  font-weight: 500;
+  background: #f59e0b;
+  color: white;
+  font-weight: 600;
   cursor: pointer;
   padding: 8px 16px;
-  border: 2px solid #e5e7eb;
+  border: none;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .logout-button:hover {
-  background: #f8fafc;
-  color: black;
-  border-color: #cdcdcd;
+  background: #d97706;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .delete-button {
@@ -1542,22 +1543,23 @@ const handleDeleteAccount = async () => {
 }
 
 .save-button:disabled {
-  background: #94a3b8;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .cancel-button {
   min-width: 100px;
   background: white;
-  cursor: pointer;
+  font-weight: 600;
   padding: 10px 20px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #cbd5f5;
   border-radius: 8px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .cancel-button:hover {
-  background: #efefef;
+  background: #eee;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
@@ -1573,7 +1575,7 @@ const handleDeleteAccount = async () => {
 .logout-confirm-button {
   min-width: 100px;
   cursor: pointer;
-  background: #2563eb;
+  background: #ef4444;
   color: white;
   font-weight: 600;
   border: none;
@@ -1583,14 +1585,14 @@ const handleDeleteAccount = async () => {
 }
 
 .logout-confirm-button:hover {
-  background: #1d4ed8;
+  background: #dc2626;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
 .delete-confirm-button {
   min-width: 100px;
-  background: #dc2626;
+  background: #ef4444;
   cursor: pointer;
   color: white;
   font-weight: 600;
@@ -1601,7 +1603,7 @@ const handleDeleteAccount = async () => {
 }
 
 .delete-confirm-button:hover {
-  background: red;
+  background: #dc2626;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }

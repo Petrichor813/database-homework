@@ -470,7 +470,7 @@ onMounted(() => {
 }
 
 .product-card.sold-out {
-  opacity: 0.7;
+  opacity: 0.45;
   background: #f9fafb;
 }
 

@@ -2,8 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import GlobalToast from "./components/utils/GlobalToast.vue";
-import { useToast } from "./utils/toast";
 import { getJson } from "./utils/api";
+import { useToast } from "./utils/toast";
 
 type MenuName = "activities" | "volunteer" | "dashboard" | "admin";
 type UserRole = "ADMIN" | "VOLUNTEER" | "USER";
@@ -201,11 +201,11 @@ const refreshProfile = async (userId: number | string) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "用户资料获取失败";
     error("用户资料获取失败", msg);
-    
+
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     curUser.value = null;
-    
+
     if (route.path !== "/login" && route.path !== "/register") {
       info("用户不存在或账号已注销", "请重新登录");
       router.push("/login");
@@ -756,7 +756,7 @@ body {
   align-items: center;
   width: 100%;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 10px 12px;
   border: none;
   border-radius: 8px;
@@ -766,12 +766,14 @@ body {
   transition: all 0.2s ease;
 }
 
-.user-action-button--center {
+.user-action-button--center,
+.user-action-button--login {
   background: #2563eb;
   color: white;
 }
 
-.user-action-button--center:hover {
+.user-action-button--center:hover,
+.user-action-button--login:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
@@ -779,27 +781,15 @@ body {
 
 .user-action-button--logout {
   background: white;
-  color: black;
+  color: #2563eb;
   border: 2px solid #cbd5f5;
 }
 
 .user-action-button--logout:hover {
-  background: #eeeeee;
-  color: #475569;
+  background: #eee;
   border-color: #cbd5e1;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
-}
-
-.user-action-button--login {
-  background: #2563eb;
-  color: white;
-}
-
-.user-action-button--login:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .app-main {
@@ -902,6 +892,7 @@ body {
 
 .logout-button--cancel {
   background: white;
+  color: #2563eb;
   border: 2px solid #cbd5f5;
 }
 

@@ -1220,7 +1220,7 @@ const deleteProduct = async () => {
 }
 
 .actions button:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -1378,8 +1378,7 @@ const deleteProduct = async () => {
 .dialog-body {
   display: grid;
   background: white;
-  min-width: 360px;
-  max-width: 450px;
+  width: 420px;
   padding: 24px;
   gap: 16px;
   border-radius: 16px;

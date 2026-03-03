@@ -122,12 +122,13 @@ const props = defineProps({
   color: #374151;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: all 0.2s ease;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.page-button:hover {
-  background: #f8fafc;
+.page-button:hover:not(:disabled) {
+  background: #eee;
+  transform: translateY(-1px);
 }
 
 .page-button.active {
@@ -136,8 +137,12 @@ const props = defineProps({
   border: none;
 }
 
+.page-button.active:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
 .page-button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 

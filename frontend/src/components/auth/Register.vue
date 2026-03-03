@@ -328,7 +328,7 @@ form {
   padding: 12px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .input-box:hover,

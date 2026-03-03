@@ -786,8 +786,11 @@ const handleReviewAction = async (
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
+  transition: all 0.2s ease;
+}
+
+.filters select {
   cursor: pointer;
-  transition: all 0.1s ease;
 }
 
 .search-box input:hover,
@@ -862,6 +865,7 @@ const handleReviewAction = async (
 
 .row-actions button {
   min-width: 80px;
+  font-weight: 600;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
@@ -879,14 +883,13 @@ const handleReviewAction = async (
 
 .row-actions .edit-button {
   background: white;
-  color: #111827;
-  border: 1px solid #d1d5db;
+  color: #2563eb;
+  border: 2px solid #cbd5f5;
 }
 
 .row-actions .edit-button:hover:not(:disabled) {
-  background: #f8fafc;
-  color: black;
-  border-color: #cdcdcd;
+  background: #eee;
+  border-color: #cbd5e1;
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 

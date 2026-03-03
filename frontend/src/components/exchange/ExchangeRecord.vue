@@ -247,10 +247,7 @@ onMounted(() => {
         <p><strong>兑换数量：</strong>{{ curRecord?.number }}</p>
         <p><strong>消耗积分：</strong>{{ curRecord?.totalPoints }}</p>
         <p><strong>下单时间：</strong>{{ curRecord?.orderTime }}</p>
-        <p>
-          <strong>处理时间：</strong>
-          {{ displayProcessTime(curRecord?.processTime || "") }}
-        </p>
+        <p><strong>处理时间：</strong>{{ displayProcessTime(curRecord?.processTime || "") }}</p>
         <p>
           <strong>订单状态：</strong>
           <span class="status" :class="getStatusClass(curRecord?.status || '')">

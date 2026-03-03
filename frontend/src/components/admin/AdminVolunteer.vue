@@ -239,7 +239,7 @@ const submitReview = async () => {
                 </button>
                 <button
                   v-if="v.status === 'CERTIFIED'"
-                  class="reject"
+                  class="suspend"
                   type="button"
                   @click="openReviewDialog(v, 'SUSPEND')"
                 >
@@ -424,7 +424,7 @@ const submitReview = async () => {
 }
 
 .actions button:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -444,6 +444,15 @@ const submitReview = async () => {
 .approve:hover:not(:disabled) {
   background: #16a34a;
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.suspend {
+  background: #f59e0b;
+}
+
+.suspend:hover:not(:disabled) {
+  background: #d97706;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .reject {

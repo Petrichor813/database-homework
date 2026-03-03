@@ -1043,7 +1043,7 @@ const getRelatedRecordTypeText = (type: string) => {
 }
 
 .search-volunteer-button:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -1092,7 +1092,7 @@ const getRelatedRecordTypeText = (type: string) => {
 }
 
 .dialog-actions button:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
