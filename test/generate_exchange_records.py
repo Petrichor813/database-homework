@@ -135,6 +135,10 @@ def generate_exchange_records(
     # 初始化商品库存跟踪（使用商品ID作为键）
     product_stock = {p["id"]: p["stock"] for p in products}
 
+    # 初始化志愿者积分跟踪（使用志愿者ID作为键）
+    # 存储每个志愿者在当前批次中的积分变化总和
+    volunteer_points_changes: Dict[int, float] = {}
+
     # 获取兑换日期
     exchange_dates = get_exchange_dates()
     print(f"\n生成 {len(exchange_dates)} 个兑换日的兑换记录")
@@ -158,10 +162,14 @@ def generate_exchange_records(
         for volunteer in selected_volunteers:
             volunteer_id = volunteer["id"]
 
-            # 获取该时间点的积分余额
+            # 获取该时间点的积分余额（从数据库查询）
             points_at_time = get_volunteer_points_at_time(
                 conn, volunteer_id, exchange_date
             )
+
+            # 减去当前批次中该志愿者的积分变化（确保不会重复扣减）
+            if volunteer_id in volunteer_points_changes:
+                points_at_time -= volunteer_points_changes[volunteer_id]
 
             # 如果积分不足50，跳过
             if points_at_time < 50:
@@ -265,12 +273,17 @@ def generate_exchange_records(
 
                 exchange_records.append(exchange_record)
 
-                # 更新剩余积分
+                # 更新剩余积分（确保积分不会变成负数）
                 points_at_time -= total_points
 
                 # 更新商品库存（只有COMPLETED状态才真正扣减库存）
                 if status == "COMPLETED":
                     product_stock[product_id] -= number
+                    # 记录该志愿者的积分变化
+                    if volunteer_id in volunteer_points_changes:
+                        volunteer_points_changes[volunteer_id] += total_points
+                    else:
+                        volunteer_points_changes[volunteer_id] = total_points
 
                 # 如果积分不足，停止兑换
                 if points_at_time < 50:
@@ -323,6 +336,93 @@ def insert_exchange_records(
         cursor.close()
 
 
+def update_product_stock(
+    conn: PooledMySQLConnection | MySQLConnectionAbstract,
+    exchange_records: List[Dict],
+):
+    """更新商品库存"""
+    cursor = conn.cursor()
+
+    try:
+        # 统计每个商品的兑换数量（仅COMPLETED状态）
+        product_stock_changes = {}
+        for record in exchange_records:
+            if record["status"] == "COMPLETED":
+                product_id = record["productId"]
+                number = record["number"]
+                if product_id in product_stock_changes:
+                    product_stock_changes[product_id] += number
+                else:
+                    product_stock_changes[product_id] = number
+
+        # 更新商品库存
+        for product_id, number in product_stock_changes.items():
+            cursor.execute(
+                "UPDATE product SET stock = stock - %s WHERE id = %s AND stock >= %s",
+                (number, product_id, number)
+            )
+
+        # 更新库存为0的商品状态为SOLD_OUT
+        cursor.execute(
+            "UPDATE product SET status = 'SOLD_OUT' WHERE stock = 0 AND status = 'AVAILABLE'"
+        )
+
+        conn.commit()
+        print(f"成功更新 {len(product_stock_changes)} 个商品的库存")
+
+    except mysql.connector.Error as err:
+        print(f"更新商品库存时出错: {err}")
+        conn.rollback()
+    finally:
+        cursor.close()
+
+
+def restore_product_stock(
+    conn: PooledMySQLConnection | MySQLConnectionAbstract,
+):
+    """还原商品库存到初始值"""
+    cursor = conn.cursor()
+
+    try:
+        # 第一步：在删除兑换记录之前，查询并保存每个商品的初始库存
+        # 初始库存 = 当前库存 + 已兑换数量
+        cursor.execute(
+            """
+            SELECT p.id, p.stock, COALESCE(SUM(er.number), 0) as exchanged
+            FROM product p
+            LEFT JOIN exchange_record er ON p.id = er.product_id AND er.status = 'COMPLETED'
+            GROUP BY p.id, p.stock
+            """
+        )
+        products = cursor.fetchall()
+
+        # 保存初始库存信息
+        initial_stocks = {}
+        for product_id, current_stock, exchanged in products:
+            initial_stock = current_stock + exchanged
+            initial_stocks[product_id] = initial_stock
+
+        # 第二步：删除兑换记录
+        cursor.execute("DELETE FROM exchange_record")
+        conn.commit()
+
+        # 第三步：使用保存的初始库存来还原库存，并恢复状态为AVAILABLE
+        for product_id, initial_stock in initial_stocks.items():
+            cursor.execute(
+                "UPDATE product SET stock = %s, status = 'AVAILABLE' WHERE id = %s",
+                (initial_stock, product_id)
+            )
+
+        conn.commit()
+        print(f"成功还原 {len(initial_stocks)} 个商品的库存")
+
+    except mysql.connector.Error as err:
+        print(f"还原商品库存时出错: {err}")
+        conn.rollback()
+    finally:
+        cursor.close()
+
+
 def generate_exchange_point_change_records(
     exchange_records: List[Dict], exchange_ids: List[int]
 ) -> List[Dict]:
@@ -337,10 +437,10 @@ def generate_exchange_point_change_records(
             volunteer_id = exchange_record["volunteerId"]
             total_points = exchange_record["totalPoints"]
             order_time = exchange_record["orderTime"]
-            process_time = exchange_record["processTime"]
 
-            # 变动时间为处理时间
-            change_time = process_time if process_time else order_time
+            # 变动时间为兑换时间（order_time），而不是处理时间
+            # 这样才能保证在查询兑换时间点的积分时，能正确计算余额
+            change_time = order_time
 
             # 变动原因和备注
             reason = random.choice(NOTES)
@@ -547,12 +647,13 @@ def main():
     try:
         if args.clear_only:
             cursor = conn.cursor()
+            # 还原商品库存（会自动删除兑换记录）
+            print("\n还原商品库存...")
+            restore_product_stock(conn)
             # 删除兑换相关的积分变动记录
             cursor.execute(
                 "DELETE FROM point_change_record WHERE change_type = 'EXCHANGE_USE'"
             )
-            # 删除兑换记录
-            cursor.execute("DELETE FROM exchange_record")
             # 更新志愿者积分
             cursor.execute(
                 "UPDATE volunteer SET points = (SELECT COALESCE(SUM(change_points), 0) FROM point_change_record WHERE volunteer_id = volunteer.id) WHERE deleted = FALSE"
@@ -581,12 +682,13 @@ def main():
                 return
 
             cursor = conn.cursor()
+            # 还原商品库存（会自动删除兑换记录）
+            print("\n还原商品库存...")
+            restore_product_stock(conn)
             # 删除兑换相关的积分变动记录
             cursor.execute(
                 "DELETE FROM point_change_record WHERE change_type = 'EXCHANGE_USE'"
             )
-            # 删除兑换记录
-            cursor.execute("DELETE FROM exchange_record")
             cursor.execute("ALTER TABLE exchange_record AUTO_INCREMENT = 1")
             conn.commit()
             print("已清空兑换记录表和相关的积分变动记录")
@@ -607,6 +709,9 @@ def main():
             if not exchange_ids:
                 print("错误: 插入兑换记录失败")
                 return
+
+            print("\n更新商品库存...")
+            update_product_stock(conn, exchange_records)
 
             print("\n生成兑换积分变动记录...")
             point_change_records = generate_exchange_point_change_records(

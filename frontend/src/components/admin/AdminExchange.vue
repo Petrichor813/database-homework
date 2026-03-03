@@ -20,6 +20,7 @@ interface ExchangeRecord {
   volunteerId: number;
   volunteerName: string;
   productName: string;
+  productPrice: number;
   number: number;
   totalPoints: number;
   status: ExchangeStatus;
@@ -71,6 +72,7 @@ const exchangeStatusFilter = ref<string>("ALL");
 const exchangeStatusOptions = [
   { label: "全部", value: "ALL" },
   { label: "待处理", value: "REVIEWING" },
+  { label: "处理中", value: "PROCESSING" },
   { label: "已完成", value: "COMPLETED" },
   { label: "已拒绝", value: "REJECTED" },
   { label: "已取消", value: "CANCELLED" },
@@ -167,9 +169,74 @@ const clearSearch = () => {
 
 const showApproveDialog = ref(false);
 const showRejectDialog = ref(false);
+const showDetailDialog = ref(false);
+const showEditDialog = ref(false);
 const currentExchangeRecord = ref<ExchangeRecord | null>(null);
 const processNote = ref("");
 const isProcessing = ref(false);
+const isEditing = ref(false);
+
+const editForm = reactive({
+  number: 0,
+  status: "PROCESSING" as ExchangeStatus,
+});
+
+const editStatusOptions: { label: string; value: ExchangeStatus }[] = [
+  { label: "处理中", value: "PROCESSING" },
+  { label: "已完成", value: "COMPLETED" },
+];
+
+const openDetailDialog = (record: ExchangeRecord) => {
+  currentExchangeRecord.value = record;
+  showDetailDialog.value = true;
+};
+
+const closeDetailDialog = () => {
+  currentExchangeRecord.value = null;
+  showDetailDialog.value = false;
+};
+
+const openEditDialog = (record: ExchangeRecord) => {
+  currentExchangeRecord.value = record;
+  editForm.number = record.number;
+  editForm.status = record.status;
+  showEditDialog.value = true;
+};
+
+const closeEditDialog = () => {
+  currentExchangeRecord.value = null;
+  editForm.number = 0;
+  editForm.status = "PROCESSING";
+  showEditDialog.value = false;
+};
+
+const updateExchange = async () => {
+  if (!currentExchangeRecord.value || isEditing.value) return;
+
+  if (editForm.number <= 0) {
+    error("保存失败", "兑换数量必须大于0");
+    return;
+  }
+
+  isEditing.value = true;
+  try {
+    await putJson(
+      `/api/admin/exchange-records/${currentExchangeRecord.value.id}`,
+      {
+        number: editForm.number,
+        status: editForm.status,
+      }
+    );
+    success("保存成功", "兑换记录已更新");
+    closeEditDialog();
+    await fetchExchangeRecords(exchangePagination.pageObject.value.curPage);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "更新兑换记录失败";
+    error("操作失败", msg);
+  } finally {
+    isEditing.value = false;
+  }
+};
 
 const openApproveDialog = (record: ExchangeRecord) => {
   currentExchangeRecord.value = record;
@@ -430,29 +497,23 @@ const deleteProduct = async () => {
               <thead>
                 <tr>
                   <th>志愿者姓名</th>
-                  <th>志愿者ID</th>
                   <th>商品名称</th>
                   <th>兑换数量</th>
-                  <th>总消耗积分</th>
-                  <th>兑换时间</th>
                   <th>状态</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="exchangeLoading" class="loading-row">
-                  <td colspan="8">正在加载...</td>
+                  <td colspan="5">正在加载...</td>
                 </tr>
                 <tr v-else-if="exchangeRecords.length === 0" class="empty-row">
-                  <td colspan="8">暂无兑换记录</td>
+                  <td colspan="5">暂无兑换记录</td>
                 </tr>
                 <tr v-else v-for="record in exchangeRecords" :key="record.id">
                   <td>{{ record.volunteerName }}</td>
-                  <td>{{ record.volunteerId }}</td>
                   <td>{{ record.productName }}</td>
                   <td>{{ record.number }}</td>
-                  <td>{{ record.totalPoints }}</td>
-                  <td>{{ record.orderTime }}</td>
                   <td>
                     <span
                       class="status-badge"
@@ -462,23 +523,39 @@ const deleteProduct = async () => {
                     </span>
                   </td>
                   <td>
-                    <div class="actions" v-if="record.status === 'REVIEWING'">
+                    <div class="actions">
                       <button
                         type="button"
-                        class="approve-button"
-                        @click="openApproveDialog(record)"
+                        class="info-button"
+                        @click="openDetailDialog(record)"
                       >
-                        批准
+                        详细信息
                       </button>
                       <button
+                        v-if="record.status === 'PROCESSING' || record.status === 'COMPLETED'"
                         type="button"
-                        class="reject-button"
-                        @click="openRejectDialog(record)"
+                        class="edit-button"
+                        @click="openEditDialog(record)"
                       >
-                        拒绝
+                        编辑
                       </button>
+                      <template v-if="record.status === 'REVIEWING'">
+                        <button
+                          type="button"
+                          class="approve-button"
+                          @click="openApproveDialog(record)"
+                        >
+                          批准
+                        </button>
+                        <button
+                          type="button"
+                          class="reject-button"
+                          @click="openRejectDialog(record)"
+                        >
+                          拒绝
+                        </button>
+                      </template>
                     </div>
-                    <span v-else class="processed-text">已处理</span>
                   </td>
                 </tr>
               </tbody>
@@ -669,6 +746,144 @@ const deleteProduct = async () => {
             type="button"
             class="cancel-button"
             @click="closeRejectDialog"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showDetailDialog" class="dialog-bg">
+      <div class="dialog-body" role="dialog" aria-modal="true">
+        <h3>兑换记录详细信息</h3>
+        <div v-if="currentExchangeRecord" class="detail-content">
+          <div class="detail-row">
+            <span class="detail-label">志愿者姓名</span>
+            <span class="detail-value">{{ currentExchangeRecord.volunteerName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">志愿者ID</span>
+            <span class="detail-value">{{ currentExchangeRecord.volunteerId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">商品名称</span>
+            <span class="detail-value">{{ currentExchangeRecord.productName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">商品单价</span>
+            <span class="detail-value">{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">兑换数量</span>
+            <span class="detail-value">{{ currentExchangeRecord.number }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">积分消耗</span>
+            <span class="detail-value">{{ currentExchangeRecord.totalPoints }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">兑换时间</span>
+            <span class="detail-value">{{ currentExchangeRecord.orderTime }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">兑换状态</span>
+            <span class="detail-value">
+              <span
+                class="status-badge"
+                :class="currentExchangeRecord.status.toLowerCase()"
+              >
+                {{ statusLabelMap[currentExchangeRecord.status] || currentExchangeRecord.status }}
+              </span>
+            </span>
+          </div>
+          <div v-if="currentExchangeRecord.processTime" class="detail-row">
+            <span class="detail-label">处理时间</span>
+            <span class="detail-value">{{ currentExchangeRecord.processTime }}</span>
+          </div>
+          <div v-if="currentExchangeRecord.note" class="detail-row">
+            <span class="detail-label">备注</span>
+            <span class="detail-value">{{ currentExchangeRecord.note }}</span>
+          </div>
+          <div v-if="currentExchangeRecord.recvInfo" class="detail-row-block">
+            <span class="detail-label">收货信息</span>
+            <span class="detail-value">{{ currentExchangeRecord.recvInfo }}</span>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button
+            type="button"
+            class="cancel-button"
+            @click="closeDetailDialog"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showEditDialog" class="dialog-bg">
+      <div class="dialog-body" role="dialog" aria-modal="true">
+        <h3>编辑兑换记录</h3>
+        <div v-if="currentExchangeRecord" class="detail-content">
+          <div class="detail-row">
+            <span class="detail-label">志愿者姓名</span>
+            <span class="detail-value">{{ currentExchangeRecord.volunteerName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">志愿者ID</span>
+            <span class="detail-value">{{ currentExchangeRecord.volunteerId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">商品名称</span>
+            <span class="detail-value">{{ currentExchangeRecord.productName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">商品单价</span>
+            <span class="detail-value">{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span>
+          </div>
+          <div class="form-row">
+            <label>兑换数量 <span class="required">*</span></label>
+            <input
+              v-model.number="editForm.number"
+              type="number"
+              min="1"
+              placeholder="请输入兑换数量"
+            />
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">积分消耗</span>
+            <span class="detail-value">{{ (currentExchangeRecord.productPrice * editForm.number).toFixed(2) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">兑换时间</span>
+            <span class="detail-value">{{ currentExchangeRecord.orderTime }}</span>
+          </div>
+          <div class="form-row">
+            <label>兑换状态 <span class="required">*</span></label>
+            <select v-model="editForm.status">
+              <option
+                v-for="option in editStatusOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button
+            type="button"
+            class="confirm-button"
+            :disabled="isEditing"
+            @click="updateExchange"
+          >
+            确认保存
+          </button>
+          <button
+            type="button"
+            class="cancel-button"
+            @click="closeEditDialog"
           >
             取消
           </button>
@@ -1031,7 +1246,16 @@ const deleteProduct = async () => {
   background: #2563eb;
 }
 
-.edit-button:hover(:disabled) {
+.edit-button:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.info-button {
+  background: #2563eb;
+}
+
+.info-button:hover:not(:disabled) {
   background: #1d4ed8;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
@@ -1304,6 +1528,48 @@ const deleteProduct = async () => {
   background: #efefef;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-row-block:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {

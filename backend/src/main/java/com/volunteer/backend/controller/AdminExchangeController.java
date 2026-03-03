@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.volunteer.backend.dto.AdminExchangeRecordResponse;
 import com.volunteer.backend.dto.AdminExchangeProcessRequest;
+import com.volunteer.backend.dto.AdminExchangeUpdateRequest;
 import com.volunteer.backend.dto.AdminProductRequest;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.dto.ProductResponse;
@@ -50,6 +51,13 @@ public class AdminExchangeController {
             @PathVariable Long id,
             @RequestBody AdminExchangeProcessRequest request) {
         return ResponseEntity.ok(adminExchangeService.rejectExchange(id, request));
+    }
+
+    @PutMapping("/exchange-records/{id}")
+    public ResponseEntity<AdminExchangeRecordResponse> updateExchange(
+            @PathVariable Long id,
+            @RequestBody AdminExchangeUpdateRequest request) {
+        return ResponseEntity.ok(adminExchangeService.updateExchange(id, request));
     }
 
     @GetMapping("/products")

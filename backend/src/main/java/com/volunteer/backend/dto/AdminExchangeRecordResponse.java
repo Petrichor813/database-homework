@@ -7,6 +7,7 @@ public class AdminExchangeRecordResponse {
     private String productName;
     private Long number;
     private Double totalPoints;
+    private Double productPrice;
     private String status;
     private String orderTime;
     private String processTime;
@@ -23,6 +24,7 @@ public class AdminExchangeRecordResponse {
         String productName,
         Long number,
         Double totalPoints,
+        Double productPrice,
         String status,
         String orderTime,
         String processTime,
@@ -35,6 +37,7 @@ public class AdminExchangeRecordResponse {
         this.productName = productName;
         this.number = number;
         this.totalPoints = totalPoints;
+        this.productPrice = productPrice;
         this.status = status;
         this.orderTime = orderTime;
         this.processTime = processTime;
@@ -88,6 +91,14 @@ public class AdminExchangeRecordResponse {
 
     public void setTotalPoints(Double totalPoints) {
         this.totalPoints = totalPoints;
+    }
+
+    public Double getProductPrice() {
+        return productPrice;
+    }
+
+    public void setProductPrice(Double productPrice) {
+        this.productPrice = productPrice;
     }
 
     public String getStatus() {
