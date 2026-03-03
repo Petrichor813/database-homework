@@ -8,12 +8,6 @@ public class SignupRequest {
     public SignupRequest() {
     }
 
-    public SignupRequest(Long activityId, String volunteerStartTime, String volunteerEndTime) {
-        this.activityId = activityId;
-        this.volunteerStartTime = volunteerStartTime;
-        this.volunteerEndTime = volunteerEndTime;
-    }
-
     public Long getActivityId() {
         return activityId;
     }

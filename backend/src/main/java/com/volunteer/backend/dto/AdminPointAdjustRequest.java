@@ -12,20 +12,6 @@ public class AdminPointAdjustRequest {
     public AdminPointAdjustRequest() {
     }
 
-    public AdminPointAdjustRequest(
-        Long volunteerId,
-        Double changePoints,
-        PointChangeType changeType,
-        String reason,
-        String note
-    ) {
-        this.volunteerId = volunteerId;
-        this.changePoints = changePoints;
-        this.changeType = changeType;
-        this.reason = reason;
-        this.note = note;
-    }
-
     public Long getVolunteerId() {
         return volunteerId;
     }

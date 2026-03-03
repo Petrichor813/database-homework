@@ -12,14 +12,6 @@ public class RegisterRequest {
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String username, String password, UserRole role, String phone, boolean requestVolunteer) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.phone = phone;
-        this.requestVolunteer = requestVolunteer;
-    }
-
     public String getUsername() {
         return username;
     }

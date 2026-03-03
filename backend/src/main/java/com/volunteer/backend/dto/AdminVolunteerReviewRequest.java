@@ -9,11 +9,6 @@ public class AdminVolunteerReviewRequest {
     public AdminVolunteerReviewRequest() {
     }
 
-    public AdminVolunteerReviewRequest(VolunteerReviewAction action, String note) {
-        this.action = action;
-        this.note = note;
-    }
-
     public VolunteerReviewAction getAction() {
         return action;
     }

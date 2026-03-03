@@ -16,28 +16,6 @@ public class AdminProductImportRequest {
     public AdminProductImportRequest() {
     }
 
-    // @formatter:off
-    public AdminProductImportRequest(
-        String name,
-        String description,
-        Double price,
-        Long stock,
-        ProductType category,
-        ProductStatus status,
-        Integer sortWeight,
-        String imageUrl
-    ) {
-        // @formatter:on
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-        this.category = category;
-        this.status = status;
-        this.sortWeight = sortWeight;
-        this.imageUrl = imageUrl;
-    }
-
     public String getName() {
         return name;
     }

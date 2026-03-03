@@ -7,11 +7,6 @@ public class UpdateUserProfileRequest {
     public UpdateUserProfileRequest() {
     }
 
-    public UpdateUserProfileRequest(String username, String phone) {
-        this.username = username;
-        this.phone = phone;
-    }
-
     public String getUsername() {
         return username;
     }

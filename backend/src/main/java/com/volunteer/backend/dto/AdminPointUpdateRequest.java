@@ -8,12 +8,6 @@ public class AdminPointUpdateRequest {
     public AdminPointUpdateRequest() {
     }
 
-    public AdminPointUpdateRequest(Double changePoints, String reason, String note) {
-        this.changePoints = changePoints;
-        this.reason = reason;
-        this.note = note;
-    }
-
     public Double getChangePoints() {
         return changePoints;
     }

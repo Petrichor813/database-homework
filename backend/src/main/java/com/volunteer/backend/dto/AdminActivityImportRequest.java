@@ -19,30 +19,6 @@ public class AdminActivityImportRequest {
     public AdminActivityImportRequest() {
     }
 
-    // @formatter:off
-    public AdminActivityImportRequest(
-        String title,
-        String description,
-        ActivityType type,
-        String location,
-        LocalDateTime startTime,
-        LocalDateTime endTime,
-        ActivityStatus status,
-        Double pointsPerHour,
-        Integer maxParticipants
-    ) {
-        // @formatter:on
-        this.title = title;
-        this.description = description;
-        this.type = type;
-        this.location = location;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.status = status;
-        this.pointsPerHour = pointsPerHour;
-        this.maxParticipants = maxParticipants;
-    }
-
     public String getTitle() {
         return title;
     }
