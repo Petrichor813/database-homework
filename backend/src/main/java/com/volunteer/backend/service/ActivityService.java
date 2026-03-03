@@ -132,21 +132,11 @@ public class ActivityService {
 
         Page<Activity> activityPage;
         if ("status".equalsIgnoreCase(sort)) {
-            activityPage = activityRepository.findActivitiesByStatusOrder(
-                keyword != null ? keyword : "",
-                activityType,
-                activityStatus,
-                date != null ? date : "",
-                pageable
-            );
+            activityPage = activityRepository.findActivitiesByStatusOrder(keyword != null ? keyword : "", activityType,
+                    activityStatus, date != null ? date : "", pageable);
         } else {
-            activityPage = activityRepository.findActivities(
-                keyword != null ? keyword : "",
-                activityType,
-                activityStatus,
-                date != null ? date : "",
-                pageable
-            );
+            activityPage = activityRepository.findActivities(keyword != null ? keyword : "", activityType,
+                    activityStatus, date != null ? date : "", pageable);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -163,8 +153,8 @@ public class ActivityService {
                         activityIds.add(activity.getId());
                     }
                     if (!activityIds.isEmpty()) {
-                        List<SignupRecord> signupRecords = signupRecordRepository.findByVolunteerIdAndActivityIds(
-                            volunteer.getId(), activityIds);
+                        List<SignupRecord> signupRecords = signupRecordRepository
+                                .findByVolunteerIdAndActivityIds(volunteer.getId(), activityIds);
                         for (SignupRecord record : signupRecords) {
                             signupStatusMap.put(record.getActivityId(), record.getStatus());
                         }
@@ -179,13 +169,8 @@ public class ActivityService {
             content.add(buildResponse(activity, signupStatus));
         }
 
-        return new PageResponse<>(
-            content,
-            page,
-            size,
-            (int) activityPage.getTotalElements(),
-            activityPage.getTotalPages()
-        );
+        return new PageResponse<>(content, page, size, (int) activityPage.getTotalElements(),
+                activityPage.getTotalPages());
     }
 
     @Transactional
@@ -210,8 +195,8 @@ public class ActivityService {
             throw new IllegalArgumentException("该活动当前不接受报名");
         }
 
-        boolean hasSignedUp = signupRecordRepository.existsByVolunteerIdAndActivityId(volunteer.getId(),
-                request.getActivityId());
+        boolean hasSignedUp = signupRecordRepository.existsByVolunteerIdAndActivityIdAndStatusNot(volunteer.getId(),
+                request.getActivityId(), SignupStatus.CANCELLED);
         if (hasSignedUp) {
             throw new IllegalArgumentException("您已经报名了该活动");
         }
@@ -316,8 +301,8 @@ public class ActivityService {
                         activityIds.add(activity.getId());
                     }
                     if (!activityIds.isEmpty()) {
-                        List<SignupRecord> signupRecords = signupRecordRepository.findByVolunteerIdAndActivityIds(
-                            volunteer.getId(), activityIds);
+                        List<SignupRecord> signupRecords = signupRecordRepository
+                                .findByVolunteerIdAndActivityIds(volunteer.getId(), activityIds);
                         for (SignupRecord record : signupRecords) {
                             signupStatusMap.put(record.getActivityId(), record.getStatus());
                         }

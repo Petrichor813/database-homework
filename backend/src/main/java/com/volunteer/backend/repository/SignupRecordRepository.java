@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.volunteer.backend.entity.SignupRecord;
+import com.volunteer.backend.enums.SignupStatus;
 
 public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long> {
     Page<SignupRecord> findByVolunteerIdOrderBySignupTimeDesc(Long volunteerId, Pageable pageable);
@@ -27,4 +28,7 @@ public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long
 
     @Query("SELECT s FROM SignupRecord s WHERE s.volunteerId = :volunteerId AND s.activityId IN :activityIds")
     List<SignupRecord> findByVolunteerIdAndActivityIds(@Param("volunteerId") Long volunteerId, @Param("activityIds") List<Long> activityIds);
+
+    @Query("SELECT COUNT(s) > 0 FROM SignupRecord s WHERE s.volunteerId = :volunteerId AND s.activityId = :activityId AND s.status != :status")
+    boolean existsByVolunteerIdAndActivityIdAndStatusNot(@Param("volunteerId") Long volunteerId, @Param("activityId") Long activityId, @Param("status") SignupStatus status);
 }

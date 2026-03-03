@@ -371,7 +371,7 @@ const handleSaveSignup = async () => {
 
   try {
     await putJson(
-      `/api/admin/activity/${curActivity.value.id}/signups/${curSignupRecord.value.id}`,
+      `/api/admin/activity/${curActivity.value.id}/signups/${curSignupRecord.value.signupId}`,
       payload
     );
     success("保存成功", "报名记录已更新");
@@ -391,7 +391,7 @@ const handleReviewAction = async (
 
   try {
     await putJson(
-      `/api/admin/activity/${curActivity.value.id}/signups/${record.id}`,
+      `/api/admin/activity/${curActivity.value.id}/signups/${record.signupId}`,
       { status: action }
     );
     success("操作成功", "报名状态已更新");
@@ -846,7 +846,7 @@ const handleReviewAction = async (
 }
 
 .activity-row.faded {
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .meta {

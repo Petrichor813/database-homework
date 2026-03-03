@@ -169,6 +169,24 @@ def insert_signup_records(
         conn.commit()
         print(f"成功插入 {len(signup_records)} 条报名记录")
 
+        # 更新活动的当前报名人数
+        print("\n更新活动当前报名人数...")
+        activity_participant_counts = {}
+        for record in signup_records:
+            activity_id = record["activityId"]
+            if activity_id not in activity_participant_counts:
+                activity_participant_counts[activity_id] = 0
+            activity_participant_counts[activity_id] += 1
+
+        for activity_id, count in activity_participant_counts.items():
+            cursor.execute(
+                "UPDATE activity SET cur_participants = %s WHERE id = %s",
+                (count, activity_id)
+            )
+
+        conn.commit()
+        print(f"成功更新 {len(activity_participant_counts)} 个活动的报名人数")
+
         return signup_ids
 
     except mysql.connector.Error as err:
