@@ -38,7 +38,7 @@ const productTypeOptions = [
   { label: "其他", value: "OTHER" },
 ];
 
-const { success, error } = useToast();
+const { success, error, info } = useToast();
 const {
   pageObject,
   pageRanges,
@@ -146,7 +146,12 @@ const handleExchange = async () => {
     await fetchProducts(pageObject.value.curPage);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "兑换失败";
-    error("兑换失败", msg);
+    
+    if (msg.includes("库存不足") || msg.includes("积分不足") || msg.includes("已被其他用户兑换")) {
+      info("兑换失败", msg);
+    } else {
+      error("兑换失败", msg);
+    }
   } finally {
     isExchanging.value = false;
   }

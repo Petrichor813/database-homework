@@ -53,7 +53,9 @@ def create_connection():
         sys.exit(1)
 
 
-def get_all_volunteers(conn: PooledMySQLConnection | MySQLConnectionAbstract) -> List[Dict]:
+def get_all_volunteers(
+    conn: PooledMySQLConnection | MySQLConnectionAbstract,
+) -> List[Dict]:
     """获取所有已认证志愿者"""
     cursor = conn.cursor(dictionary=True)
     try:
@@ -84,7 +86,7 @@ def get_products(conn: PooledMySQLConnection | MySQLConnectionAbstract) -> List[
 def get_volunteer_points_at_time(
     conn: PooledMySQLConnection | MySQLConnectionAbstract,
     volunteer_id: int,
-    target_time: datetime
+    target_time: datetime,
 ) -> float:
     """获取志愿者在指定时间的积分余额"""
     cursor = conn.cursor()
@@ -96,7 +98,7 @@ def get_volunteer_points_at_time(
             FROM point_change_record
             WHERE volunteer_id = %s AND change_time <= %s
             """,
-            (volunteer_id, target_time)
+            (volunteer_id, target_time),
         )
         result = cursor.fetchone()
         return result[0] if result else 0.0
@@ -115,7 +117,7 @@ def get_exchange_dates() -> List[datetime]:
             minute = random.randint(0, 59)
             exchange_date = datetime(year, month, day, hour, minute)
             exchange_dates.append(exchange_date)
-    
+
     # 按时间排序
     exchange_dates.sort()
     return exchange_dates
@@ -124,11 +126,14 @@ def get_exchange_dates() -> List[datetime]:
 def generate_exchange_records(
     volunteers: List[Dict],
     products: List[Dict],
-    conn: PooledMySQLConnection | MySQLConnectionAbstract
+    conn: PooledMySQLConnection | MySQLConnectionAbstract,
 ) -> List[Dict]:
     """生成兑换记录"""
     fake = Faker("zh_CN")
     exchange_records: List[Dict] = []
+
+    # 初始化商品库存跟踪（使用商品ID作为键）
+    product_stock = {p["id"]: p["stock"] for p in products}
 
     # 获取兑换日期
     exchange_dates = get_exchange_dates()
@@ -138,68 +143,92 @@ def generate_exchange_records(
     for exchange_date in tqdm(exchange_dates, desc="按兑换日生成记录"):
         year = exchange_date.year
         month = exchange_date.month
-        
+
         print(f"\n处理 {year}年{month}月15日 兑换日...")
 
         # 随机选取20-30名志愿者
         num_volunteers = random.randint(20, 30)
-        selected_volunteers = random.sample(volunteers, min(num_volunteers, len(volunteers)))
-        
+        selected_volunteers = random.sample(
+            volunteers, min(num_volunteers, len(volunteers))
+        )
+
         print(f"  随机选取 {len(selected_volunteers)} 名志愿者")
 
         # 为每个志愿者生成兑换记录
         for volunteer in selected_volunteers:
             volunteer_id = volunteer["id"]
-            
+
             # 获取该时间点的积分余额
-            points_at_time = get_volunteer_points_at_time(conn, volunteer_id, exchange_date)
-            
+            points_at_time = get_volunteer_points_at_time(
+                conn, volunteer_id, exchange_date
+            )
+
             # 如果积分不足50，跳过
             if points_at_time < 50:
                 continue
-            
-            # 选择可兑换的商品（价格不超过当前积分）
-            affordable_products = [p for p in products if p["price"] <= points_at_time]
-            
+
+            # 选择可兑换的商品（价格不超过当前积分且库存大于0）
+            affordable_products = [
+                p for p in products
+                if p["price"] <= points_at_time and product_stock[p["id"]] > 0
+            ]
+
             if not affordable_products:
                 continue
-            
+
             # 随机决定兑换次数（1-2次）
             num_exchanges = random.randint(1, 2)
-            
+
             # 随机选择商品并兑换
             for _ in range(num_exchanges):
+                # 重新获取有库存的商品列表
+                affordable_products = [
+                    p for p in products
+                    if p["price"] <= points_at_time and product_stock[p["id"]] > 0
+                ]
+
+                if not affordable_products:
+                    break
+
                 # 随机选择商品
                 product = random.choice(affordable_products)
                 product_id = product["id"]
                 product_price = product["price"]
-                
-                # 计算可兑换的数量
-                max_number = int(points_at_time // product_price)
-                number = random.randint(1, min(max_number, 2))
-                
+
+                # 计算可兑换的数量（不超过库存和2件）
+                max_number = min(
+                    int(points_at_time // product_price),
+                    product_stock[product_id],
+                    2
+                )
+
+                if max_number < 1:
+                    break
+
+                number = random.randint(1, max_number)
+
                 # 计算总积分
                 total_points = product_price * number
-                
+
                 # 确定兑换状态（大部分为COMPLETED，少量为其他状态）
                 # 2025年的兑换日可以有更多其他状态的记录
                 if year == 2025:
                     status_weights = [0.05, 0.05, 0.85, 0.03, 0.02]
                 else:
                     status_weights = [0.02, 0.02, 0.95, 0.01, 0.00]
-                
+
                 status = random.choices(EXCHANGE_STATUSES, weights=status_weights)[0]
-                
+
                 # 处理时间和备注
                 process_time = None
                 note = None
-                
+
                 if status == "COMPLETED":
                     # 处理时间在兑换日后的1-7天内
                     days_after = random.randint(1, 7)
                     hours_after = random.randint(9, 18)
                     minutes_after = random.randint(0, 59)
-                    process_time = exchange_date + timedelta(days=days_after, hours=hours_after-exchange_date.hour, minutes=minutes_after-exchange_date.minute)
+                    process_time = exchange_date + timedelta(days=days_after, hours=hours_after, minutes=minutes_after)
                     note = "兑换成功"
                 elif status == "PROCESSING":
                     # 处理时间在兑换日后的1-24小时内
@@ -218,10 +247,10 @@ def generate_exchange_records(
                     note = "用户取消"
                 elif status == "REVIEWING":
                     note = "待处理"
-                
+
                 # 收货信息
                 recv_info = f"{fake.name()}, {random.choice(RECV_ADDRESSES)}, {fake.phone_number()}"
-                
+
                 exchange_record = {
                     "volunteerId": volunteer_id,
                     "productId": product_id,
@@ -233,16 +262,20 @@ def generate_exchange_records(
                     "note": note,
                     "recvInfo": recv_info,
                 }
-                
+
                 exchange_records.append(exchange_record)
-                
+
                 # 更新剩余积分
                 points_at_time -= total_points
-                
+
+                # 更新商品库存（只有COMPLETED状态才真正扣减库存）
+                if status == "COMPLETED":
+                    product_stock[product_id] -= number
+
                 # 如果积分不足，停止兑换
                 if points_at_time < 50:
                     break
-    
+
     return exchange_records
 
 
@@ -291,8 +324,7 @@ def insert_exchange_records(
 
 
 def generate_exchange_point_change_records(
-    exchange_records: List[Dict],
-    exchange_ids: List[int]
+    exchange_records: List[Dict], exchange_ids: List[int]
 ) -> List[Dict]:
     """生成兑换积分变动记录"""
     fake = Faker("zh_CN")
@@ -354,7 +386,7 @@ def calculate_all_balance_after(
                 WHERE volunteer_id = %s
                 ORDER BY change_time ASC, id ASC
                 """,
-                (volunteer_id,)
+                (volunteer_id,),
             )
             records = cursor.fetchall()
 
@@ -365,7 +397,7 @@ def calculate_all_balance_after(
                 # 更新余额
                 cursor.execute(
                     "UPDATE point_change_record SET balance_after = %s WHERE id = %s",
-                    (balance, record_id)
+                    (balance, record_id),
                 )
 
         conn.commit()
@@ -422,7 +454,9 @@ def print_statistics(conn: PooledMySQLConnection | MySQLConnectionAbstract):
         print(f"\n兑换记录总数: {total_exchanges}")
 
         # 积分变动记录总数
-        cursor.execute("SELECT COUNT(*) FROM point_change_record WHERE change_type = 'EXCHANGE_USE'")
+        cursor.execute(
+            "SELECT COUNT(*) FROM point_change_record WHERE change_type = 'EXCHANGE_USE'"
+        )
         total_exchange_point_changes = cursor.fetchone()[0]
         print(f"兑换积分变动记录总数: {total_exchange_point_changes}")
 
@@ -434,49 +468,57 @@ def print_statistics(conn: PooledMySQLConnection | MySQLConnectionAbstract):
             print(f"  {status}: {count}")
 
         # 商品兑换统计
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT p.name, COUNT(*) as count, SUM(er.number) as total_number
             FROM exchange_record er
             JOIN product p ON er.product_id = p.id
             GROUP BY p.id, p.name
             ORDER BY count DESC
-        """)
+        """
+        )
         product_stats = cursor.fetchall()
         print("\n商品兑换统计:")
         for name, count, total_number in product_stats:
             print(f"  {name}: {count}次, 共{total_number}件")
 
         # 年度兑换统计
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT YEAR(order_time) as year, COUNT(*) as count
             FROM exchange_record
             GROUP BY YEAR(order_time)
             ORDER BY year
-        """)
+        """
+        )
         year_stats = cursor.fetchall()
         print("\n年度兑换统计:")
         for year, count in year_stats:
             print(f"  {year}年: {count}次")
 
         # 月度兑换统计
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT YEAR(order_time) as year, MONTH(order_time) as month, COUNT(*) as count
             FROM exchange_record
             GROUP BY YEAR(order_time), MONTH(order_time)
             ORDER BY year, month
-        """)
+        """
+        )
         month_stats = cursor.fetchall()
         print("\n月度兑换统计:")
         for year, month, count in month_stats:
             print(f"  {year}年{month}月: {count}次")
 
         # 兑换日统计
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT DATE(order_time) as exchange_date, COUNT(*) as count
             FROM exchange_record
             GROUP BY DATE(order_time)
             ORDER BY exchange_date
-        """)
+        """
+        )
         date_stats = cursor.fetchall()
         print("\n兑换日统计:")
         for exchange_date, count in date_stats:
@@ -494,7 +536,7 @@ def main():
     parser.add_argument(
         "--clear-only",
         action="store_true",
-        help="仅清空兑换记录表和相关的积分变动记录，不插入新数据"
+        help="仅清空兑换记录表和相关的积分变动记录，不插入新数据",
     )
     args = parser.parse_args()
 
@@ -506,11 +548,15 @@ def main():
         if args.clear_only:
             cursor = conn.cursor()
             # 删除兑换相关的积分变动记录
-            cursor.execute("DELETE FROM point_change_record WHERE change_type = 'EXCHANGE_USE'")
+            cursor.execute(
+                "DELETE FROM point_change_record WHERE change_type = 'EXCHANGE_USE'"
+            )
             # 删除兑换记录
             cursor.execute("DELETE FROM exchange_record")
             # 更新志愿者积分
-            cursor.execute("UPDATE volunteer SET points = (SELECT COALESCE(SUM(change_points), 0) FROM point_change_record WHERE volunteer_id = volunteer.id) WHERE deleted = FALSE")
+            cursor.execute(
+                "UPDATE volunteer SET points = (SELECT COALESCE(SUM(change_points), 0) FROM point_change_record WHERE volunteer_id = volunteer.id) WHERE deleted = FALSE"
+            )
             cursor.execute("ALTER TABLE exchange_record AUTO_INCREMENT = 1")
             conn.commit()
             print("已清空兑换记录表和相关的积分变动记录")
@@ -536,7 +582,9 @@ def main():
 
             cursor = conn.cursor()
             # 删除兑换相关的积分变动记录
-            cursor.execute("DELETE FROM point_change_record WHERE change_type = 'EXCHANGE_USE'")
+            cursor.execute(
+                "DELETE FROM point_change_record WHERE change_type = 'EXCHANGE_USE'"
+            )
             # 删除兑换记录
             cursor.execute("DELETE FROM exchange_record")
             cursor.execute("ALTER TABLE exchange_record AUTO_INCREMENT = 1")

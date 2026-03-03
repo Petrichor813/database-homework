@@ -202,9 +202,13 @@ public class ProductService {
             throw new IllegalArgumentException("您的积分不足，当前积分为: " + currentPoints);
         }
 
+        int updatedRows = productRepository.decreaseStock(product.getId(), request.getNumber());
+        if (updatedRows == 0) {
+            throw new IllegalArgumentException("商品库存不足或已被其他用户兑换");
+        }
+
         product.setStock(product.getStock() - request.getNumber());
         updateProductStatus(product);
-        productRepository.save(product);
 
         // @formatter:off
         ExchangeRecord exchangeRecord = new ExchangeRecord(
