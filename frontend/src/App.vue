@@ -555,11 +555,12 @@ body {
   text-decoration: none;
   padding: 8px 12px;
   border-radius: 6px;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
 }
 
-.nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
+.nav-link:hover,
+.nav-link:focus {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .nav-link.router-link-active {
@@ -588,9 +589,11 @@ body {
   flex-direction: column;
   position: absolute;
   background: white;
-  min-width: 160px;
+  min-width: 120px;
+  text-align: center;
   top: 42px;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   border-radius: 10px;
   padding: 8px;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
@@ -602,17 +605,14 @@ body {
   color: #111827;
   font-size: 16px;
   text-decoration: none;
+  border-radius: 6px;
   padding: 8px 10px;
+  transition: all 0.2s ease;
 }
 
 .nav-dropdown-link:hover {
   background: #f3f4f6;
-}
-
-.nav-dropdown-link + .nav-dropdown-link {
-  border-top: 1px solid grey;
-  margin-top: 4px;
-  padding-top: 8px;
+  transform: scale(1.05);
 }
 
 .user-menu {
