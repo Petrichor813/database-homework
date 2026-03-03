@@ -12,6 +12,7 @@ public class ProductResponse {
     private Long stock;
     private ProductStatus status;
     private String imageUrl;
+    private Integer sortWeight;
 
     public ProductResponse() {
     }
@@ -24,7 +25,8 @@ public class ProductResponse {
         Double price,
         Long stock,
         ProductStatus status,
-        String imageUrl
+        String imageUrl,
+        Integer sortWeight
     ) {
         this.id = id;
         this.name = name;
@@ -34,6 +36,7 @@ public class ProductResponse {
         this.stock = stock;
         this.status = status;
         this.imageUrl = imageUrl;
+        this.sortWeight = sortWeight;
     }
 
     public Long getId() {
@@ -98,5 +101,13 @@ public class ProductResponse {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Integer getSortWeight() {
+        return sortWeight;
+    }
+
+    public void setSortWeight(Integer sortWeight) {
+        this.sortWeight = sortWeight;
     }
 }

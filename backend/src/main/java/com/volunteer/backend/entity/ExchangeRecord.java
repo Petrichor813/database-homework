@@ -60,7 +60,8 @@ public class ExchangeRecord {
         Long volunteerId,
         Long productId,
         Long number,
-        Double totalPoints
+        Double totalPoints,
+        String recvInfo
     ) {
         this();
 
@@ -76,6 +77,7 @@ public class ExchangeRecord {
         this.productId = productId;
         this.number = number;
         this.totalPoints = totalPoints;
+        this.recvInfo = recvInfo;
     }
     // @formatter:on
 

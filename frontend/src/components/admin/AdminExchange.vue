@@ -38,6 +38,7 @@ interface Product {
   stock: number;
   status: string;
   imageUrl?: string;
+  sortWeight?: number;
 }
 
 type ProductStatus = "AVAILABLE" | "SOLD_OUT" | "DELETED";
@@ -293,7 +294,7 @@ const openEditProductDialog = (product: Product) => {
   productForm.stock = product.stock;
   productForm.category = product.category as ProductType;
   productForm.status = product.status as ProductStatus;
-  productForm.sortWeight = 0;
+  productForm.sortWeight = product.sortWeight || 0;
   productForm.imageUrl = product.imageUrl || "";
   showProductDialog.value = true;
 };
@@ -741,6 +742,15 @@ const deleteProduct = async () => {
                 </option>
               </select>
             </div>
+          </div>
+          <div class="form-row">
+            <label>排序权重</label>
+            <input
+              v-model.number="productForm.sortWeight"
+              type="number"
+              min="0"
+              placeholder="请输入排序权重（数值越大越靠前）"
+            />
           </div>
           <div class="form-row">
             <label>图片链接</label>

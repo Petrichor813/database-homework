@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, reactive } from "vue";
 import { usePagination } from "../../utils/page";
 import { useToast } from "../../utils/toast";
 import { getJson, postJson } from "../../utils/api";
@@ -53,6 +53,15 @@ const products = ref<Product[]>([]);
 const keyword = ref("");
 const typeFilter = ref("ALL");
 
+const showExchangeDialog = ref(false);
+const currentProduct = ref<Product | null>(null);
+const isExchanging = ref(false);
+const recvInfoForm = reactive({
+  name: "",
+  phone: "",
+  address: "",
+});
+
 const fetchProducts = async (page = 0) => {
   loading.value = true;
   try {
@@ -89,17 +98,57 @@ const handleSearch = async () => {
   await fetchProducts(0);
 };
 
-const handleExchange = async (prod: Product) => {
+const openExchangeDialog = (prod: Product) => {
+  currentProduct.value = prod;
+  recvInfoForm.name = "";
+  recvInfoForm.phone = "";
+  recvInfoForm.address = "";
+  showExchangeDialog.value = true;
+};
+
+const closeExchangeDialog = () => {
+  showExchangeDialog.value = false;
+  currentProduct.value = null;
+  recvInfoForm.name = "";
+  recvInfoForm.phone = "";
+  recvInfoForm.address = "";
+};
+
+const handleExchange = async () => {
+  if (!currentProduct.value || isExchanging.value) return;
+
+  const name = recvInfoForm.name.trim();
+  const phone = recvInfoForm.phone.trim();
+  const address = recvInfoForm.address.trim();
+
+  if (!name) {
+    error("兑换失败", "请填写收货人姓名");
+    return;
+  }
+  if (!phone) {
+    error("兑换失败", "请填写收货人手机号");
+    return;
+  }
+  if (!address) {
+    error("兑换失败", "请填写收货地址");
+    return;
+  }
+
+  isExchanging.value = true;
   try {
     await postJson<{ id: number; message: string }>("/api/product/exchange", {
-      productId: prod.id,
+      productId: currentProduct.value.id,
       number: 1,
+      recvInfo: `${name}, ${phone}, ${address}`,
     });
-    success("兑换成功", `您成功兑换了${prod.name}`);
+    success("兑换成功", `您成功兑换了${currentProduct.value.name}`);
+    closeExchangeDialog();
     await fetchProducts(pageObject.value.curPage);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "兑换失败";
     error("兑换失败", msg);
+  } finally {
+    isExchanging.value = false;
   }
 };
 
@@ -110,12 +159,12 @@ const getCategoryLabel = (category: ProductType) => {
 
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement;
-  img.style.display = 'none';
+  img.style.display = "none";
   const parent = img.parentElement;
   if (parent) {
-    const placeholder = parent.querySelector('.image-placeholder');
+    const placeholder = parent.querySelector(".image-placeholder");
     if (placeholder) {
-      (placeholder as HTMLElement).style.display = 'flex';
+      (placeholder as HTMLElement).style.display = "flex";
     }
   }
 };
@@ -189,7 +238,7 @@ onMounted(() => {
           <p class="stock">{{ prod.stock }} 件库存</p>
           <button
             :disabled="prod.status === 'SOLD_OUT'"
-            @click="handleExchange(prod)"
+            @click="openExchangeDialog(prod)"
           >
             {{ prod.status === "SOLD_OUT" ? "已售罄" : "兑换" }}
           </button>
@@ -206,6 +255,67 @@ onMounted(() => {
       :prev-page="() => prevPage(fetchProducts)"
       :next-page="() => nextPage(fetchProducts)"
     />
+  </div>
+
+  <div v-if="showExchangeDialog" class="dialog-bg">
+    <div class="dialog-body" role="dialog" aria-modal="true">
+      <h3>商品兑换</h3>
+      <p class="dialog-tip">确定要兑换此商品吗？兑换后将消耗相应积分。</p>
+      <div v-if="currentProduct" class="product-summary">
+        <div class="summary-item">
+          <span class="label">商品名称</span>
+          <span class="value">{{ currentProduct.name }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">所需积分</span>
+          <span class="value">{{ currentProduct.price }} 积分</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>收货人姓名</label>
+        <input
+          v-model="recvInfoForm.name"
+          type="text"
+          placeholder="请输入收货人姓名"
+          maxlength="20"
+        />
+      </div>
+      <div class="form-row">
+        <label>收货人手机号</label>
+        <input
+          v-model="recvInfoForm.phone"
+          type="text"
+          placeholder="请输入收货人手机号"
+          maxlength="11"
+        />
+      </div>
+      <div class="form-row">
+        <label>收货地址</label>
+        <textarea
+          v-model="recvInfoForm.address"
+          placeholder="请输入详细收货地址"
+          rows="3"
+          maxlength="200"
+        ></textarea>
+      </div>
+      <div class="dialog-actions">
+        <button
+          type="button"
+          class="confirm-button"
+          :disabled="isExchanging"
+          @click="handleExchange"
+        >
+          确认兑换
+        </button>
+        <button
+          type="button"
+          class="cancel-button"
+          @click="closeExchangeDialog"
+        >
+          取消
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -433,6 +543,152 @@ onMounted(() => {
 .product-body button:disabled {
   background: #9ca3af;
   cursor: not-allowed;
+}
+
+.dialog-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog-body {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 480px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.dialog-body h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dialog-tip {
+  margin: 0 0 16px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.product-summary {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-item .label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.summary-item .value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-row label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-row input,
+.form-row textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-row input:hover,
+.form-row input:focus,
+.form-row textarea:hover,
+.form-row textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-row input:focus,
+.form-row textarea:focus {
+  border-width: 2px;
+}
+
+.form-row textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.dialog-actions button {
+  min-width: 80px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.confirm-button:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.confirm-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.cancel-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
 }
 
 .empty {

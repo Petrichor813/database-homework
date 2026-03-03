@@ -33,12 +33,14 @@ public class ProductService {
     private final ExchangeRecordRepository exchangeRecordRepository;
     private final PointChangeRecordRepository pointChangeRecordRepository;
 
+    // @formatter:off
     public ProductService(
         ProductRepository productRepository,
         VolunteerRepository volunteerRepository,
         ExchangeRecordRepository exchangeRecordRepository,
         PointChangeRecordRepository pointChangeRecordRepository
     ) {
+        // @formatter:on
         this.productRepository = productRepository;
         this.volunteerRepository = volunteerRepository;
         this.exchangeRecordRepository = exchangeRecordRepository;
@@ -71,6 +73,7 @@ public class ProductService {
     }
 
     private ProductResponse buildResponse(Product product) {
+        // @formatter:off
         return new ProductResponse(
             product.getId(),
             product.getName(),
@@ -79,16 +82,20 @@ public class ProductService {
             product.getPrice(),
             product.getStock(),
             product.getStatus(),
-            product.getImageUrl()
+            product.getImageUrl(),
+            product.getSortWeight()
         );
+        // @formatter:on
     }
 
+    // @formatter:off
     public PageResponse<ProductResponse> getProducts(
         int page,
         int size,
         String keyword,
         String category
     ) {
+        // @formatter:on
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");
         }
@@ -189,7 +196,7 @@ public class ProductService {
         }
 
         double totalPoints = product.getPrice() * request.getNumber();
-        double currentPoints = getCurrentPoints(volunteer.getId());
+        double currentPoints = volunteer.getPoints() != null ? volunteer.getPoints() : 0.0;
 
         if (currentPoints < totalPoints) {
             throw new IllegalArgumentException("您的积分不足，当前积分为: " + currentPoints);
@@ -199,14 +206,18 @@ public class ProductService {
         updateProductStatus(product);
         productRepository.save(product);
 
+        // @formatter:off
         ExchangeRecord exchangeRecord = new ExchangeRecord(
             volunteer.getId(),
             product.getId(),
             request.getNumber(),
-            totalPoints
+            totalPoints,
+            request.getRecvInfo()
         );
+        // @formatter:on
         exchangeRecordRepository.save(exchangeRecord);
 
+        // @formatter:off
         PointChangeRecord pointChangeRecord = new PointChangeRecord(
             volunteer.getId(),
             -totalPoints,
@@ -215,16 +226,12 @@ public class ProductService {
             exchangeRecord.getId(),
             RelatedRecordType.EXCHANGE
         );
+        // @formatter:on
         pointChangeRecordRepository.save(pointChangeRecord);
 
         volunteer.setPoints(volunteer.getPoints() - totalPoints);
         volunteerRepository.save(volunteer);
 
         return new ExchangeResponse(exchangeRecord.getId(), "兑换成功");
-    }
-
-    private double getCurrentPoints(Long volunteerId) {
-        Volunteer volunteer = volunteerRepository.findById(volunteerId).orElseThrow();
-        return volunteer.getPoints() != null ? volunteer.getPoints() : 0.0;
     }
 }
