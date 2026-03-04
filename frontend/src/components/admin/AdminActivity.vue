@@ -1009,13 +1009,14 @@ const handleReviewAction = async (
 }
 
 .close-button {
-  background: #6b7280;
+  background: #9ca3af;
   color: white;
   border: none;
 }
 
 .close-button:hover {
-  background: #4b5563;
+  background: #6b7280;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 
 .save-button {

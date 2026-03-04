@@ -1,0 +1,413 @@
+package com.volunteer.backend.service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.volunteer.backend.dto.ActivityParticipationBubble;
+import com.volunteer.backend.dto.ActivityParticipationBubbleResponse;
+import com.volunteer.backend.dto.ActivityTypeTrendResponse;
+import com.volunteer.backend.dto.DashboardKPIResponse;
+import com.volunteer.backend.dto.PointFlowSankeyResponse;
+import com.volunteer.backend.dto.SankeyLink;
+import com.volunteer.backend.dto.SankeyNode;
+import com.volunteer.backend.dto.VolunteerActivityHeatmapResponse;
+import com.volunteer.backend.dto.VolunteerGrowthRadarResponse;
+import com.volunteer.backend.dto.VolunteerRetentionResponse;
+import com.volunteer.backend.entity.Activity;
+import com.volunteer.backend.entity.PointChangeRecord;
+import com.volunteer.backend.entity.SignupRecord;
+import com.volunteer.backend.entity.Volunteer;
+import com.volunteer.backend.enums.ActivityStatus;
+import com.volunteer.backend.enums.ActivityType;
+import com.volunteer.backend.enums.PointChangeType;
+import com.volunteer.backend.repository.ActivityRepository;
+import com.volunteer.backend.repository.PointChangeRecordRepository;
+import com.volunteer.backend.repository.SignupRecordRepository;
+import com.volunteer.backend.repository.VolunteerRepository;
+
+@Service
+public class StatisticsService {
+    private final SignupRecordRepository signupRecordRepository;
+    private final ActivityRepository activityRepository;
+    private final PointChangeRecordRepository pointChangeRecordRepository;
+    private final VolunteerRepository volunteerRepository;
+
+    // @formatter:off
+    public StatisticsService(
+        SignupRecordRepository signupRecordRepository,
+        ActivityRepository activityRepository,
+        PointChangeRecordRepository pointChangeRecordRepository,
+        VolunteerRepository volunteerRepository
+    ) {
+        // @formatter:on
+        this.signupRecordRepository = signupRecordRepository;
+        this.activityRepository = activityRepository;
+        this.pointChangeRecordRepository = pointChangeRecordRepository;
+        this.volunteerRepository = volunteerRepository;
+    }
+
+    public DashboardKPIResponse getDashboardKPI() {
+        List<SignupRecord> allSignups = signupRecordRepository.findAll();
+        List<Activity> allActivities = activityRepository.findAll();
+        List<PointChangeRecord> allPointRecords = pointChangeRecordRepository.findAll();
+
+        Double totalServiceHours = 0.0;
+        for (SignupRecord record : allSignups) {
+            if (record.getActualHours() != null) {
+                totalServiceHours += record.getActualHours();
+            }
+        }
+
+        Integer totalActivities = 0;
+        for (Activity activity : allActivities) {
+            if (activity.getStatus() == ActivityStatus.COMPLETED) {
+                totalActivities++;
+            }
+        }
+
+        LocalDateTime sixMonthsAgo = LocalDateTime.now().minusMonths(6);
+        Integer activeVolunteers = 0;
+        Map<Long, Boolean> volunteerActivityMap = new HashMap<>();
+        for (SignupRecord record : allSignups) {
+            if (record.getSignupTime() != null && record.getSignupTime().isAfter(sixMonthsAgo)) {
+                if (!volunteerActivityMap.containsKey(record.getVolunteerId())) {
+                    volunteerActivityMap.put(record.getVolunteerId(), true);
+                    activeVolunteers++;
+                }
+            }
+        }
+
+        Double totalPointsIssued = 0.0;
+        for (PointChangeRecord record : allPointRecords) {
+            if (record.getChangeType() == PointChangeType.ACTIVITY_EARN && record.getChangePoints() != null) {
+                totalPointsIssued += record.getChangePoints();
+            }
+        }
+
+        return new DashboardKPIResponse(totalServiceHours, totalActivities, activeVolunteers, totalPointsIssued);
+    }
+
+    public VolunteerActivityHeatmapResponse getVolunteerActivityHeatmap(Integer year) {
+        List<String> months = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            months.add(i + "月");
+        }
+
+        List<String> weekdays = new ArrayList<>();
+        weekdays.add("周一");
+        weekdays.add("周二");
+        weekdays.add("周三");
+        weekdays.add("周四");
+        weekdays.add("周五");
+        weekdays.add("周六");
+        weekdays.add("周日");
+
+        List<List<Integer>> data = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            List<Integer> row = new ArrayList<>();
+            for (int j = 0; j < 7; j++) {
+                row.add(0);
+            }
+            data.add(row);
+        }
+
+        List<SignupRecord> allSignups = signupRecordRepository.findAll();
+        for (SignupRecord record : allSignups) {
+            if (record.getSignupTime() == null) {
+                continue;
+            }
+
+            LocalDateTime signupTime = record.getSignupTime();
+            int signupYear = signupTime.getYear();
+            if (year != null && signupYear != year) {
+                continue;
+            }
+
+            int month = signupTime.getMonthValue();
+            int weekday = signupTime.getDayOfWeek().getValue();
+            int weekdayIndex = weekday - 1;
+            if (weekdayIndex < 0) {
+                weekdayIndex = 6;
+            }
+
+            int count = data.get(month - 1).get(weekdayIndex);
+            data.get(month - 1).set(weekdayIndex, count + 1);
+        }
+
+        return new VolunteerActivityHeatmapResponse(months, weekdays, data);
+    }
+
+    public PointFlowSankeyResponse getPointFlowSankey(Integer year) {
+        List<SankeyNode> nodes = new ArrayList<>();
+        nodes.add(new SankeyNode("活动服务"));
+        nodes.add(new SankeyNode("管理员调整"));
+        nodes.add(new SankeyNode("系统奖励"));
+        nodes.add(new SankeyNode("其他来源"));
+        nodes.add(new SankeyNode("商品兑换"));
+        nodes.add(new SankeyNode("积分过期"));
+        nodes.add(new SankeyNode("其他去向"));
+
+        Map<String, Double> sourceMap = new HashMap<>();
+        sourceMap.put("活动服务", 0.0);
+        sourceMap.put("管理员调整", 0.0);
+        sourceMap.put("系统奖励", 0.0);
+        sourceMap.put("其他来源", 0.0);
+
+        Map<String, Double> targetMap = new HashMap<>();
+        targetMap.put("商品兑换", 0.0);
+        targetMap.put("积分过期", 0.0);
+        targetMap.put("其他去向", 0.0);
+
+        List<PointChangeRecord> allRecords = pointChangeRecordRepository.findAll();
+        for (PointChangeRecord record : allRecords) {
+            if (record.getChangeTime() == null) {
+                continue;
+            }
+
+            int recordYear = record.getChangeTime().getYear();
+            if (year != null && recordYear != year) {
+                continue;
+            }
+
+            if (record.getChangeType() == PointChangeType.ACTIVITY_EARN && record.getChangePoints() != null) {
+                sourceMap.put("活动服务", sourceMap.get("活动服务") + record.getChangePoints());
+            } else if (record.getChangeType() == PointChangeType.ADMIN_ADJUST && record.getChangePoints() != null) {
+                if (record.getChangePoints() > 0) {
+                    sourceMap.put("管理员调整", sourceMap.get("管理员调整") + record.getChangePoints());
+                } else {
+                    targetMap.put("其他去向", targetMap.get("其他去向") + Math.abs(record.getChangePoints()));
+                }
+            } else if (record.getChangeType() == PointChangeType.SYSTEM_BONUS && record.getChangePoints() != null) {
+                sourceMap.put("系统奖励", sourceMap.get("系统奖励") + record.getChangePoints());
+            } else if (record.getChangeType() == PointChangeType.EXCHANGE_USE && record.getChangePoints() != null) {
+                targetMap.put("商品兑换", targetMap.get("商品兑换") + Math.abs(record.getChangePoints()));
+            }
+        }
+
+        List<SankeyLink> links = new ArrayList<>();
+        for (Map.Entry<String, Double> entry : sourceMap.entrySet()) {
+            if (entry.getValue() > 0) {
+                links.add(new SankeyLink(entry.getKey(), "积分池", entry.getValue()));
+            }
+        }
+        for (Map.Entry<String, Double> entry : targetMap.entrySet()) {
+            if (entry.getValue() > 0) {
+                links.add(new SankeyLink("积分池", entry.getKey(), entry.getValue()));
+            }
+        }
+
+        List<SankeyNode> finalNodes = new ArrayList<>();
+        finalNodes.add(new SankeyNode("积分池"));
+        for (SankeyNode node : nodes) {
+            boolean hasLink = false;
+            for (SankeyLink link : links) {
+                if (link.getSource().equals(node.getName()) || link.getTarget().equals(node.getName())) {
+                    hasLink = true;
+                    break;
+                }
+            }
+            if (hasLink) {
+                finalNodes.add(node);
+            }
+        }
+
+        return new PointFlowSankeyResponse(finalNodes, links);
+    }
+
+    public ActivityParticipationBubbleResponse getActivityParticipationBubble(Integer year) {
+        List<Activity> activities = activityRepository.findAll();
+        List<SignupRecord> allSignups = signupRecordRepository.findAll();
+
+        List<ActivityParticipationBubble> bubbles = new ArrayList<>();
+        for (Activity activity : activities) {
+            if (activity.getStartTime() == null) {
+                continue;
+            }
+
+            int activityYear = activity.getStartTime().getYear();
+            if (year != null && activityYear != year) {
+                continue;
+            }
+
+            Integer participantCount = 0;
+            Integer totalHours = 0;
+            Double totalPoints = 0.0;
+
+            for (SignupRecord signup : allSignups) {
+                if (signup.getActivityId().equals(activity.getId())) {
+                    participantCount++;
+                    if (signup.getActualHours() != null) {
+                        totalHours += signup.getActualHours();
+                    }
+                    if (signup.getPoints() != null) {
+                        totalPoints += signup.getPoints();
+                    }
+                }
+            }
+
+            if (participantCount > 0) {
+                bubbles.add(new ActivityParticipationBubble(activity.getTitle(), participantCount, totalHours, totalPoints));
+            }
+        }
+
+        return new ActivityParticipationBubbleResponse(bubbles);
+    }
+
+    public ActivityTypeTrendResponse getActivityTypeTrend(Integer year) {
+        List<String> months = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            months.add(i + "月");
+        }
+
+        Map<ActivityType, String> activityTypeMap = new HashMap<>();
+        activityTypeMap.put(ActivityType.COMMUNITY_SERVICE, "社区服务");
+        activityTypeMap.put(ActivityType.ENVIRONMENTAL_PROTECTION, "环境保护");
+        activityTypeMap.put(ActivityType.ELDERLY_CARE, "敬老助老");
+        activityTypeMap.put(ActivityType.CHILDREN_TUTORING, "儿童助学");
+        activityTypeMap.put(ActivityType.DISABILITIES_SUPPORT, "助残服务");
+        activityTypeMap.put(ActivityType.CULTURAL_EVENTS, "文化活动");
+        activityTypeMap.put(ActivityType.HEALTH_PROMOTION, "健康宣传");
+        activityTypeMap.put(ActivityType.OTHER, "其他");
+
+        List<String> activityTypes = new ArrayList<>();
+        for (ActivityType type : ActivityType.values()) {
+            activityTypes.add(activityTypeMap.get(type));
+        }
+
+        List<List<Integer>> data = new ArrayList<>();
+        for (int i = 0; i < activityTypes.size(); i++) {
+            List<Integer> typeData = new ArrayList<>();
+            for (int j = 0; j < 12; j++) {
+                typeData.add(0);
+            }
+            data.add(typeData);
+        }
+
+        List<Activity> allActivities = activityRepository.findAll();
+        for (Activity activity : allActivities) {
+            if (activity.getStartTime() == null) {
+                continue;
+            }
+
+            int activityYear = activity.getStartTime().getYear();
+            if (year != null && activityYear != year) {
+                continue;
+            }
+
+            int month = activity.getStartTime().getMonthValue();
+            String typeLabel = activityTypeMap.get(activity.getType());
+            int typeIndex = activityTypes.indexOf(typeLabel);
+            if (typeIndex >= 0) {
+                int count = data.get(typeIndex).get(month - 1);
+                data.get(typeIndex).set(month - 1, count + 1);
+            }
+        }
+
+        return new ActivityTypeTrendResponse(months, activityTypes, data);
+    }
+
+    public VolunteerRetentionResponse getVolunteerRetention(Integer year) {
+        List<String> months = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            months.add(i + "月");
+        }
+
+        List<Double> retentionRates = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            retentionRates.add(0.0);
+        }
+
+        List<SignupRecord> allSignups = signupRecordRepository.findAll();
+        Map<Long, List<Integer>> volunteerMonthsMap = new HashMap<>();
+
+        for (SignupRecord record : allSignups) {
+            if (record.getSignupTime() == null) {
+                continue;
+            }
+
+            int recordYear = record.getSignupTime().getYear();
+            if (year != null && recordYear != year) {
+                continue;
+            }
+
+            int month = record.getSignupTime().getMonthValue();
+            Long volunteerId = record.getVolunteerId();
+
+            if (!volunteerMonthsMap.containsKey(volunteerId)) {
+                volunteerMonthsMap.put(volunteerId, new ArrayList<>());
+            }
+            volunteerMonthsMap.get(volunteerId).add(month);
+        }
+
+        for (int month = 1; month <= 12; month++) {
+            int totalVolunteers = 0;
+            int retainedVolunteers = 0;
+
+            for (Map.Entry<Long, List<Integer>> entry : volunteerMonthsMap.entrySet()) {
+                List<Integer> monthsParticipated = entry.getValue();
+                if (monthsParticipated.contains(month)) {
+                    totalVolunteers++;
+                    boolean hasFutureActivity = false;
+                    for (int futureMonth = month + 1; futureMonth <= 12; futureMonth++) {
+                        if (monthsParticipated.contains(futureMonth)) {
+                            hasFutureActivity = true;
+                            break;
+                        }
+                    }
+                    if (hasFutureActivity) {
+                        retainedVolunteers++;
+                    }
+                }
+            }
+
+            double retentionRate = totalVolunteers > 0 ? (retainedVolunteers * 100.0 / totalVolunteers) : 0.0;
+            retentionRates.set(month - 1, Math.round(retentionRate * 10.0) / 10.0);
+        }
+
+        return new VolunteerRetentionResponse(months, retentionRates);
+    }
+
+    public VolunteerGrowthRadarResponse getVolunteerGrowthRadar(Long volunteerId) {
+        Volunteer volunteer = volunteerRepository.findById(volunteerId).orElse(null);
+        if (volunteer == null) {
+            throw new IllegalArgumentException("志愿者不存在");
+        }
+
+        List<SignupRecord> signups = signupRecordRepository.findByVolunteerId(volunteerId);
+
+        Integer totalActivities = signups.size();
+        Integer totalHours = 0;
+        Double totalPoints = 0.0;
+
+        for (SignupRecord signup : signups) {
+            if (signup.getActualHours() != null) {
+                totalHours += signup.getActualHours();
+            }
+            if (signup.getPoints() != null) {
+                totalPoints += signup.getPoints();
+            }
+        }
+
+        Integer activityParticipation = Math.min(100, totalActivities * 5);
+        Integer serviceQuality = Math.min(100, totalHours * 2);
+        Integer continuity = Math.min(100, totalActivities * 3);
+        Integer initiative = Math.min(100, (int) (totalPoints / 10));
+
+        return new VolunteerGrowthRadarResponse(
+            volunteer.getName(),
+            volunteer.getPhone(),
+            totalActivities,
+            totalHours,
+            totalPoints,
+            activityParticipation,
+            serviceQuality,
+            continuity,
+            initiative
+        );
+    }
+}
