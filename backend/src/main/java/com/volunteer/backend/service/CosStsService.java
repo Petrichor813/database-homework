@@ -1,9 +1,16 @@
 package com.volunteer.backend.service;
 
+import java.net.URI;
 import java.util.TreeMap;
 
 import org.springframework.stereotype.Service;
 
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.ClientConfig;
+import com.qcloud.cos.auth.BasicCOSCredentials;
+import com.qcloud.cos.auth.COSCredentials;
+import com.qcloud.cos.model.DeleteObjectRequest;
+import com.qcloud.cos.region.Region;
 import com.tencent.cloud.CosStsClient;
 import com.tencent.cloud.Response;
 
@@ -40,13 +47,45 @@ public class CosStsService {
                 "name/cos:ListMultipartUploads",
                 "name/cos:ListParts",
                 "name/cos:UploadPart",
-                "name/cos:CompleteMultipartUpload"
+                "name/cos:CompleteMultipartUpload",
+                "name/cos:DeleteObject"
             });
             // @formatter:on
 
             return CosStsClient.getCredential(config);
         } catch (Exception e) {
             throw new RuntimeException("获取临时密钥失败: " + e.getMessage(), e);
+        }
+    }
+
+    public void deleteObject(String fileUrl) throws RuntimeException {
+        try {
+            URI uri = new URI(fileUrl);
+            String path = uri.getPath();
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+
+            COSCredentials cred = new BasicCOSCredentials(
+                cosProperties.getSecretId(),
+                cosProperties.getSecretKey()
+            );
+            ClientConfig clientConfig = new ClientConfig(
+                new Region(cosProperties.getRegion())
+            );
+            COSClient cosClient = new COSClient(cred, clientConfig);
+
+            try {
+                DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(
+                    cosProperties.getBucketName(),
+                    path
+                );
+                cosClient.deleteObject(deleteObjectRequest);
+            } finally {
+                cosClient.shutdown();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("删除文件失败: " + e.getMessage(), e);
         }
     }
 }

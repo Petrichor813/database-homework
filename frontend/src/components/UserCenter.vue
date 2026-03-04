@@ -1028,19 +1028,28 @@ const handleDeleteAccount = async () => {
   padding: 10px 12px;
   border: none;
   border-radius: 8px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.tab-button:hover,
+.tab-button:hover {
+  background: #f8fafc;
+  color: black;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+}
+
 .tab-button.active {
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.tab-button:hover,
 .tab-button.active:hover {
-  transform: scale(1.02);
+  background: #dbeafe;
+  color: #1e40af;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .tab-page {

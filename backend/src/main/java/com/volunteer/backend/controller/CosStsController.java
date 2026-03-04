@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,6 +40,21 @@ public class CosStsController {
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("message", "获取临时密钥失败", "detail", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/object")
+    public ResponseEntity<?> deleteObject(@RequestBody Map<String, String> request) {
+        try {
+            String fileUrl = request.get("fileUrl");
+            if (fileUrl == null || fileUrl.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "文件URL不能为空"));
+            }
+
+            cosStsService.deleteObject(fileUrl);
+            return ResponseEntity.ok(Map.of("message", "文件删除成功"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "删除文件失败", "detail", e.getMessage()));
         }
     }
 }

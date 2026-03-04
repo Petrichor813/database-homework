@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { useToast } from "../../utils/toast";
-import { getJson, postJson } from "../../utils/api";
+import { getJson, postJson, deleteJson } from "../../utils/api";
 import COS from "cos-js-sdk-v5";
 
 type ImportTab = "ACTIVITY" | "PRODUCT";
@@ -323,6 +323,34 @@ const submitProductImport = async () => {
   }
 };
 
+const deleteImageFromCos = async (fileUrl: string): Promise<void> => {
+  try {
+    await deleteJson("/api/cos-sts/object", { fileUrl });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "删除文件失败";
+    throw new Error(msg);
+  }
+};
+
+const removeImage = async () => {
+  if (productImageUrl.value) {
+    try {
+      await deleteImageFromCos(productImageUrl.value);
+    } catch (err) {
+      error("删除失败", "图片删除失败，但已清除本地选择");
+    }
+  }
+  productImage.value = null;
+  productImageUrl.value = "";
+
+  const fileInput = document.querySelector(
+    'input[type="file"]'
+  ) as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = "";
+  }
+};
+
 const resetProductForm = () => {
   productForm.name = "";
   productForm.description = "";
@@ -530,7 +558,14 @@ const resetProductForm = () => {
               <p>{{ productImageText }}</p>
               <div v-if="productImageUrl" class="image-preview">
                 <img :src="productImageUrl" alt="商品图片预览" />
-                <p>图片URL: {{ productImageUrl }}</p>
+                <button
+                  type="button"
+                  class="delete-image-button"
+                  @click="removeImage"
+                  aria-label="删除图片"
+                >
+                  ×
+                </button>
               </div>
               <small>支持jpg、png等常见图片格式，大小不超过5MB</small>
             </div>
@@ -718,6 +753,8 @@ const resetProductForm = () => {
 }
 
 .image-preview {
+  display: inline-block;
+  position: relative;
   margin-top: 12px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -730,13 +767,35 @@ const resetProductForm = () => {
   max-height: 200px;
   border-radius: 6px;
   object-fit: cover;
-  margin-bottom: 8px;
 }
 
-.image-preview p {
-  margin: 0;
-  font-size: 12px;
-  color: #6b7280;
-  word-break: break-all;
+.delete-image-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.delete-image-button:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+.delete-image-button:active {
+  transform: scale(0.95);
 }
 </style>

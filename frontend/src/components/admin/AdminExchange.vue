@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { deleteJson, getJson, postJson, putJson } from "../../utils/api";
 import type { PageResponse } from "../../utils/page";
 import { usePagination } from "../../utils/page";
 import { useToast } from "../../utils/toast";
 import Pagination from "../utils/Pagination.vue";
+import COS from "cos-js-sdk-v5";
 
 type AdminExchangeTab = "EXCHANGE_RECORDS" | "PRODUCTS";
 
@@ -50,6 +51,20 @@ type ProductType =
   | "FOOD"
   | "COUPON"
   | "OTHER";
+
+interface CosCredentials {
+  tmpSecretId: string;
+  tmpSecretKey: string;
+  sessionToken: string;
+}
+
+interface StsCredentialResponse {
+  credentials: CosCredentials;
+  startTime: number;
+  expiredTime: number;
+  bucket: string;
+  region: string;
+}
 
 const { success, error } = useToast();
 
@@ -171,10 +186,31 @@ const showApproveDialog = ref(false);
 const showRejectDialog = ref(false);
 const showDetailDialog = ref(false);
 const showEditDialog = ref(false);
+const showProductDialog = ref(false);
+const showDeleteProductDialog = ref(false);
 const currentExchangeRecord = ref<ExchangeRecord | null>(null);
 const processNote = ref("");
 const isProcessing = ref(false);
 const isEditing = ref(false);
+
+const isAnyDialogOpen = computed(() => {
+  return (
+    showApproveDialog.value ||
+    showRejectDialog.value ||
+    showDetailDialog.value ||
+    showEditDialog.value ||
+    showProductDialog.value ||
+    showDeleteProductDialog.value
+  );
+});
+
+watch(isAnyDialogOpen, (isOpen) => {
+  if (isOpen) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+});
 
 const editForm = reactive({
   number: 0,
@@ -306,8 +342,6 @@ const rejectExchange = async () => {
   }
 };
 
-const showProductDialog = ref(false);
-const showDeleteProductDialog = ref(false);
 const isProductSaving = ref(false);
 const isProductDeleting = ref(false);
 const isEditMode = ref(false);
@@ -323,6 +357,137 @@ const productForm = reactive({
   sortWeight: 0,
   imageUrl: "",
 });
+
+const productImage = ref<File | null>(null);
+const productImageUrl = ref<string>("");
+const isUploadingImage = ref(false);
+
+const productImageText = computed(() => {
+  if (productImageUrl.value) {
+    return `已上传: ${productImage.value?.name || "图片"}`;
+  } else if (productImage.value) {
+    return `已选择: ${productImage.value.name}`;
+  } else {
+    return "未选择图片";
+  }
+});
+
+const uploadImageToCos = async (file: File): Promise<string> => {
+  try {
+    const credential = (await getJson(
+      "/api/cos-sts/credential"
+    )) as StsCredentialResponse;
+
+    const cosClient = new COS({
+      getAuthorization: function (_options, callback) {
+        callback({
+          TmpSecretId: credential.credentials.tmpSecretId,
+          TmpSecretKey: credential.credentials.tmpSecretKey,
+          XCosSecurityToken: credential.credentials.sessionToken,
+          StartTime: credential.startTime,
+          ExpiredTime: credential.expiredTime,
+        });
+      },
+    });
+
+    const fileExtension = file.name.split(".").pop() || "jpg";
+    const fileName = `images/${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2)}.${fileExtension}`;
+
+    await new Promise<void>((resolve, reject) => {
+      cosClient.putObject(
+        {
+          Bucket: credential.bucket,
+          Region: credential.region,
+          Key: fileName,
+          Body: file,
+        },
+        function (err, _data) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        }
+      );
+    });
+
+    const imageUrl = `https://${credential.bucket}.cos.${credential.region}.myqcloud.com/${fileName}`;
+    return imageUrl;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "未知错误";
+    error("上传失败", msg);
+    throw new Error(msg);
+  }
+};
+
+const deleteImageFromCos = async (fileUrl: string): Promise<void> => {
+  try {
+    await deleteJson("/api/cos-sts/object", { fileUrl });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "删除文件失败";
+    throw new Error(msg);
+  }
+};
+
+const pickImage = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0] ?? null;
+
+  if (!file) {
+    target.value = "";
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    error("上传失败", "请选择图片文件");
+    target.value = "";
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    error("上传失败", "图片大小不能超过5MB");
+    target.value = "";
+    return;
+  }
+
+  try {
+    isUploadingImage.value = true;
+    const imageUrl = await uploadImageToCos(file);
+    productImage.value = file;
+    productImageUrl.value = imageUrl;
+    productForm.imageUrl = imageUrl;
+    success("上传成功", "图片已成功上传到腾讯云COS");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "图片上传失败";
+    error("上传失败", msg);
+    target.value = "";
+    productImage.value = null;
+  } finally {
+    isUploadingImage.value = false;
+  }
+};
+
+const removeImage = async () => {
+  if (productImageUrl.value) {
+    try {
+      await deleteImageFromCos(productImageUrl.value);
+    } catch (err) {
+      error("删除失败", "图片删除失败，但已清除本地选择");
+    }
+  }
+  productImage.value = null;
+  productImageUrl.value = "";
+  productForm.imageUrl = "";
+
+  const fileInput = document.querySelector(
+    '.product-form input[type="file"]'
+  ) as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = "";
+  }
+};
 
 const productTypeOptions: { label: string; value: ProductType }[] = [
   { label: "日用品", value: "DAILY_NECESSITIES" },
@@ -349,6 +514,8 @@ const openAddProductDialog = () => {
   productForm.status = "AVAILABLE";
   productForm.sortWeight = 0;
   productForm.imageUrl = "";
+  productImage.value = null;
+  productImageUrl.value = "";
   showProductDialog.value = true;
 };
 
@@ -363,6 +530,8 @@ const openEditProductDialog = (product: Product) => {
   productForm.status = product.status as ProductStatus;
   productForm.sortWeight = product.sortWeight || 0;
   productForm.imageUrl = product.imageUrl || "";
+  productImageUrl.value = product.imageUrl || "";
+  productImage.value = null;
   showProductDialog.value = true;
 };
 
@@ -532,7 +701,10 @@ const deleteProduct = async () => {
                         详细信息
                       </button>
                       <button
-                        v-if="record.status === 'PROCESSING' || record.status === 'COMPLETED'"
+                        v-if="
+                          record.status === 'PROCESSING' ||
+                          record.status === 'COMPLETED'
+                        "
                         type="button"
                         class="edit-button"
                         @click="openEditDialog(record)"
@@ -759,19 +931,27 @@ const deleteProduct = async () => {
         <div v-if="currentExchangeRecord" class="detail-content">
           <div class="detail-row">
             <span class="detail-label">志愿者姓名</span>
-            <span class="detail-value">{{ currentExchangeRecord.volunteerName }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.volunteerName
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">志愿者ID</span>
-            <span class="detail-value">{{ currentExchangeRecord.volunteerId }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.volunteerId
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品名称</span>
-            <span class="detail-value">{{ currentExchangeRecord.productName }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.productName
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品单价</span>
-            <span class="detail-value">{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span>
+            <span class="detail-value"
+              >{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span
+            >
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换数量</span>
@@ -779,11 +959,15 @@ const deleteProduct = async () => {
           </div>
           <div class="detail-row">
             <span class="detail-label">积分消耗</span>
-            <span class="detail-value">{{ currentExchangeRecord.totalPoints }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.totalPoints
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换时间</span>
-            <span class="detail-value">{{ currentExchangeRecord.orderTime }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.orderTime
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换状态</span>
@@ -792,13 +976,18 @@ const deleteProduct = async () => {
                 class="status-badge"
                 :class="currentExchangeRecord.status.toLowerCase()"
               >
-                {{ statusLabelMap[currentExchangeRecord.status] || currentExchangeRecord.status }}
+                {{
+                  statusLabelMap[currentExchangeRecord.status] ||
+                  currentExchangeRecord.status
+                }}
               </span>
             </span>
           </div>
           <div v-if="currentExchangeRecord.processTime" class="detail-row">
             <span class="detail-label">处理时间</span>
-            <span class="detail-value">{{ currentExchangeRecord.processTime }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.processTime
+            }}</span>
           </div>
           <div v-if="currentExchangeRecord.note" class="detail-row">
             <span class="detail-label">备注</span>
@@ -806,7 +995,9 @@ const deleteProduct = async () => {
           </div>
           <div v-if="currentExchangeRecord.recvInfo" class="detail-row-block">
             <span class="detail-label">收货信息</span>
-            <span class="detail-value">{{ currentExchangeRecord.recvInfo }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.recvInfo
+            }}</span>
           </div>
         </div>
         <div class="dialog-actions">
@@ -827,19 +1018,27 @@ const deleteProduct = async () => {
         <div v-if="currentExchangeRecord" class="detail-content">
           <div class="detail-row">
             <span class="detail-label">志愿者姓名</span>
-            <span class="detail-value">{{ currentExchangeRecord.volunteerName }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.volunteerName
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">志愿者ID</span>
-            <span class="detail-value">{{ currentExchangeRecord.volunteerId }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.volunteerId
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品名称</span>
-            <span class="detail-value">{{ currentExchangeRecord.productName }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.productName
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品单价</span>
-            <span class="detail-value">{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span>
+            <span class="detail-value"
+              >{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span
+            >
           </div>
           <div class="form-row">
             <label>兑换数量 <span class="required">*</span></label>
@@ -852,11 +1051,15 @@ const deleteProduct = async () => {
           </div>
           <div class="detail-row">
             <span class="detail-label">积分消耗</span>
-            <span class="detail-value">{{ (currentExchangeRecord.productPrice * editForm.number).toFixed(2) }}</span>
+            <span class="detail-value">{{
+              (currentExchangeRecord.productPrice * editForm.number).toFixed(2)
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换时间</span>
-            <span class="detail-value">{{ currentExchangeRecord.orderTime }}</span>
+            <span class="detail-value">{{
+              currentExchangeRecord.orderTime
+            }}</span>
           </div>
           <div class="form-row">
             <label>兑换状态 <span class="required">*</span></label>
@@ -880,11 +1083,7 @@ const deleteProduct = async () => {
           >
             确认保存
           </button>
-          <button
-            type="button"
-            class="cancel-button"
-            @click="closeEditDialog"
-          >
+          <button type="button" class="cancel-button" @click="closeEditDialog">
             取消
           </button>
         </div>
@@ -967,13 +1166,31 @@ const deleteProduct = async () => {
               placeholder="请输入排序权重（数值越大越靠前）"
             />
           </div>
-          <div class="form-row">
-            <label>图片链接</label>
-            <input
-              v-model="productForm.imageUrl"
-              type="text"
-              placeholder="请输入商品图片链接（可选）"
-            />
+          <div class="form-row image-upload-row">
+            <label>商品图片</label>
+            <div class="image-upload-container">
+              <label v-if="!productImageUrl" class="upload-trigger">
+                <input
+                  type="file"
+                  accept="image/*"
+                  @change="pickImage($event)"
+                />
+                <span>{{ isUploadingImage ? "上传中..." : "选择图片" }}</span>
+              </label>
+              <p class="image-status-text">{{ productImageText }}</p>
+              <div v-if="productImageUrl" class="image-preview">
+                <img :src="productImageUrl" alt="商品图片预览" />
+                <button
+                  type="button"
+                  class="delete-image-button"
+                  @click="removeImage"
+                  aria-label="删除图片"
+                >
+                  ×
+                </button>
+              </div>
+              <small>支持jpg、png等常见图片格式，大小不超过5MB</small>
+            </div>
           </div>
         </div>
         <div class="dialog-actions">
@@ -1057,6 +1274,14 @@ const deleteProduct = async () => {
   padding: 10px 12px;
   border: none;
   border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background: #f8fafc;
+  color: black;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
 }
 
 .tab-button.active {
@@ -1064,6 +1289,13 @@ const deleteProduct = async () => {
   color: #1d4ed8;
   font-weight: 600;
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+.tab-button.active:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .tab-page {
@@ -1373,21 +1605,28 @@ const deleteProduct = async () => {
   background: rgba(15, 23, 42, 0.4);
   inset: 0;
   z-index: 100;
+  padding: 20px;
+  overflow: hidden;
 }
 
 .dialog-body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   background: white;
   width: 420px;
+  max-width: 90vw;
+  max-height: 90vh;
   padding: 24px;
   gap: 16px;
   border-radius: 16px;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+  overflow: hidden;
 }
 
 .dialog-body h3 {
   text-align: center;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .dialog-tip {
@@ -1396,12 +1635,14 @@ const deleteProduct = async () => {
   text-align: center;
   margin: 0;
   line-height: 1.5;
+  flex-shrink: 0;
 }
 
 .form-row {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .form-row label {
@@ -1422,6 +1663,8 @@ const deleteProduct = async () => {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-row input:focus,
@@ -1436,13 +1679,109 @@ const deleteProduct = async () => {
   resize: vertical;
 }
 
+.image-upload-row {
+  flex-direction: column;
+}
+
+.image-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-trigger {
+  position: relative;
+  width: fit-content;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-trigger:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.upload-trigger input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-status-text {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f9fafb;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.delete-image-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.delete-image-button:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+.delete-image-button:active {
+  transform: scale(0.95);
+}
+
+.image-upload-row small {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
 .form-row-inline {
   display: flex;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .form-row.half {
   flex: 1;
+  min-width: 0;
 }
 
 .product-dialog {
@@ -1453,6 +1792,29 @@ const deleteProduct = async () => {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.product-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-form::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.product-form::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.product-form::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .dialog-actions {
@@ -1460,6 +1822,7 @@ const deleteProduct = async () => {
   justify-content: center;
   gap: 14px;
   margin-top: 8px;
+  flex-shrink: 0;
 }
 
 .confirm-button {
@@ -1533,14 +1896,20 @@ const deleteProduct = async () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 12px;
+  flex: 1;
+  min-height: 0;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 8px 0;
   border-bottom: 1px solid #f3f4f6;
+  gap: 12px;
 }
 
 .detail-row:last-child {
@@ -1563,12 +1932,18 @@ const deleteProduct = async () => {
   font-size: 14px;
   color: #6b7280;
   font-weight: 500;
+  flex-shrink: 0;
+  min-width: 80px;
 }
 
 .detail-value {
   font-size: 14px;
   color: #374151;
   font-weight: 500;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
+  flex: 1;
 }
 
 @media (max-width: 768px) {
@@ -1597,5 +1972,23 @@ const deleteProduct = async () => {
   .form-row-inline {
     flex-direction: column;
   }
+}
+
+.detail-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detail-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.detail-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.detail-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>
