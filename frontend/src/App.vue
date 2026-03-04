@@ -280,6 +280,7 @@ onBeforeUnmount(() => {
 
         <nav class="nav-menu" ref="navMenu">
           <router-link to="/home" class="nav-link"> 首页 </router-link>
+          <router-link to="/dashboard" class="nav-link"> 数据统计 </router-link>
           <div class="nav-group">
             <button
               type="button"
@@ -332,34 +333,6 @@ onBeforeUnmount(() => {
                 </router-link>
                 <router-link to="/exchange-records" class="nav-dropdown-link">
                   兑换记录
-                </router-link>
-              </div>
-            </transition>
-          </div>
-          <div class="nav-group">
-            <button
-              type="button"
-              :class="[
-                'nav-link nav-trigger',
-                { 'is-active': activeRoutes === 'dashboard' },
-              ]"
-              aria-controls="nav-dashboard"
-              :aria-expanded="activeMenu === 'dashboard'"
-              @click="toggleNavMenu('dashboard')"
-            >
-              数据看板
-            </button>
-            <transition name="fade">
-              <div
-                id="nav-dashboard"
-                v-show="activeMenu === 'dashboard'"
-                class="nav-dropdown"
-              >
-                <router-link to="/dashboard" class="nav-dropdown-link">
-                  看板总览
-                </router-link>
-                <router-link to="/data-export" class="nav-dropdown-link">
-                  数据导出
                 </router-link>
               </div>
             </transition>

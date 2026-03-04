@@ -10,8 +10,7 @@ import AdminVolunteer from "../components/admin/AdminVolunteer.vue";
 import ImportData from "../components/admin/ImportData.vue";
 import Login from "../components/auth/Login.vue";
 import Register from "../components/auth/Register.vue";
-import Dashboard from "../components/data/Dashboard.vue";
-import ExportData from "../components/data/ExportData.vue";
+import Dashboard from "../components/Dashboard.vue";
 import Exchange from "../components/exchange/Exchange.vue";
 import ExchangeRecord from "../components/exchange/ExchangeRecord.vue";
 
@@ -73,12 +72,6 @@ const routes = [
     name: "DataImport",
     component: ImportData,
     meta: { requiresAuth: true, requiresAdmin: true },
-  },
-  {
-    path: "/data-export",
-    name: "DataExport",
-    component: ExportData,
-    meta: { requiresAuth: true},
   },
   {
     path: "/admin/activities",

@@ -1,5 +1,14 @@
+<script setup lang="ts">
+const kpis = [
+  { label: "累计服务时长", value: "12,580 小时" },
+  { label: "累计活动场次", value: "320 场" },
+  { label: "活跃志愿者", value: "1,250 人" },
+  { label: "积分发放", value: "98,000 分" },
+];
+</script>
+
 <template>
-  <div class="page-shell">
+  <div class="dashboard">
     <header class="page-header">
       <h2>数据看板</h2>
       <p>展示核心统计指标与图表占位。</p>
@@ -27,17 +36,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-const kpis = [
-  { label: "累计服务时长", value: "12,580 小时" },
-  { label: "累计活动场次", value: "320 场" },
-  { label: "活跃志愿者", value: "1,250 人" },
-  { label: "积分发放", value: "98,000 分" },
-];
-</script>
-
-<style scoped>
-.page-shell {
+<style scoped lang="css">
+.dashboard {
   display: flex;
   flex-direction: column;
   gap: 20px;
