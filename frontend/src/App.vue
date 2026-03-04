@@ -293,18 +293,20 @@ onBeforeUnmount(() => {
             >
               活动中心
             </button>
-            <div
-              id="nav-activities"
-              v-show="activeMenu === 'activities'"
-              class="nav-dropdown"
-            >
-              <router-link to="/activities" class="nav-dropdown-link">
-                活动列表
-              </router-link>
-              <router-link to="/signups" class="nav-dropdown-link">
-                报名记录
-              </router-link>
-            </div>
+            <transition name="fade">
+              <div
+                id="nav-activities"
+                v-show="activeMenu === 'activities'"
+                class="nav-dropdown"
+              >
+                <router-link to="/activities" class="nav-dropdown-link">
+                  活动列表
+                </router-link>
+                <router-link to="/signups" class="nav-dropdown-link">
+                  报名记录
+                </router-link>
+              </div>
+            </transition>
           </div>
           <div class="nav-group">
             <button
@@ -319,18 +321,20 @@ onBeforeUnmount(() => {
             >
               兑换中心
             </button>
-            <div
-              id="nav-volunteer"
-              v-show="activeMenu === 'volunteer'"
-              class="nav-dropdown"
-            >
-              <router-link to="/exchange" class="nav-dropdown-link">
-                商品列表
-              </router-link>
-              <router-link to="/exchange-records" class="nav-dropdown-link">
-                兑换记录
-              </router-link>
-            </div>
+            <transition name="fade">
+              <div
+                id="nav-volunteer"
+                v-show="activeMenu === 'volunteer'"
+                class="nav-dropdown"
+              >
+                <router-link to="/exchange" class="nav-dropdown-link">
+                  商品列表
+                </router-link>
+                <router-link to="/exchange-records" class="nav-dropdown-link">
+                  兑换记录
+                </router-link>
+              </div>
+            </transition>
           </div>
           <div class="nav-group">
             <button
@@ -345,18 +349,20 @@ onBeforeUnmount(() => {
             >
               数据看板
             </button>
-            <div
-              id="nav-dashboard"
-              v-show="activeMenu === 'dashboard'"
-              class="nav-dropdown"
-            >
-              <router-link to="/dashboard" class="nav-dropdown-link">
-                看板总览
-              </router-link>
-              <router-link to="/data-export" class="nav-dropdown-link">
-                数据导出
-              </router-link>
-            </div>
+            <transition name="fade">
+              <div
+                id="nav-dashboard"
+                v-show="activeMenu === 'dashboard'"
+                class="nav-dropdown"
+              >
+                <router-link to="/dashboard" class="nav-dropdown-link">
+                  看板总览
+                </router-link>
+                <router-link to="/data-export" class="nav-dropdown-link">
+                  数据导出
+                </router-link>
+              </div>
+            </transition>
           </div>
           <div class="nav-group">
             <button
@@ -371,27 +377,29 @@ onBeforeUnmount(() => {
             >
               管理后台
             </button>
-            <div
-              id="nav-admin"
-              v-show="activeMenu === 'admin'"
-              class="nav-dropdown"
-            >
-              <router-link to="/admin/volunteers" class="nav-dropdown-link">
-                志愿者管理
-              </router-link>
-              <router-link to="/admin/activities" class="nav-dropdown-link">
-                活动管理
-              </router-link>
-              <router-link to="/admin/points" class="nav-dropdown-link">
-                积分管理
-              </router-link>
-              <router-link to="/admin/exchange" class="nav-dropdown-link">
-                兑换管理
-              </router-link>
-              <router-link to="/data-import" class="nav-dropdown-link">
-                数据导入
-              </router-link>
-            </div>
+            <transition name="fade">
+              <div
+                id="nav-admin"
+                v-show="activeMenu === 'admin'"
+                class="nav-dropdown"
+              >
+                <router-link to="/admin/volunteers" class="nav-dropdown-link">
+                  志愿者管理
+                </router-link>
+                <router-link to="/admin/activities" class="nav-dropdown-link">
+                  活动管理
+                </router-link>
+                <router-link to="/admin/points" class="nav-dropdown-link">
+                  积分管理
+                </router-link>
+                <router-link to="/admin/exchange" class="nav-dropdown-link">
+                  兑换管理
+                </router-link>
+                <router-link to="/data-import" class="nav-dropdown-link">
+                  数据导入
+                </router-link>
+              </div>
+            </transition>
           </div>
         </nav>
 
