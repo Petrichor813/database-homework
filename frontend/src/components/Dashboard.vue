@@ -490,9 +490,13 @@ const exportTrendCSV = (): string => {
   const data = trendData.value.data;
 
   let csv = "月份," + activityTypes.join(",") + "\n";
-  for (let i = 0; i < months.length; i++) {
-    const row = data[i] || [];
-    csv += months[i] + "," + row.join(",") + "\n";
+
+  for (let monthIndex = 0; monthIndex < months.length; monthIndex++) {
+    const rowData = [months[monthIndex]];
+    for (let typeIndex = 0; typeIndex < activityTypes.length; typeIndex++) {
+      rowData.push(String(data[typeIndex][monthIndex]));
+    }
+    csv += rowData.join(",") + "\n";
   }
 
   return csv;
