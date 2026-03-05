@@ -1128,13 +1128,13 @@ const getRelatedRecordTypeText = (type: string) => {
 }
 
 .close-button {
-  background: #2563eb;
+  background: #9ca3af;
   color: white;
   border: none;
 }
 
 .close-button:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  background: #6b7280;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 </style>

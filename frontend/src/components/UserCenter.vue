@@ -1641,7 +1641,7 @@ const handleDeleteAccount = async () => {
 
 .close-button {
   min-width: 100px;
-  background: #2563eb;
+  background: #9ca3af;
   color: white;
   cursor: pointer;
   padding: 10px 20px;
@@ -1651,8 +1651,8 @@ const handleDeleteAccount = async () => {
 }
 
 .close-button:hover {
-  background: #1d4ed8;
+  background: #6b7280;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 </style>

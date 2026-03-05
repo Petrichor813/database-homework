@@ -1003,7 +1003,7 @@ const deleteProduct = async () => {
         <div class="dialog-actions">
           <button
             type="button"
-            class="cancel-button"
+            class="close-button"
             @click="closeDetailDialog"
           >
             关闭
@@ -1890,6 +1890,17 @@ const deleteProduct = async () => {
   background: #efefef;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(203, 213, 215, 0.3);
+}
+
+.close-button {
+  background: #9ca3af;
+  color: white;
+  border: none;
+}
+
+.close-button:hover {
+  background: #6b7280;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 
 .detail-content {
