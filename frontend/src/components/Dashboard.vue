@@ -18,6 +18,7 @@ import {
   LegendComponent,
 } from "echarts/components";
 import VChart from "vue-echarts";
+import html2canvas from "html2canvas";
 import { getJson } from "../utils/api";
 import { useToast } from "../utils/toast";
 
@@ -36,7 +37,7 @@ use([
   LegendComponent,
 ]);
 
-const toast = useToast();
+const { error } = useToast();
 
 interface DashboardKPIResponse {
   totalServiceHours: number;
@@ -100,130 +101,23 @@ interface VolunteerGrowthRadarResponse {
   initiative: number;
 }
 
+/* 顶部看板 KPI 数据 */
 const kpiData = ref<DashboardKPIResponse | null>(null);
-const heatmapYear = ref<string>("全部");
-const sankeyYear = ref<string>("全部");
-const bubbleYear = ref<string>("全部");
-const trendYear = ref<string>("全部");
-const retentionYear = ref<string>("全部");
-const heatmapData = ref<VolunteerActivityHeatmapResponse | null>(null);
-const sankeyData = ref<PointFlowSankeyResponse | null>(null);
-const bubbleData = ref<ActivityParticipationBubbleResponse | null>(null);
-const trendData = ref<ActivityTypeTrendResponse | null>(null);
-const retentionData = ref<VolunteerRetentionResponse | null>(null);
-const radarData = ref<VolunteerGrowthRadarResponse | null>(null);
-
-const heatmapOption = ref<any>(null);
-const sankeyOption = ref<any>(null);
-const bubbleOption = ref<any>(null);
-const trendOption = ref<any>(null);
-const retentionOption = ref<any>(null);
-const radarOption = ref<any>(null);
-const searchKeyword = ref("");
-const selectedVolunteer = ref<any>(null);
-const volunteerSearchResults = ref<any[]>([]);
-const isSearchingVolunteer = ref(false);
-const hasSearched = ref(false);
-
 const fetchKPI = async () => {
   try {
     const data = await getJson<DashboardKPIResponse>("/api/statistics/kpi");
     kpiData.value = data;
-  } catch (error) {
-    toast.error("获取KPI数据失败");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("获取KPI数据失败", msg);
   }
 };
 
-const fetchHeatmapData = async () => {
-  try {
-    const year =
-      heatmapYear.value === "全部" ? null : parseInt(heatmapYear.value);
-    const params = year !== null ? `?year=${year}` : "";
-    const data = await getJson<VolunteerActivityHeatmapResponse>(
-      `/api/statistics/volunteer-activity-heatmap${params}`
-    );
-    heatmapData.value = data;
-    updateHeatmapChart();
-  } catch (error) {
-    toast.error("获取热力图数据失败");
-  }
-};
-
-const fetchBubbleData = async () => {
-  try {
-    const year =
-      bubbleYear.value === "全部" ? null : parseInt(bubbleYear.value);
-    const params = year !== null ? `?year=${year}` : "";
-    const data = await getJson<ActivityParticipationBubbleResponse>(
-      `/api/statistics/activity-participation-bubble${params}`
-    );
-    bubbleData.value = data;
-    updateBubbleChart();
-  } catch (error) {
-    toast.error("获取气泡图数据失败");
-  }
-};
-
-const fetchTrendData = async () => {
-  try {
-    const year = trendYear.value === "全部" ? null : parseInt(trendYear.value);
-    const params = year !== null ? `?year=${year}` : "";
-    const data = await getJson<ActivityTypeTrendResponse>(
-      `/api/statistics/activity-type-trend${params}`
-    );
-    trendData.value = data;
-    updateTrendChart();
-  } catch (error) {
-    toast.error("获取趋势图数据失败");
-  }
-};
-
-const fetchRetentionData = async () => {
-  try {
-    const year =
-      retentionYear.value === "全部" ? null : parseInt(retentionYear.value);
-    const params = year !== null ? `?year=${year}` : "";
-    const data = await getJson<VolunteerRetentionResponse>(
-      `/api/statistics/volunteer-retention${params}`
-    );
-    retentionData.value = data;
-    updateRetentionChart();
-  } catch (error) {
-    toast.error("获取留存率数据失败");
-  }
-};
-
-const fetchRadarData = async () => {
-  if (!selectedVolunteer.value || !selectedVolunteer.value.id) {
-    toast.error("请先选择志愿者");
-    return;
-  }
-
-  try {
-    const data = await getJson<VolunteerGrowthRadarResponse>(
-      `/api/statistics/volunteer-growth-radar?volunteerId=${selectedVolunteer.value.id}`
-    );
-    radarData.value = data;
-    updateRadarChart();
-  } catch (error) {
-    toast.error("获取雷达图数据失败");
-  }
-};
-
-const fetchSankeyData = async () => {
-  try {
-    const year =
-      sankeyYear.value === "全部" ? null : parseInt(sankeyYear.value);
-    const params = year !== null ? `?year=${year}` : "";
-    const data = await getJson<PointFlowSankeyResponse>(
-      `/api/statistics/point-flow-sankey${params}`
-    );
-    sankeyData.value = data;
-    updateSankeyChart();
-  } catch (error) {
-    toast.error("获取桑基图数据失败");
-  }
-};
+/* 志愿者活跃度热力图 */
+const heatmapYear = ref<string>("全部");
+const heatmapData = ref<VolunteerActivityHeatmapResponse | null>(null);
+const heatmapFigure = ref<any>(null);
+const heatmapChartRef = ref<any>(null);
 
 const updateHeatmapChart = () => {
   if (!heatmapData.value) {
@@ -245,7 +139,7 @@ const updateHeatmapChart = () => {
     }
   }
 
-  heatmapOption.value = {
+  heatmapFigure.value = {
     tooltip: {
       position: "top",
       formatter: function (params: any) {
@@ -300,12 +194,52 @@ const updateHeatmapChart = () => {
   };
 };
 
+const fetchHeatmapData = async () => {
+  try {
+    const year =
+      heatmapYear.value === "全部" ? null : parseInt(heatmapYear.value);
+    const params = year !== null ? `?year=${year}` : "";
+    const data = await getJson<VolunteerActivityHeatmapResponse>(
+      `/api/statistics/volunteer-activity-heatmap${params}`
+    );
+    heatmapData.value = data;
+    updateHeatmapChart();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("获取志愿者活跃度热力图数据失败", msg);
+  }
+};
+
+const exportHeatmapCSV = (): string => {
+  if (!heatmapData.value) {
+    return "";
+  }
+
+  const months = heatmapData.value.months;
+  const weekdays = heatmapData.value.weekdays;
+  const data = heatmapData.value.data;
+
+  let csv = "月份," + weekdays.join(",") + "\n";
+  for (let i = 0; i < months.length; i++) {
+    const row = data[i] || [];
+    csv += months[i] + "," + row.join(",") + "\n";
+  }
+
+  return csv;
+};
+
+/* 积分流转桑基图 */
+const sankeyYear = ref<string>("全部");
+const sankeyData = ref<PointFlowSankeyResponse | null>(null);
+const sankeyFigure = ref<any>(null);
+const sankeyChartRef = ref<any>(null);
+
 const updateSankeyChart = () => {
   if (!sankeyData.value) {
     return;
   }
 
-  sankeyOption.value = {
+  sankeyFigure.value = {
     tooltip: {
       trigger: "item",
       triggerOn: "mousemove",
@@ -333,6 +267,46 @@ const updateSankeyChart = () => {
   };
 };
 
+const fetchSankeyData = async () => {
+  try {
+    const year =
+      sankeyYear.value === "全部" ? null : parseInt(sankeyYear.value);
+    const params = year !== null ? `?year=${year}` : "";
+    const data = await getJson<PointFlowSankeyResponse>(
+      `/api/statistics/point-flow-sankey${params}`
+    );
+    sankeyData.value = data;
+    updateSankeyChart();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("获取积分流转桑基图数据失败", msg);
+  }
+};
+
+const exportSankeyCSV = (): string => {
+  if (!sankeyData.value) {
+    return "";
+  }
+
+  let csv = "节点名称\n";
+  sankeyData.value.nodes.forEach((node) => {
+    csv += node.name + "\n";
+  });
+
+  csv += "\n来源,目标,流量\n";
+  sankeyData.value.links.forEach((link) => {
+    csv += `${link.source},${link.target},${link.value}\n`;
+  });
+
+  return csv;
+};
+
+/* 活动参与度气泡图 */
+const bubbleYear = ref<string>("全部");
+const bubbleData = ref<ActivityParticipationBubbleResponse | null>(null);
+const bubbleFigure = ref<any>(null);
+const bubbleChartRef = ref<any>(null);
+
 const updateBubbleChart = () => {
   if (!bubbleData.value) {
     return;
@@ -349,7 +323,7 @@ const updateBubbleChart = () => {
     ]);
   }
 
-  bubbleOption.value = {
+  bubbleFigure.value = {
     tooltip: {
       trigger: "item",
       formatter: function (params: any) {
@@ -398,6 +372,41 @@ const updateBubbleChart = () => {
   };
 };
 
+const fetchBubbleData = async () => {
+  try {
+    const year =
+      bubbleYear.value === "全部" ? null : parseInt(bubbleYear.value);
+    const params = year !== null ? `?year=${year}` : "";
+    const data = await getJson<ActivityParticipationBubbleResponse>(
+      `/api/statistics/activity-participation-bubble${params}`
+    );
+    bubbleData.value = data;
+    updateBubbleChart();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("获取活动参与度气泡图数据失败", msg);
+  }
+};
+
+const exportBubbleCSV = (): string => {
+  if (!bubbleData.value) {
+    return "";
+  }
+
+  let csv = "活动标题,参与人数,总时长(小时),总积分\n";
+  bubbleData.value.data.forEach((item) => {
+    csv += `${item.activityTitle},${item.participantCount},${item.totalHours},${item.totalPoints}\n`;
+  });
+
+  return csv;
+};
+
+/* 活动类型趋势堆叠面积图 */
+const trendYear = ref<string>("全部");
+const trendData = ref<ActivityTypeTrendResponse | null>(null);
+const trendFigure = ref<any>(null);
+const trendChartRef = ref<any>(null);
+
 const updateTrendChart = () => {
   if (!trendData.value) {
     return;
@@ -423,7 +432,7 @@ const updateTrendChart = () => {
     });
   }
 
-  trendOption.value = {
+  trendFigure.value = {
     tooltip: {
       trigger: "axis",
       axisPointer: {
@@ -456,6 +465,45 @@ const updateTrendChart = () => {
   };
 };
 
+const fetchTrendData = async () => {
+  try {
+    const year = trendYear.value === "全部" ? null : parseInt(trendYear.value);
+    const params = year !== null ? `?year=${year}` : "";
+    const data = await getJson<ActivityTypeTrendResponse>(
+      `/api/statistics/activity-type-trend${params}`
+    );
+    trendData.value = data;
+    updateTrendChart();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("获取活动类型趋势堆叠面积图数据失败", msg);
+  }
+};
+
+const exportTrendCSV = (): string => {
+  if (!trendData.value) {
+    return "";
+  }
+
+  const months = trendData.value.months;
+  const activityTypes = trendData.value.activityTypes;
+  const data = trendData.value.data;
+
+  let csv = "月份," + activityTypes.join(",") + "\n";
+  for (let i = 0; i < months.length; i++) {
+    const row = data[i] || [];
+    csv += months[i] + "," + row.join(",") + "\n";
+  }
+
+  return csv;
+};
+
+/* 志愿者留存率曲线图 */
+const retentionYear = ref<string>("全部");
+const retentionData = ref<VolunteerRetentionResponse | null>(null);
+const retentionFigure = ref<any>(null);
+const retentionChartRef = ref<any>(null);
+
 const updateRetentionChart = () => {
   if (!retentionData.value) {
     return;
@@ -464,7 +512,7 @@ const updateRetentionChart = () => {
   const months = retentionData.value.months;
   const retentionRates = retentionData.value.retentionRates;
 
-  retentionOption.value = {
+  retentionFigure.value = {
     tooltip: {
       trigger: "axis",
       formatter: function (params: any) {
@@ -527,6 +575,73 @@ const updateRetentionChart = () => {
   };
 };
 
+const fetchRetentionData = async () => {
+  try {
+    const year =
+      retentionYear.value === "全部" ? null : parseInt(retentionYear.value);
+    const params = year !== null ? `?year=${year}` : "";
+    const data = await getJson<VolunteerRetentionResponse>(
+      `/api/statistics/volunteer-retention${params}`
+    );
+    retentionData.value = data;
+    updateRetentionChart();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("获取志愿者留存曲线图数据失败", msg);
+  }
+};
+
+const exportRetentionCSV = (): string => {
+  if (!retentionData.value) {
+    return "";
+  }
+
+  let csv = "月份,留存率(%)\n";
+  for (let i = 0; i < retentionData.value.months.length; i++) {
+    csv += `${retentionData.value.months[i]},${retentionData.value.retentionRates[i]}\n`;
+  }
+
+  return csv;
+};
+
+/* 志愿者成长雷达图 */
+const searchKeyword = ref("");
+const selectedVolunteer = ref<any>(null);
+const volunteerSearchResults = ref<any[]>([]);
+const isSearchingVolunteer = ref(false);
+const hasSearched = ref(false);
+
+const radarData = ref<VolunteerGrowthRadarResponse | null>(null);
+const radarFigure = ref<any>(null);
+const radarChartRef = ref<any>(null);
+
+const searchVolunteer = async () => {
+  const keyword = searchKeyword.value.trim();
+  if (!keyword) {
+    volunteerSearchResults.value = [];
+    hasSearched.value = false;
+    selectedVolunteer.value = null;
+    radarFigure.value = null;
+    return;
+  }
+
+  isSearchingVolunteer.value = true;
+  hasSearched.value = true;
+  try {
+    const data = await getJson<any>(
+      `/api/admin/volunteer/search?keyword=${encodeURIComponent(
+        keyword
+      )}&page=0&size=10`
+    );
+    volunteerSearchResults.value = data.content || [];
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("搜索志愿者失败", msg);
+  } finally {
+    isSearchingVolunteer.value = false;
+  }
+};
+
 const updateRadarChart = () => {
   if (!radarData.value) {
     return;
@@ -538,7 +653,7 @@ const updateRadarChart = () => {
     phone: data.volunteerPhone,
   };
 
-  radarOption.value = {
+  radarFigure.value = {
     tooltip: {
       trigger: "item",
     },
@@ -595,57 +710,21 @@ const updateRadarChart = () => {
   };
 };
 
-const onHeatmapYearChange = () => {
-  fetchHeatmapData();
-};
-
-const onSankeyYearChange = () => {
-  fetchSankeyData();
-};
-
-const onBubbleYearChange = () => {
-  fetchBubbleData();
-};
-
-const onTrendYearChange = () => {
-  fetchTrendData();
-};
-
-const onRetentionYearChange = () => {
-  fetchRetentionData();
-};
-
-const exportChartPNG = (chartName: string) => {
-  console.log(`导出${chartName}为PNG`);
-};
-
-const exportChartCSV = (chartName: string) => {
-  console.log(`导出${chartName}数据为CSV`);
-};
-
-const searchVolunteer = async () => {
-  const keyword = searchKeyword.value.trim();
-  if (!keyword) {
-    volunteerSearchResults.value = [];
-    hasSearched.value = false;
-    selectedVolunteer.value = null;
-    radarOption.value = null;
+const fetchRadarData = async () => {
+  if (!selectedVolunteer.value || !selectedVolunteer.value.id) {
+    error("请先选择志愿者");
     return;
   }
 
-  isSearchingVolunteer.value = true;
-  hasSearched.value = true;
   try {
-    const data = await getJson<any>(
-      `/api/admin/volunteer/search?keyword=${encodeURIComponent(
-        keyword
-      )}&page=0&size=10`
+    const data = await getJson<VolunteerGrowthRadarResponse>(
+      `/api/statistics/volunteer-growth-radar?volunteerId=${selectedVolunteer.value.id}`
     );
-    volunteerSearchResults.value = data.content || [];
-  } catch (error) {
-    toast.error("搜索志愿者失败");
-  } finally {
-    isSearchingVolunteer.value = false;
+    radarData.value = data;
+    updateRadarChart();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "请检查网络连接";
+    error("获取志愿者成长雷达图数据失败", msg);
   }
 };
 
@@ -659,6 +738,119 @@ const selectVolunteer = (volunteer: any) => {
   volunteerSearchResults.value = [];
   hasSearched.value = false;
   fetchRadarData();
+};
+
+const exportRadarCSV = (): string => {
+  if (!radarData.value) {
+    return "";
+  }
+
+  const data = radarData.value;
+  let csv =
+    "志愿者姓名,手机号,总活动数,总时长(小时),总积分,活动参与度,服务质量,连续性,主动性\n";
+  csv += `${data.volunteerName},${data.volunteerPhone},${data.totalActivities},${data.totalHours},${data.totalPoints},${data.activityParticipation},${data.serviceQuality},${data.continuity},${data.initiative}\n`;
+
+  return csv;
+};
+
+const exportChartPNG = (chartName: string) => {
+  let chartRef: any = null;
+  let fileName = chartName;
+
+  switch (chartName) {
+    case "志愿者活跃度热力图":
+      chartRef = heatmapChartRef.value;
+      break;
+    case "积分流转桑基图":
+      chartRef = sankeyChartRef.value;
+      break;
+    case "活动参与度气泡图":
+      chartRef = bubbleChartRef.value;
+      break;
+    case "活动类型趋势堆叠面积图":
+      chartRef = trendChartRef.value;
+      break;
+    case "志愿者留存率曲线图":
+      chartRef = retentionChartRef.value;
+      break;
+    case "志愿者成长雷达图":
+      chartRef = radarChartRef.value;
+      break;
+  }
+
+  if (!chartRef) {
+    error(`未找到${chartName}的图表引用`);
+    return;
+  }
+
+  const element = chartRef.$el;
+  if (!element) {
+    error(`未找到${chartName}的DOM元素`);
+    return;
+  }
+
+  html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    backgroundColor: "white",
+  })
+    .then((canvas) => {
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = `${fileName}.png`;
+      link.click();
+    })
+    .catch((err) => {
+      const msg = err instanceof Error ? err.message : "请检查网络连接";
+      error(`导出${chartName}图片失败:`, msg);
+    });
+};
+
+const exportChartCSV = (chartName: string) => {
+  let csvContent = "";
+  let fileName = chartName;
+
+  switch (chartName) {
+    case "志愿者活跃度热力图":
+      csvContent = exportHeatmapCSV();
+      break;
+    case "积分流转桑基图":
+      csvContent = exportSankeyCSV();
+      break;
+    case "活动参与度气泡图":
+      csvContent = exportBubbleCSV();
+      break;
+    case "活动类型趋势堆叠面积图":
+      csvContent = exportTrendCSV();
+      break;
+    case "志愿者留存率曲线图":
+      csvContent = exportRetentionCSV();
+      break;
+    case "志愿者成长雷达图":
+      csvContent = exportRadarCSV();
+      break;
+    default:
+      error(`未知的图表类型: ${chartName}`);
+      return;
+  }
+
+  if (!csvContent) {
+    error(`导出${chartName}数据失败`);
+    return;
+  }
+
+  const blob = new Blob(["\ufeff" + csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `${fileName}.csv`);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 onMounted(() => {
@@ -705,25 +897,29 @@ onMounted(() => {
       <div class="chart-card">
         <div class="chart-header">
           <h3>志愿者活跃度热力图</h3>
-          <select
-            v-model="heatmapYear"
-            @change="onHeatmapYearChange"
-            class="time-select"
-          >
-            <option value="全部">全部</option>
-            <option value="2022">2022年</option>
-            <option value="2023">2023年</option>
-            <option value="2024">2024年</option>
-            <option value="2025">2025年</option>
-            <option value="2026">2026年</option>
-          </select>
+          <div class="chart-note-row">
+            <p class="chart-note">展示整个系统的志愿者活动活跃度分布</p>
+            <select
+              v-model="heatmapYear"
+              @change="fetchHeatmapData"
+              class="time-select"
+            >
+              <option value="全部">全部</option>
+              <option value="2022">2022年</option>
+              <option value="2023">2023年</option>
+              <option value="2024">2024年</option>
+              <option value="2025">2025年</option>
+              <option value="2026">2026年</option>
+            </select>
+          </div>
         </div>
         <v-chart
-          v-if="heatmapOption"
-          :option="heatmapOption"
-          class="chart-container"
+          v-if="heatmapFigure"
+          :option="heatmapFigure"
+          class="chart-image"
+          ref="heatmapChartRef"
         />
-        <div v-else class="chart-img">热力图加载中...</div>
+        <div v-else class="chart-loading">热力图加载中...</div>
         <div class="chart-actions">
           <button
             class="export-pic"
@@ -743,25 +939,29 @@ onMounted(() => {
       <div class="chart-card">
         <div class="chart-header">
           <h3>积分流转桑基图</h3>
-          <select
-            v-model="sankeyYear"
-            @change="onSankeyYearChange"
-            class="time-select"
-          >
-            <option value="全部">全部</option>
-            <option value="2022">2022年</option>
-            <option value="2023">2023年</option>
-            <option value="2024">2024年</option>
-            <option value="2025">2025年</option>
-            <option value="2026">2026年</option>
-          </select>
+          <div class="chart-note-row">
+            <p class="chart-note">展示积分在系统中的流转路径和数量</p>
+            <select
+              v-model="sankeyYear"
+              @change="fetchSankeyData"
+              class="time-select"
+            >
+              <option value="全部">全部</option>
+              <option value="2022">2022年</option>
+              <option value="2023">2023年</option>
+              <option value="2024">2024年</option>
+              <option value="2025">2025年</option>
+              <option value="2026">2026年</option>
+            </select>
+          </div>
         </div>
         <v-chart
-          v-if="sankeyOption"
-          :option="sankeyOption"
-          class="chart-container"
+          v-if="sankeyFigure"
+          :option="sankeyFigure"
+          class="chart-image"
+          ref="sankeyChartRef"
         />
-        <div v-else class="chart-img">桑基图加载中...</div>
+        <div v-else class="chart-loading">桑基图加载中...</div>
         <div class="chart-actions">
           <button class="export-pic" @click="exportChartPNG('积分流转桑基图')">
             导出图片
@@ -775,25 +975,29 @@ onMounted(() => {
       <div class="chart-card">
         <div class="chart-header">
           <h3>活动参与度气泡图</h3>
-          <select
-            v-model="bubbleYear"
-            @change="onBubbleYearChange"
-            class="time-select"
-          >
-            <option value="全部">全部</option>
-            <option value="2022">2022年</option>
-            <option value="2023">2023年</option>
-            <option value="2024">2024年</option>
-            <option value="2025">2025年</option>
-            <option value="2026">2026年</option>
-          </select>
+          <div class="chart-note-row">
+            <p class="chart-note">展示各活动的参与人数、总时长和总积分</p>
+            <select
+              v-model="bubbleYear"
+              @change="fetchBubbleData"
+              class="time-select"
+            >
+              <option value="全部">全部</option>
+              <option value="2022">2022年</option>
+              <option value="2023">2023年</option>
+              <option value="2024">2024年</option>
+              <option value="2025">2025年</option>
+              <option value="2026">2026年</option>
+            </select>
+          </div>
         </div>
         <v-chart
-          v-if="bubbleOption"
-          :option="bubbleOption"
-          class="chart-container"
+          v-if="bubbleFigure"
+          :option="bubbleFigure"
+          class="chart-image"
+          ref="bubbleChartRef"
         />
-        <div v-else class="chart-img">气泡图加载中...</div>
+        <div v-else class="chart-loading">气泡图加载中...</div>
         <div class="chart-actions">
           <button
             class="export-pic"
@@ -813,25 +1017,29 @@ onMounted(() => {
       <div class="chart-card">
         <div class="chart-header">
           <h3>活动类型趋势堆叠面积图</h3>
-          <select
-            v-model="trendYear"
-            @change="onTrendYearChange"
-            class="time-select"
-          >
-            <option value="全部">全部</option>
-            <option value="2022">2022年</option>
-            <option value="2023">2023年</option>
-            <option value="2024">2024年</option>
-            <option value="2025">2025年</option>
-            <option value="2026">2026年</option>
-          </select>
+          <div class="chart-note-row">
+            <p class="chart-note">展示各类型活动每月的数量变化趋势</p>
+            <select
+              v-model="trendYear"
+              @change="fetchTrendData"
+              class="time-select"
+            >
+              <option value="全部">全部</option>
+              <option value="2022">2022年</option>
+              <option value="2023">2023年</option>
+              <option value="2024">2024年</option>
+              <option value="2025">2025年</option>
+              <option value="2026">2026年</option>
+            </select>
+          </div>
         </div>
         <v-chart
-          v-if="trendOption"
-          :option="trendOption"
-          class="chart-container"
+          v-if="trendFigure"
+          :option="trendFigure"
+          class="chart-image"
+          ref="trendChartRef"
         />
-        <div v-else class="chart-img">堆叠面积图加载中...</div>
+        <div v-else class="chart-loading">堆叠面积图加载中...</div>
         <div class="chart-actions">
           <button
             class="export-pic"
@@ -851,25 +1059,36 @@ onMounted(() => {
       <div class="chart-card">
         <div class="chart-header">
           <h3>志愿者留存率曲线图</h3>
-          <select
-            v-model="retentionYear"
-            @change="onRetentionYearChange"
-            class="time-select"
-          >
-            <option value="全部">全部</option>
-            <option value="2022">2022年</option>
-            <option value="2023">2023年</option>
-            <option value="2024">2024年</option>
-            <option value="2025">2025年</option>
-            <option value="2026">2026年</option>
-          </select>
+          <div class="retention-tip">
+            <div class="formula-container">
+              <span class="formula-title">留存率 = </span>
+              <div class="fraction">
+                <div class="numerator">当月有后续活动的志愿者数</div>
+                <div class="denominator">当月参与志愿者总数</div>
+              </div>
+              <span class="formula-suffix"> × 100%</span>
+            </div>
+            <select
+              v-model="retentionYear"
+              @change="fetchRetentionData"
+              class="time-select"
+            >
+              <option value="全部">全部</option>
+              <option value="2022">2022年</option>
+              <option value="2023">2023年</option>
+              <option value="2024">2024年</option>
+              <option value="2025">2025年</option>
+              <option value="2026">2026年</option>
+            </select>
+          </div>
         </div>
         <v-chart
-          v-if="retentionOption"
-          :option="retentionOption"
-          class="chart-container"
+          v-if="retentionFigure"
+          :option="retentionFigure"
+          class="chart-image"
+          ref="retentionChartRef"
         />
-        <div v-else class="chart-img">留存率曲线图加载中...</div>
+        <div v-else class="chart-loading">留存率曲线图加载中...</div>
         <div class="chart-actions">
           <button
             class="export-pic"
@@ -887,7 +1106,12 @@ onMounted(() => {
       </div>
 
       <div class="chart-card">
-        <h3>志愿者成长雷达图</h3>
+        <div class="chart-header">
+          <h3>志愿者成长雷达图</h3>
+          <p class="chart-note">
+            展示志愿者在活动参与、服务质量、连续性和主动性方面的表现
+          </p>
+        </div>
         <div class="search-box">
           <div class="volunteer-search-wrapper">
             <div class="volunteer-search">
@@ -902,7 +1126,10 @@ onMounted(() => {
                   v-if="searchKeyword"
                   type="button"
                   class="clear-button"
-                  @click="searchKeyword = ''; searchVolunteer()"
+                  @click="
+                    searchKeyword = '';
+                    searchVolunteer();
+                  "
                 >
                   ×
                 </button>
@@ -916,7 +1143,10 @@ onMounted(() => {
                 {{ isSearchingVolunteer ? "搜索中..." : "搜索" }}
               </button>
             </div>
-            <div v-if="volunteerSearchResults.length > 0" class="search-results">
+            <div
+              v-if="volunteerSearchResults.length > 0"
+              class="search-results"
+            >
               <div
                 v-for="volunteer in volunteerSearchResults"
                 :key="volunteer.id"
@@ -934,15 +1164,18 @@ onMounted(() => {
             </div>
           </div>
           <div v-if="selectedVolunteer" class="selected-volunteer">
-            已选择：{{ selectedVolunteer.name }}（{{ selectedVolunteer.phone }}）
+            已选择：{{ selectedVolunteer.name }}（{{
+              selectedVolunteer.phone
+            }}）
           </div>
         </div>
         <v-chart
-          v-if="radarOption"
-          :option="radarOption"
-          class="chart-container"
+          v-if="radarFigure"
+          :option="radarFigure"
+          class="chart-image"
+          ref="radarChartRef"
         />
-        <div v-else class="chart-img">雷达图加载中...</div>
+        <div v-else class="chart-loading">雷达图加载中...</div>
         <div class="chart-actions">
           <button
             class="export-pic"
@@ -1031,6 +1264,12 @@ onMounted(() => {
 
 .chart-header {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-note-row {
+  display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
@@ -1044,6 +1283,14 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+.chart-note {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+
 .time-select {
   padding: 6px 12px;
   border: 1px solid #d1d5db;
@@ -1052,6 +1299,72 @@ onMounted(() => {
   background: white;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  width: auto;
+  min-width: 100px;
+}
+
+.retention-tip {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.formula-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.formula-title {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.fraction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 0 8px;
+}
+
+.numerator {
+  padding: 4px 0;
+  font-size: 12px;
+  color: #1f2937;
+  text-align: center;
+  position: relative;
+}
+
+.numerator::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #1f2937;
+}
+
+.denominator {
+  padding: 4px 0;
+  font-size: 12px;
+  color: #1f2937;
+  text-align: center;
+}
+
+.formula-suffix {
+  font-size: 13px;
+  color: #1f2937;
+  font-weight: 500;
 }
 
 .time-select:hover {
@@ -1065,20 +1378,12 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.chart-card h3 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 20px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.chart-container {
+.chart-image {
   flex: 1;
   min-height: 300px;
 }
 
-.chart-img {
+.chart-loading {
   flex: 1;
   min-height: 300px;
   background: #f1f5f9;

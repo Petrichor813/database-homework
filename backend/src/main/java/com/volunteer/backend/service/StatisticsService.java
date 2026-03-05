@@ -312,6 +312,7 @@ public class StatisticsService {
     }
 
     public VolunteerRetentionResponse getVolunteerRetention(Integer year) {
+        // 如果志愿者在当月及后续月份都有活动，则在当月算作留存
         List<String> months = new ArrayList<>();
         for (int i = 1; i <= 12; i++) {
             months.add(i + "月");
