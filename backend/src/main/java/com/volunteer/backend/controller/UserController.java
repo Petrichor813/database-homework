@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
-import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
 import com.volunteer.backend.service.UserService;
@@ -39,10 +38,12 @@ public class UserController {
     // @formatter:off
     public ResponseEntity<UserProfileResponse> updateProfile(
         @PathVariable Long userId,
-        @RequestBody UpdateUserProfileRequest request
+        @RequestBody Map<String, String> request
     ) {
         // @formatter:on
-        return ResponseEntity.ok(userService.updateProfile(userId, request));
+        String username = request.get("username");
+        String phone = request.get("phone");
+        return ResponseEntity.ok(userService.updateProfile(userId, username, phone));
     }
 
     @PostMapping("/{userId}/volunteer-apply")

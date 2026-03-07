@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.volunteer.backend.dto.ActivityQueryRequest;
 import com.volunteer.backend.dto.ActivityResponse;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.dto.SignupRequest;
@@ -44,11 +45,11 @@ public class ActivityService {
         VolunteerRepository volunteerRepository,
         SignupRecordRepository signupRecordRepository
     ) {
+        // @formatter:on
         this.activityRepository = activityRepository;
         this.volunteerRepository = volunteerRepository;
         this.signupRecordRepository = signupRecordRepository;
     }
-    // @formatter:on
 
     private void refreshActivityStatus(Activity activity, LocalDateTime now) {
         if (activity.getStatus() == ActivityStatus.CANCELLED) {
@@ -89,54 +90,50 @@ public class ActivityService {
     // @formatter:off
     public PageResponse<ActivityResponse> getActivities(
         Long userId,
-        int page,
-        int size,
-        String keyword,
-        String type,
-        String status,
-        String date,
-        String sort
+        ActivityQueryRequest request
     ) {
         // @formatter:on
-        if (page < 0) {
+        if (request.getPage() < 0) {
             throw new IllegalArgumentException("页码不能小于0");
         }
-        if (size <= 0) {
+        if (request.getSize() <= 0) {
             throw new IllegalArgumentException("每页记录数必须大于0");
         }
 
         Pageable pageable;
-        if ("status".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(page, size);
+        if ("status".equalsIgnoreCase(request.getSort())) {
+            pageable = PageRequest.of(request.getPage(), request.getSize());
         } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startTime"));
+            pageable = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "startTime"));
         }
 
         ActivityType activityType = null;
-        if (type != null && !type.isEmpty() && !"ALL".equalsIgnoreCase(type)) {
+        if (request.getType() != null && !request.getType().isEmpty() && !"ALL".equalsIgnoreCase(request.getType())) {
             try {
-                activityType = ActivityType.valueOf(type);
+                activityType = ActivityType.valueOf(request.getType());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("无效的活动类型: " + type);
+                throw new IllegalArgumentException("无效的活动类型: " + request.getType());
             }
         }
 
         ActivityStatus activityStatus = null;
-        if (status != null && !status.isEmpty() && !"ALL".equalsIgnoreCase(status)) {
+        if (request.getStatus() != null && !request.getStatus().isEmpty()
+                && !"ALL".equalsIgnoreCase(request.getStatus())) {
             try {
-                activityStatus = ActivityStatus.valueOf(status);
+                activityStatus = ActivityStatus.valueOf(request.getStatus());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("无效的活动状态: " + status);
+                throw new IllegalArgumentException("无效的活动状态: " + request.getStatus());
             }
         }
 
         Page<Activity> activityPage;
-        if ("status".equalsIgnoreCase(sort)) {
-            activityPage = activityRepository.findActivitiesByStatusOrder(keyword != null ? keyword : "", activityType,
-                    activityStatus, date != null ? date : "", pageable);
+        if ("status".equalsIgnoreCase(request.getSort())) {
+            activityPage = activityRepository.findActivitiesByStatusOrder(
+                    request.getKeyword() != null ? request.getKeyword() : "", activityType, activityStatus,
+                    request.getDate() != null ? request.getDate() : "", pageable);
         } else {
-            activityPage = activityRepository.findActivities(keyword != null ? keyword : "", activityType,
-                    activityStatus, date != null ? date : "", pageable);
+            activityPage = activityRepository.findActivities(request.getKeyword() != null ? request.getKeyword() : "",
+                    activityType, activityStatus, request.getDate() != null ? request.getDate() : "", pageable);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -169,7 +166,7 @@ public class ActivityService {
             content.add(buildResponse(activity, signupStatus));
         }
 
-        return new PageResponse<>(content, page, size, (int) activityPage.getTotalElements(),
+        return new PageResponse<>(content, request.getPage(), request.getSize(), (int) activityPage.getTotalElements(),
                 activityPage.getTotalPages());
     }
 

@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.AdminExchangeRecordResponse;
-import com.volunteer.backend.dto.AdminExchangeProcessRequest;
-import com.volunteer.backend.dto.AdminExchangeUpdateRequest;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.PointChangeRecord;
@@ -52,7 +50,8 @@ public class AdminExchangeService {
         this.pointChangeRecordRepository = pointChangeRecordRepository;
     }
 
-    private AdminExchangeRecordResponse buildResponse(ExchangeRecord record, String volunteerName, String productName, Double productPrice) {
+    private AdminExchangeRecordResponse buildResponse(ExchangeRecord record, String volunteerName, String productName,
+            Double productPrice) {
         // @formatter:off
         return new AdminExchangeRecordResponse(
             record.getId(),
@@ -123,7 +122,7 @@ public class AdminExchangeService {
     }
 
     @Transactional
-    public AdminExchangeRecordResponse approveExchange(Long recordId, AdminExchangeProcessRequest request) {
+    public AdminExchangeRecordResponse approveExchange(Long recordId, String note) {
         Optional<ExchangeRecord> er = exchangeRecordRepository.findById(recordId);
         if (er.isEmpty()) {
             throw new IllegalArgumentException("兑换记录不存在");
@@ -151,7 +150,7 @@ public class AdminExchangeService {
 
         record.setStatus(ExchangeStatus.PROCESSING);
         record.setProcessTime(LocalDateTime.now());
-        record.setNote(request.getNote() != null ? request.getNote().trim() : "管理员批准兑换");
+        record.setNote(note);
 
         ExchangeRecord saved = exchangeRecordRepository.save(record);
 
@@ -165,7 +164,7 @@ public class AdminExchangeService {
     }
 
     @Transactional
-    public AdminExchangeRecordResponse rejectExchange(Long recordId, AdminExchangeProcessRequest request) {
+    public AdminExchangeRecordResponse rejectExchange(Long recordId, String note) {
         Optional<ExchangeRecord> er = exchangeRecordRepository.findById(recordId);
         if (er.isEmpty()) {
             throw new IllegalArgumentException("兑换记录不存在");
@@ -179,14 +178,14 @@ public class AdminExchangeService {
 
         record.setStatus(ExchangeStatus.REJECTED);
         record.setProcessTime(LocalDateTime.now());
-        record.setNote(request.getNote() != null ? request.getNote().trim() : "管理员拒绝兑换");
+        record.setNote(note);
 
         // @formatter:off
         PointChangeRecord refundRecord = new PointChangeRecord(
             record.getVolunteerId(),
             record.getTotalPoints(),
             PointChangeType.ADMIN_ADJUST,
-            "兑换被拒绝，积分退还: " + (request.getNote() != null ? request.getNote() : "管理员拒绝兑换"),
+            "兑换被拒绝，积分退还: " + note,
             record.getId(),
             RelatedRecordType.EXCHANGE
         );
@@ -218,7 +217,7 @@ public class AdminExchangeService {
     }
 
     @Transactional
-    public AdminExchangeRecordResponse updateExchange(Long recordId, AdminExchangeUpdateRequest request) {
+    public AdminExchangeRecordResponse updateExchange(Long recordId, Long number, String status) {
         Optional<ExchangeRecord> er = exchangeRecordRepository.findById(recordId);
         if (er.isEmpty()) {
             throw new IllegalArgumentException("兑换记录不存在");
@@ -238,12 +237,12 @@ public class AdminExchangeService {
         Product product = p.get();
 
         Long oldNumber = record.getNumber();
-        Long newNumber = request.getNumber();
+        Long newNumber = number;
         if (newNumber == null || newNumber <= 0) {
             throw new IllegalArgumentException("兑换数量必须大于0");
         }
 
-        String newStatus = request.getStatus();
+        String newStatus = status;
         if (newStatus == null || newStatus.isBlank()) {
             throw new IllegalArgumentException("兑换状态不能为空");
         }
@@ -282,7 +281,7 @@ public class AdminExchangeService {
 
         if (!oldTotalPoints.equals(newTotalPoints)) {
             Double pointDiff = newTotalPoints - oldTotalPoints;
-            
+
             Optional<Volunteer> v = volunteerRepository.findById(record.getVolunteerId());
             if (v.isEmpty()) {
                 throw new IllegalArgumentException("志愿者不存在");
@@ -292,14 +291,9 @@ public class AdminExchangeService {
             volunteer.setPoints(volunteer.getPoints() - pointDiff);
             volunteerRepository.save(volunteer);
 
-            PointChangeRecord adjustRecord = new PointChangeRecord(
-                record.getVolunteerId(),
-                pointDiff,
-                PointChangeType.ADMIN_ADJUST,
-                "兑换记录编辑，积分调整: " + (pointDiff > 0 ? "增加" : "减少") + Math.abs(pointDiff),
-                record.getId(),
-                RelatedRecordType.EXCHANGE
-            );
+            PointChangeRecord adjustRecord = new PointChangeRecord(record.getVolunteerId(), pointDiff,
+                    PointChangeType.ADMIN_ADJUST, "兑换记录编辑，积分调整: " + (pointDiff > 0 ? "增加" : "减少") + Math.abs(pointDiff),
+                    record.getId(), RelatedRecordType.EXCHANGE);
             pointChangeRecordRepository.save(adjustRecord);
         }
 

@@ -140,21 +140,25 @@ const updateHeatmapChart = () => {
   }
 
   heatmapFigure.value = {
+    // 提示框
     tooltip: {
       position: "top",
+      trigger: "item", // 触发方式：item（数据项）/ axis（坐标轴）/ none（无）
       formatter: function (params: any) {
+        // 提示框内容格式化函数
         return `${weekdays[params.value[0]]} ${
           months[params.value[1]]
         }<br/>活跃度: ${params.value[2]}`;
       },
     },
+    // 绘图区边距
     grid: {
       height: "70%",
       top: "5%",
       bottom: "0%",
     },
     xAxis: {
-      type: "category",
+      type: "category", // 类目轴，用于显示离散类别
       data: weekdays,
       splitArea: {
         show: true,
@@ -167,14 +171,16 @@ const updateHeatmapChart = () => {
         show: true,
       },
     },
+    // 映射颜色
     visualMap: {
       min: 0,
       max: Math.max(...heatmapDataArray.map((item) => item[2]), 1),
-      calculable: true,
-      orient: "horizontal",
-      left: "center",
+      calculable: true, // 是否显示拖拽条
+      orient: "horizontal", // 拖拽条位置：horizontal / vertical
+      left: "center", // 位置，也可以是数值或百分比
       top: "80%",
     },
+    // 数据系列（核心）
     series: [
       {
         name: "志愿者活跃度",
@@ -183,10 +189,11 @@ const updateHeatmapChart = () => {
         label: {
           show: false,
         },
+        // 高亮样式，类似 :hover
         emphasis: {
           itemStyle: {
-            shadowBlur: 10,
-            shadowColor: "rgba(0, 0, 0, 0.5)",
+            shadowBlur: 10, // 阴影模糊半径
+            shadowColor: "rgba(0, 0, 0, 0.5)", // 阴影颜色（半透明黑色）
           },
         },
       },
@@ -249,12 +256,13 @@ const updateSankeyChart = () => {
         type: "sankey",
         layout: "none",
         emphasis: {
-          focus: "adjacency",
+          focus: "adjacency", // 高亮当前元素及其直接相邻的元素
         },
         data: sankeyData.value.nodes,
         links: sankeyData.value.links,
         top: "5%",
         bottom: "0%",
+        // 控制连线样式
         lineStyle: {
           color: "gradient",
           curveness: 0.5,
@@ -354,6 +362,7 @@ const updateBubbleChart = () => {
         type: "scatter",
         data: bubbleDataArray,
         symbolSize: function (data: any) {
+          // 动态计算气泡大小
           return Math.sqrt(data[2]) * 3;
         },
         itemStyle: {
@@ -417,6 +426,7 @@ const updateTrendChart = () => {
   const data = trendData.value.data;
 
   const seriesData: any[] = [];
+  // 每个活动类型创建一个折线的堆叠面积图
   for (let i = 0; i < activityTypes.length; i++) {
     seriesData.push({
       name: activityTypes[i],
@@ -436,12 +446,13 @@ const updateTrendChart = () => {
     tooltip: {
       trigger: "axis",
       axisPointer: {
-        type: "cross",
+        type: "cross", // 十字指针，显示垂直线、水平线和标签
         label: {
           backgroundColor: "#6a7985",
         },
       },
     },
+    // 图标
     legend: {
       data: activityTypes,
       top: "85%",
@@ -459,7 +470,7 @@ const updateTrendChart = () => {
       data: months,
     },
     yAxis: {
-      type: "value",
+      type: "value", // 数值轴，用于显示连续数据
     },
     series: seriesData,
   };

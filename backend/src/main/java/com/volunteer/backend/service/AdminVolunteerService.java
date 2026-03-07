@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.volunteer.backend.dto.AdminVolunteerResponse;
-import com.volunteer.backend.dto.AdminVolunteerReviewRequest;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
@@ -92,7 +91,7 @@ public class AdminVolunteerService {
         // @formatter:on
     }
 
-    public AdminVolunteerResponse reviewVolunteer(Long id, AdminVolunteerReviewRequest request) {
+    public AdminVolunteerResponse reviewVolunteer(Long id, String action, String note) {
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(id);
         Volunteer volunteer;
         if (v.isEmpty()) {
@@ -100,19 +99,25 @@ public class AdminVolunteerService {
         }
         volunteer = v.get();
 
-        VolunteerReviewAction action = request.getAction();
-        if (action == null) {
+        if (action == null || action.isBlank()) {
             throw new IllegalArgumentException("审核操作不能为空");
         }
 
-        String note = (request.getNote() != null) ? request.getNote().trim() : "";
-        if (note.isEmpty()) {
+        VolunteerReviewAction reviewAction;
+        try {
+            reviewAction = VolunteerReviewAction.valueOf(action.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("未知的审核操作类型: " + action);
+        }
+
+        String trimmedNote = (note != null) ? note.trim() : "";
+        if (trimmedNote.isEmpty()) {
             throw new IllegalArgumentException("审核备注不能为空");
         }
 
-        switch (action) {
+        switch (reviewAction) {
         case APPROVE:
-            volunteer.approve(note);
+            volunteer.approve(trimmedNote);
 
             Optional<User> u = userRepository.findByIdAndDeletedFalse(volunteer.getUserId());
             if (u.isEmpty()) {
@@ -126,13 +131,13 @@ public class AdminVolunteerService {
             }
             break;
         case REJECT:
-            volunteer.reject(note);
+            volunteer.reject(trimmedNote);
             break;
         case SUSPEND:
-            volunteer.suspend(note);
+            volunteer.suspend(trimmedNote);
             break;
         case RESUME:
-            volunteer.resume(note);
+            volunteer.resume(trimmedNote);
             break;
         default:
             throw new IllegalArgumentException("未知的审核操作类型");

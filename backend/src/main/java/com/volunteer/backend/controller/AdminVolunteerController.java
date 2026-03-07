@@ -1,5 +1,7 @@
 package com.volunteer.backend.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.volunteer.backend.dto.AdminVolunteerResponse;
-import com.volunteer.backend.dto.AdminVolunteerReviewRequest;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.service.AdminVolunteerService;
 
@@ -41,7 +42,9 @@ public class AdminVolunteerController {
 
     @PostMapping("/{id}/review")
     public ResponseEntity<AdminVolunteerResponse> reviewVolunteer(@PathVariable Long id,
-            @RequestBody AdminVolunteerReviewRequest request) {
-        return ResponseEntity.ok(adminVolunteerService.reviewVolunteer(id, request));
+            @RequestBody Map<String, String> request) {
+        String action = request.get("action");
+        String note = request.get("note");
+        return ResponseEntity.ok(adminVolunteerService.reviewVolunteer(id, action, note));
     }
 }

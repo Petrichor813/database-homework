@@ -1,5 +1,7 @@
 package com.volunteer.backend.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.volunteer.backend.dto.AdminExchangeRecordResponse;
-import com.volunteer.backend.dto.AdminExchangeProcessRequest;
-import com.volunteer.backend.dto.AdminExchangeUpdateRequest;
 import com.volunteer.backend.dto.AdminProductRequest;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.dto.ProductResponse;
@@ -42,22 +42,29 @@ public class AdminExchangeController {
     @PostMapping("/exchange-records/{id}/approve")
     public ResponseEntity<AdminExchangeRecordResponse> approveExchange(
             @PathVariable Long id,
-            @RequestBody AdminExchangeProcessRequest request) {
-        return ResponseEntity.ok(adminExchangeService.approveExchange(id, request));
+            @RequestBody Map<String, String> request) {
+        String note = request.getOrDefault("note", "管理员批准兑换");
+        return ResponseEntity.ok(adminExchangeService.approveExchange(id, note));
     }
 
     @PostMapping("/exchange-records/{id}/reject")
     public ResponseEntity<AdminExchangeRecordResponse> rejectExchange(
             @PathVariable Long id,
-            @RequestBody AdminExchangeProcessRequest request) {
-        return ResponseEntity.ok(adminExchangeService.rejectExchange(id, request));
+            @RequestBody Map<String, String> request) {
+        String note = request.getOrDefault("note", "管理员拒绝兑换");
+        return ResponseEntity.ok(adminExchangeService.rejectExchange(id, note));
     }
 
     @PutMapping("/exchange-records/{id}")
     public ResponseEntity<AdminExchangeRecordResponse> updateExchange(
             @PathVariable Long id,
-            @RequestBody AdminExchangeUpdateRequest request) {
-        return ResponseEntity.ok(adminExchangeService.updateExchange(id, request));
+            @RequestBody Map<String, Object> request) {
+        Long number = null;
+        if (request.get("number") != null) {
+            number = ((Number) request.get("number")).longValue();
+        }
+        String status = (String) request.get("status");
+        return ResponseEntity.ok(adminExchangeService.updateExchange(id, number, status));
     }
 
     @GetMapping("/products")

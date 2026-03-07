@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
-import com.volunteer.backend.dto.UpdateUserProfileRequest;
 import com.volunteer.backend.dto.UserProfileResponse;
 import com.volunteer.backend.dto.VolunteerApplyRequest;
 import com.volunteer.backend.entity.User;
@@ -76,19 +75,19 @@ public class UserService {
         return buildUserProfileResponse(user);
     }
 
-    public UserProfileResponse updateProfile(Long userId, UpdateUserProfileRequest request) {
+    public UserProfileResponse updateProfile(Long userId, String username, String phone) {
         User user = findActiveUser(userId);
 
-        String username = (request.getUsername() != null) ? request.getUsername().trim() : "";
-        if (username.isEmpty()) {
+        String trimmedUsername = (username != null) ? username.trim() : "";
+        if (trimmedUsername.isEmpty()) {
             throw new IllegalArgumentException("用户名不能为空");
         }
-        if (!username.equals(user.getUsername()) && userRepository.existsByUsernameAndDeletedFalse(username)) {
+        if (!trimmedUsername.equals(user.getUsername()) && userRepository.existsByUsernameAndDeletedFalse(trimmedUsername)) {
             throw new IllegalArgumentException("用户名已存在");
         }
 
-        user.setUsername(username);
-        user.setPhone(request.getPhone());
+        user.setUsername(trimmedUsername);
+        user.setPhone(phone);
         userRepository.save(user);
 
         Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);

@@ -5,12 +5,13 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.volunteer.backend.dto.ActivityQueryRequest;
 import com.volunteer.backend.dto.ActivityResponse;
 import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.dto.SignupRequest;
@@ -31,17 +32,11 @@ public class ActivityController {
     @GetMapping("/get-activities")
     public ResponseEntity<PageResponse<ActivityResponse>> getActivities(
         @AuthenticationPrincipal User user,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "8") int size,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(defaultValue = "ALL") String type,
-        @RequestParam(defaultValue = "ALL") String status,
-        @RequestParam(required = false) String date,
-        @RequestParam(defaultValue = "time") String sort
+        @ModelAttribute ActivityQueryRequest request
     ) {
         // @formatter:on
         Long userId = user != null ? user.getId() : null;
-        return ResponseEntity.ok(activityService.getActivities(userId, page, size, keyword, type, status, date, sort));
+        return ResponseEntity.ok(activityService.getActivities(userId, request));
     }
 
     // @formatter:off
