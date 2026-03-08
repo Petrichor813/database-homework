@@ -69,6 +69,8 @@ interface PointFlowSankeyResponse {
 
 interface ActivityParticipationBubble {
   activityTitle: string;
+  activityDate: string;
+  activityType: string;
   participantCount: number;
   totalHours: number;
   totalPoints: number;
@@ -87,6 +89,9 @@ interface ActivityTypeTrendResponse {
 interface VolunteerRetentionResponse {
   months: string[];
   retentionRates: number[];
+  activeVolunteers: number[];
+  retainedVolunteers: number[];
+  lostVolunteers: number[];
 }
 
 interface VolunteerGrowthRadarResponse {
@@ -402,9 +407,12 @@ const exportBubbleCSV = (): string => {
     return "";
   }
 
-  let csv = "活动标题,参与人数,总时长(小时),总积分\n";
+  let csv = "活动标题,活动日期,活动类型,参与人数,总时长(小时),人均时长(小时),总积分,人均积分\n";
   bubbleData.value.data.forEach((item) => {
-    csv += `${item.activityTitle},${item.participantCount},${item.totalHours},${item.totalPoints}\n`;
+    const avgHours = item.participantCount > 0 ? (item.totalHours / item.participantCount).toFixed(1) : "0.0";
+    const avgPoints = item.participantCount > 0 ? (item.totalPoints / item.participantCount).toFixed(1) : "0.0";
+    const dateStr = item.activityDate ? new Date(item.activityDate).toLocaleDateString('zh-CN') : '';
+    csv += `${item.activityTitle},${dateStr},${item.activityType},${item.participantCount},${item.totalHours},${avgHours},${item.totalPoints},${avgPoints}\n`;
   });
 
   return csv;
@@ -611,9 +619,14 @@ const exportRetentionCSV = (): string => {
     return "";
   }
 
-  let csv = "月份,留存率(%)\n";
+  let csv = "月份,留存率(%),当月活跃人数,后续留存人数,流失人数\n";
   for (let i = 0; i < retentionData.value.months.length; i++) {
-    csv += `${retentionData.value.months[i]},${retentionData.value.retentionRates[i]}\n`;
+    const month = retentionData.value.months[i];
+    const rate = retentionData.value.retentionRates[i];
+    const active = retentionData.value.activeVolunteers[i];
+    const retained = retentionData.value.retainedVolunteers[i];
+    const lost = retentionData.value.lostVolunteers[i];
+    csv += `${month},${rate},${active},${retained},${lost}\n`;
   }
 
   return csv;

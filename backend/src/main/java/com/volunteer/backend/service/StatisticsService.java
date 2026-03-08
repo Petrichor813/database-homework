@@ -74,10 +74,14 @@ public class StatisticsService {
         Integer activeVolunteers = 0;
         Map<Long, Boolean> volunteerActivityMap = new HashMap<>();
         for (SignupRecord record : allSignups) {
-            if (record.getSignupTime() != null && record.getSignupTime().isAfter(sixMonthsAgo)) {
-                if (!volunteerActivityMap.containsKey(record.getVolunteerId())) {
-                    volunteerActivityMap.put(record.getVolunteerId(), true);
-                    activeVolunteers++;
+            // 用 actualHours 判断志愿者是否真正完成了活动
+            if (record.getActualHours() != null && record.getActualHours() > 0) {
+                // 检查活动完成时间是否在6个月内
+                if (record.getSignupTime() != null && record.getSignupTime().isAfter(sixMonthsAgo)) {
+                    if (!volunteerActivityMap.containsKey(record.getVolunteerId())) {
+                        volunteerActivityMap.put(record.getVolunteerId(), true);
+                        activeVolunteers++;
+                    }
                 }
             }
         }
@@ -251,9 +255,12 @@ public class StatisticsService {
             }
 
             if (participantCount > 0) {
+                String activityType = activity.getType() != null ? activity.getType().getDescription() : "未知";
                 // @formatter:off
                 bubbles.add(new ActivityParticipationBubble(
                     activity.getTitle(),
+                    activity.getStartTime(),
+                    activityType,
                     participantCount,
                     totalHours,
                     totalPoints
@@ -326,8 +333,14 @@ public class StatisticsService {
         }
 
         List<Double> retentionRates = new ArrayList<>();
+        List<Integer> activeVolunteers = new ArrayList<>();
+        List<Integer> retainedVolunteers = new ArrayList<>();
+        List<Integer> lostVolunteers = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
             retentionRates.add(0.0);
+            activeVolunteers.add(0);
+            retainedVolunteers.add(0);
+            lostVolunteers.add(0);
         }
 
         List<SignupRecord> allSignups = signupRecordRepository.findAll();
@@ -354,7 +367,7 @@ public class StatisticsService {
 
         for (int month = 1; month <= 12; month++) {
             int totalVolunteers = 0;
-            int retainedVolunteers = 0;
+            int retainedCount = 0;
 
             for (Map.Entry<Long, List<Integer>> entry : volunteerMonthsMap.entrySet()) {
                 List<Integer> monthsParticipated = entry.getValue();
@@ -368,16 +381,20 @@ public class StatisticsService {
                         }
                     }
                     if (hasFutureActivity) {
-                        retainedVolunteers++;
+                        retainedCount++;
                     }
                 }
             }
 
-            double retentionRate = totalVolunteers > 0 ? (retainedVolunteers * 100.0 / totalVolunteers) : 0.0;
+            int lostCount = totalVolunteers - retainedCount;
+            double retentionRate = totalVolunteers > 0 ? (retainedCount * 100.0 / totalVolunteers) : 0.0;
             retentionRates.set(month - 1, Math.round(retentionRate * 10.0) / 10.0);
+            activeVolunteers.set(month - 1, totalVolunteers);
+            retainedVolunteers.set(month - 1, retainedCount);
+            lostVolunteers.set(month - 1, lostCount);
         }
 
-        return new VolunteerRetentionResponse(months, retentionRates);
+        return new VolunteerRetentionResponse(months, retentionRates, activeVolunteers, retainedVolunteers, lostVolunteers);
     }
 
     public VolunteerGrowthRadarResponse getVolunteerGrowthRadar(Long volunteerId) {
