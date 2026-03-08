@@ -14,6 +14,7 @@ public class VolunteerGrowthRadarResponse {
     public VolunteerGrowthRadarResponse() {
     }
 
+    // @formatter:off
     public VolunteerGrowthRadarResponse(
         String volunteerName,
         String volunteerPhone,
@@ -25,6 +26,7 @@ public class VolunteerGrowthRadarResponse {
         Integer continuity,
         Integer initiative
     ) {
+        // @formatter:on
         this.volunteerName = volunteerName;
         this.volunteerPhone = volunteerPhone;
         this.totalActivities = totalActivities;

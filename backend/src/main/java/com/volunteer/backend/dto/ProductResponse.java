@@ -17,6 +17,7 @@ public class ProductResponse {
     public ProductResponse() {
     }
 
+    // @formatter:off
     public ProductResponse(
         Long id,
         String name,
@@ -28,6 +29,7 @@ public class ProductResponse {
         String imageUrl,
         Integer sortWeight
     ) {
+        // @formatter:on
         this.id = id;
         this.name = name;
         this.description = description;

@@ -25,18 +25,30 @@ public class AuthController {
         this.authService = authService;
     }
 
+    // @formatter:off
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(
+        @RequestBody LoginRequest request
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(authService.login(request));
     }
 
+    // @formatter:off
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<RegisterResponse> register(
+        @RequestBody RegisterRequest request
+    ) {
+        // @formatter:on
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
+    // @formatter:off
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@RequestHeader(value = "Authorization", required = false) String authorization) {
+    public ResponseEntity<Map<String, String>> logout(
+        @RequestHeader(value = "Authorization", required = false) String authorization
+    ) {
+        // @formatter:on
         String token = null;
         if (authorization != null && authorization.startsWith("Bearer ")) {
             token = authorization.substring(7);

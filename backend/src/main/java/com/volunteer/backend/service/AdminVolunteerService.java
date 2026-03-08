@@ -170,6 +170,7 @@ public class AdminVolunteerService {
             responses.add(buildResponse(v));
         }
 
+        // @formatter:off
         return new PageResponse<>(
             responses,
             volunteerPage.getNumber(),
@@ -177,5 +178,6 @@ public class AdminVolunteerService {
             volunteerPage.getTotalElements(),
             volunteerPage.getTotalPages()
         );
+        // @formatter:on
     }
 }

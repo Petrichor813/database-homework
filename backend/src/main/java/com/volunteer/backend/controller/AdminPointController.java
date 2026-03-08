@@ -26,24 +26,34 @@ public class AdminPointController {
         this.adminPointService = adminPointService;
     }
 
+    // @formatter:off
     @GetMapping
     public ResponseEntity<PageResponse<AdminPointRecordResponse>> getPointRecords(
-            @RequestParam(defaultValue = "ALL") String type,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+        @RequestParam(defaultValue = "ALL") String type,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "8") int size
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminPointService.getPointRecords(type, keyword, page, size));
     }
 
+    // @formatter:off
     @PostMapping
-    public ResponseEntity<AdminPointRecordResponse> addPointRecord(@RequestBody AdminPointAdjustRequest request) {
+    public ResponseEntity<AdminPointRecordResponse> addPointRecord(
+        @RequestBody AdminPointAdjustRequest request
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminPointService.addPointRecord(request));
     }
 
+    // @formatter:off
     @PutMapping("/{id}")
     public ResponseEntity<AdminPointRecordResponse> updatePointRecord(
-            @PathVariable Long id,
-            @RequestBody AdminPointUpdateRequest request) {
+        @PathVariable Long id,
+        @RequestBody AdminPointUpdateRequest request
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminPointService.updatePointRecord(id, request));
     }
 

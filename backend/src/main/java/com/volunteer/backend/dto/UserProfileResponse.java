@@ -31,6 +31,7 @@ public class UserProfileResponse {
         Double points,
         Integer serviceHours
     ) {
+        // @formatter:on
         this.id = id;
         this.volunteerId = volunteerId;
         this.username = username;
@@ -42,7 +43,6 @@ public class UserProfileResponse {
         this.points = points;
         this.serviceHours = serviceHours;
     }
-    // @formatter:on
 
     public Long getId() {
         return id;

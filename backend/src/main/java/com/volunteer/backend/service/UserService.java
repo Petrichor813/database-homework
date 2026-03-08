@@ -82,7 +82,8 @@ public class UserService {
         if (trimmedUsername.isEmpty()) {
             throw new IllegalArgumentException("用户名不能为空");
         }
-        if (!trimmedUsername.equals(user.getUsername()) && userRepository.existsByUsernameAndDeletedFalse(trimmedUsername)) {
+        if (!trimmedUsername.equals(user.getUsername())
+                && userRepository.existsByUsernameAndDeletedFalse(trimmedUsername)) {
             throw new IllegalArgumentException("用户名已存在");
         }
 

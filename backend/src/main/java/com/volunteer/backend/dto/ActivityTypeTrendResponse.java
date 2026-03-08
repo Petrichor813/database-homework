@@ -10,7 +10,13 @@ public class ActivityTypeTrendResponse {
     public ActivityTypeTrendResponse() {
     }
 
-    public ActivityTypeTrendResponse(List<String> months, List<String> activityTypes, List<List<Integer>> data) {
+    // @formatter:off
+    public ActivityTypeTrendResponse(
+        List<String> months,
+        List<String> activityTypes,
+        List<List<Integer>> data
+    ) {
+        // @formatter:on
         this.months = months;
         this.activityTypes = activityTypes;
         this.data = data;

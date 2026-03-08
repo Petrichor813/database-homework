@@ -29,13 +29,17 @@ public class UserController {
         this.userService = userService;
     }
 
+    // @formatter:off
     @GetMapping("/{userId}/profile")
-    public ResponseEntity<UserProfileResponse> getProfile(@PathVariable Long userId) {
+    public ResponseEntity<UserProfileResponse> getProfile(
+        @PathVariable Long userId
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(userService.getProfile(userId));
     }
 
-    @PutMapping("/{userId}/profile")
     // @formatter:off
+    @PutMapping("/{userId}/profile")
     public ResponseEntity<UserProfileResponse> updateProfile(
         @PathVariable Long userId,
         @RequestBody Map<String, String> request
@@ -46,8 +50,8 @@ public class UserController {
         return ResponseEntity.ok(userService.updateProfile(userId, username, phone));
     }
 
-    @PostMapping("/{userId}/volunteer-apply")
     // @formatter:off
+    @PostMapping("/{userId}/volunteer-apply")
     public ResponseEntity<UserProfileResponse> applyVolunteer(
         @PathVariable Long userId,
         @Valid @RequestBody VolunteerApplyRequest request
@@ -56,8 +60,8 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.applyVolunteer(userId, request));
     }
 
-    @PutMapping("/{userId}/volunteer-application")
     // @formatter:off
+    @PutMapping("/{userId}/volunteer-application")
     public ResponseEntity<UserProfileResponse> updateVolunteerApplication(
         @PathVariable Long userId,
         @Valid @RequestBody ModifyVolunteerApplicationRequest request
@@ -66,8 +70,12 @@ public class UserController {
         return ResponseEntity.ok(userService.updateVolunteerApplication(userId, request));
     }
 
+    // @formatter:off
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Map<String, String>> deleteAccount(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, String>> deleteAccount(
+        @PathVariable Long userId
+    ) {
+        // @formatter:on
         userService.deleteAccount(userId);
         return ResponseEntity.ok(Map.of("message", "账号已注销"));
     }

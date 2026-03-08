@@ -9,7 +9,15 @@ public class PageResponse<T> {
     private long totalElements;
     private int totalPages;
 
-    public PageResponse(List<T> content, int curPage, int pageSize, long totalElements, int totalPages) {
+    // @formatter:off
+    public PageResponse(
+        List<T> content,
+        int curPage,
+        int pageSize,
+        long totalElements,
+        int totalPages
+    ) {
+        // @formatter:on
         this.content = content;
         this.curPage = curPage;
         this.pageSize = pageSize;

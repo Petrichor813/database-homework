@@ -29,18 +29,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, TokenAuthenticationFilter tokenAuthenticationFilter)
             throws Exception {
         // @formatter:off
+        // 使用 JWT token 代替 CSRF token 防御
         http.csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/product/get-products", "/api/activity/get-activities")
+                .requestMatchers("/api/auth/**", "/api/product/get-products", "/api/activity/get-activities") // 公开接口
                 .permitAll()
                 .anyRequest()
                 .authenticated()
             )
+            // 添加 token 过滤器
             .addFilterBefore(
                 tokenAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class
-        ); // 添加token过滤器
+        );
         // @formatter:on
         return http.build();
     }

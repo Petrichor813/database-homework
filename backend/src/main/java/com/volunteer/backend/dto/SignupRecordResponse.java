@@ -20,7 +20,7 @@ public class SignupRecordResponse {
     // @formatter:off
     public SignupRecordResponse(
         Long id,
-        Long activityId, // 添加活动ID参数
+        Long activityId,
         String activityTitle,
         String activityStartTime,
         String activityEndTime,
@@ -34,7 +34,7 @@ public class SignupRecordResponse {
     ) {
         // @formatter:on
         this.id = id;
-        this.activityId = activityId; // 设置活动ID
+        this.activityId = activityId;
         this.activityTitle = activityTitle;
         this.activityStartTime = activityStartTime;
         this.activityEndTime = activityEndTime;

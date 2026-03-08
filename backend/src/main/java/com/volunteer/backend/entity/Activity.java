@@ -19,9 +19,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
+// @formatter:off
 @Table(name = "activity", indexes = {
     @jakarta.persistence.Index(name = "idx_activity_start_time", columnList = "start_time")
 })
+// @formatter:on
 public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,6 +78,7 @@ public class Activity {
         Double pointsPerHour,
         Integer maxParticipants
     ) {
+        // @formatter:on
         this();
         this.title = title;
         this.type = type;
@@ -86,7 +89,6 @@ public class Activity {
         this.maxParticipants = maxParticipants;
         this.status = ActivityStatus.RECRUITING;
     }
-    // @formatter:on
 
     public Long getId() {
         return id;

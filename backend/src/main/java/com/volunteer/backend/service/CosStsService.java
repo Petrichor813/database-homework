@@ -66,20 +66,12 @@ public class CosStsService {
                 path = path.substring(1);
             }
 
-            COSCredentials cred = new BasicCOSCredentials(
-                cosProperties.getSecretId(),
-                cosProperties.getSecretKey()
-            );
-            ClientConfig clientConfig = new ClientConfig(
-                new Region(cosProperties.getRegion())
-            );
+            COSCredentials cred = new BasicCOSCredentials(cosProperties.getSecretId(), cosProperties.getSecretKey());
+            ClientConfig clientConfig = new ClientConfig(new Region(cosProperties.getRegion()));
             COSClient cosClient = new COSClient(cred, clientConfig);
 
             try {
-                DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(
-                    cosProperties.getBucketName(),
-                    path
-                );
+                DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(cosProperties.getBucketName(), path);
                 cosClient.deleteObject(deleteObjectRequest);
             } finally {
                 cosClient.shutdown();

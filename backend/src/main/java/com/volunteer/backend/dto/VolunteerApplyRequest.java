@@ -7,7 +7,6 @@ public class VolunteerApplyRequest {
     private String realName;
 
     private String phone;
-    
     private String applyReason;
 
     public String getRealName() {

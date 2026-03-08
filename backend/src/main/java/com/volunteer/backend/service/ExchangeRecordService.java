@@ -119,6 +119,7 @@ public class ExchangeRecordService {
         exchangeRecordRepository.save(record);
 
         // 退还积分
+        // @formatter:off
         PointChangeRecord refundRecord = new PointChangeRecord(
             volunteerId,
             record.getTotalPoints(),
@@ -127,6 +128,7 @@ public class ExchangeRecordService {
             record.getId(),
             RelatedRecordType.EXCHANGE
         );
+        // @formatter:on
         pointChangeRecordRepository.save(refundRecord);
 
         // 更新志愿者积分

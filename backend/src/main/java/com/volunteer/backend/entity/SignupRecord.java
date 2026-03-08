@@ -61,7 +61,14 @@ public class SignupRecord {
         this.signupTime = LocalDateTime.now();
     }
 
-    public SignupRecord(Long volunteerId, Long activityId, LocalDateTime volunteerStartTime, LocalDateTime volunteerEndTime) {
+    // @formatter:off
+    public SignupRecord(
+        Long volunteerId,
+        Long activityId,
+        LocalDateTime volunteerStartTime,
+        LocalDateTime volunteerEndTime
+    ) {
+        // @formatter:on
         this();
         this.volunteerId = volunteerId;
         this.activityId = activityId;

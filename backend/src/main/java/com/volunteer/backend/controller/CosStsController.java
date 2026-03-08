@@ -20,7 +20,12 @@ public class CosStsController {
     private final CosProperties cosProperties;
     private final CosStsService cosStsService;
 
-    public CosStsController(CosProperties cosProperties, CosStsService cosStsService) {
+    // @formatter:off
+    public CosStsController(
+        CosProperties cosProperties,
+        CosStsService cosStsService
+    ) {
+        // @formatter:on
         this.cosProperties = cosProperties;
         this.cosStsService = cosStsService;
     }
@@ -43,8 +48,12 @@ public class CosStsController {
         }
     }
 
+    // @formatter:off
     @DeleteMapping("/object")
-    public ResponseEntity<?> deleteObject(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> deleteObject(
+        @RequestBody Map<String, String> request
+    ) {
+        // @formatter:on
         try {
             String fileUrl = request.get("fileUrl");
             if (fileUrl == null || fileUrl.trim().isEmpty()) {

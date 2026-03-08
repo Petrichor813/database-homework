@@ -9,7 +9,12 @@ public class VolunteerRetentionResponse {
     public VolunteerRetentionResponse() {
     }
 
-    public VolunteerRetentionResponse(List<String> months, List<Double> retentionRates) {
+    // @formatter:off
+    public VolunteerRetentionResponse(
+        List<String> months,
+        List<Double> retentionRates
+    ) {
+        // @formatter:on
         this.months = months;
         this.retentionRates = retentionRates;
     }

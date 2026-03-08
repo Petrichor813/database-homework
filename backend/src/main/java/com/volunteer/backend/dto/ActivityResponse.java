@@ -16,38 +16,8 @@ public class ActivityResponse {
     private Double pointsPerHour;
     private Integer maxParticipants;
     private Integer curParticipants;
-    private SignupStatus signupStatus; // 添加报名状态字段
-
-    // @formatter:off
-    public ActivityResponse(
-        Long id,
-        String title,
-        String description,
-        ActivityType type,
-        String location,
-        String startTime,
-        String endTime,
-        ActivityStatus status,
-        Double pointsPerHour,
-        Integer maxParticipants,
-        Integer curParticipants
-    ) {
-        // @formatter:on
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.type = type;
-        this.location = location;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.status = status;
-        this.pointsPerHour = pointsPerHour;
-        this.maxParticipants = maxParticipants;
-        this.curParticipants = curParticipants;
-        this.signupStatus = null; // 默认为null，表示未报名
-    }
+    private SignupStatus signupStatus;
     
-    // 添加带报名状态的构造函数
     // @formatter:off
     public ActivityResponse(
         Long id,

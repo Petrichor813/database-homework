@@ -9,7 +9,12 @@ public class PointFlowSankeyResponse {
     public PointFlowSankeyResponse() {
     }
 
-    public PointFlowSankeyResponse(List<SankeyNode> nodes, List<SankeyLink> links) {
+    // @formatter:off
+    public PointFlowSankeyResponse(
+        List<SankeyNode> nodes,
+        List<SankeyLink> links
+    ) {
+        // @formatter:on
         this.nodes = nodes;
         this.links = links;
     }

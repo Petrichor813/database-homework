@@ -9,7 +9,14 @@ public class ActivityParticipationBubble {
     public ActivityParticipationBubble() {
     }
 
-    public ActivityParticipationBubble(String activityTitle, Integer participantCount, Integer totalHours, Double totalPoints) {
+    // @formatter:off
+    public ActivityParticipationBubble(
+        String activityTitle,
+        Integer participantCount,
+        Integer totalHours,
+        Double totalPoints
+    ) {
+        // @formatter:on
         this.activityTitle = activityTitle;
         this.participantCount = participantCount;
         this.totalHours = totalHours;

@@ -17,6 +17,7 @@ public class AdminExchangeRecordResponse {
     public AdminExchangeRecordResponse() {
     }
 
+    // @formatter:off
     public AdminExchangeRecordResponse(
         Long id,
         Long volunteerId,
@@ -31,6 +32,7 @@ public class AdminExchangeRecordResponse {
         String note,
         String recvInfo
     ) {
+        // @formatter:on
         this.id = id;
         this.volunteerId = volunteerId;
         this.volunteerName = volunteerName;

@@ -29,8 +29,19 @@ public class AdminProductService {
     }
 
     private ProductResponse buildResponse(Product product) {
-        return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getCategory(),
-                product.getPrice(), product.getStock(), product.getStatus(), product.getImageUrl(), product.getSortWeight());
+        // @formatter:off
+        return new ProductResponse(
+            product.getId(),
+            product.getName(),
+            product.getDescription(),
+            product.getCategory(),
+            product.getPrice(),
+            product.getStock(),
+            product.getStatus(),
+            product.getImageUrl(),
+            product.getSortWeight()
+        );
+        // @formatter:on
     }
 
     public PageResponse<ProductResponse> getProducts(String keyword, int page, int size) {

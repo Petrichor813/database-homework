@@ -86,8 +86,8 @@ public class AuthService {
     public User authenticate(String username, String password, UserRole role) {
         // @formatter:off
         Optional<User> u = (role == null)
-                            ? userRepository.findByUsernameAndDeletedFalse(username)
-                            : userRepository.findByUsernameAndRoleAndDeletedFalse(username, role);
+                ? userRepository.findByUsernameAndDeletedFalse(username)
+                : userRepository.findByUsernameAndRoleAndDeletedFalse(username, role);
         // @formatter:on
         if (u.isEmpty()) {
             throw new IllegalArgumentException("用户不存在或该用户账号已注销");
@@ -107,7 +107,12 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());
 
         tokenRepository.deleteByUserId(user.getId());
-        LocalDateTime expireTime = LocalDateTime.ofInstant(jwtUtil.getExpirationFromToken(token), ZoneId.systemDefault());
+        // @formatter:off
+        LocalDateTime expireTime = LocalDateTime.ofInstant(
+            jwtUtil.getExpirationFromToken(token),
+            ZoneId.systemDefault()
+        );
+        // @formatter:on
         Token newToken = new Token(user.getId(), token, expireTime);
         tokenRepository.save(newToken);
 
@@ -136,8 +141,14 @@ public class AuthService {
             throw new IllegalArgumentException("用户名已存在");
         }
 
-        User user = new User(request.getUsername(), passwordEncoder.encode(request.getPassword()), role,
-                request.getPhone());
+        // @formatter:off
+        User user = new User(
+            request.getUsername(),
+            passwordEncoder.encode(request.getPassword()),
+            role,
+            request.getPhone()
+        );
+        // @formatter:on
         User savedUser = userRepository.save(user);
 
         if (request.isRequestVolunteer() && role == UserRole.USER) {

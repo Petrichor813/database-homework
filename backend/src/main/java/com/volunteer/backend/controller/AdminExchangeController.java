@@ -26,39 +26,56 @@ public class AdminExchangeController {
     private final AdminExchangeService adminExchangeService;
     private final AdminProductService adminProductService;
 
-    public AdminExchangeController(AdminExchangeService adminExchangeService, AdminProductService adminProductService) {
+    // @formatter:off
+    public AdminExchangeController(
+        AdminExchangeService adminExchangeService,
+        AdminProductService adminProductService
+    ) {
+        // @formatter:on
         this.adminExchangeService = adminExchangeService;
         this.adminProductService = adminProductService;
     }
 
+    // @formatter:off
     @GetMapping("/exchange-records")
     public ResponseEntity<PageResponse<AdminExchangeRecordResponse>> getExchangeRecords(
-            @RequestParam(defaultValue = "ALL") String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+        @RequestParam(defaultValue = "ALL") String status,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "8") int size
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminExchangeService.getExchangeRecords(status, page, size));
     }
 
+    // @formatter:off
     @PostMapping("/exchange-records/{id}/approve")
     public ResponseEntity<AdminExchangeRecordResponse> approveExchange(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> request) {
+        @PathVariable Long id,
+        @RequestBody Map<String, String> request
+    ) {
+        // @formatter:on
         String note = request.getOrDefault("note", "管理员批准兑换");
         return ResponseEntity.ok(adminExchangeService.approveExchange(id, note));
     }
 
+    // @formatter:off
     @PostMapping("/exchange-records/{id}/reject")
     public ResponseEntity<AdminExchangeRecordResponse> rejectExchange(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> request) {
+        @PathVariable Long id,
+        @RequestBody Map<String, String> request
+    ) {
+        // @formatter:on
         String note = request.getOrDefault("note", "管理员拒绝兑换");
         return ResponseEntity.ok(adminExchangeService.rejectExchange(id, note));
     }
 
+    // @formatter:off
     @PutMapping("/exchange-records/{id}")
     public ResponseEntity<AdminExchangeRecordResponse> updateExchange(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> request) {
+        @PathVariable Long id,
+        @RequestBody Map<String, Object> request
+    ) {
+        // @formatter:on
         Long number = null;
         if (request.get("number") != null) {
             number = ((Number) request.get("number")).longValue();
@@ -67,23 +84,33 @@ public class AdminExchangeController {
         return ResponseEntity.ok(adminExchangeService.updateExchange(id, number, status));
     }
 
+    // @formatter:off
     @GetMapping("/products")
     public ResponseEntity<PageResponse<ProductResponse>> getProducts(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+        @RequestParam(required = false) String keyword,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "8") int size
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminProductService.getProducts(keyword, page, size));
     }
 
+    // @formatter:off
     @PostMapping("/products")
-    public ResponseEntity<ProductResponse> createProduct(@RequestBody AdminProductRequest request) {
+    public ResponseEntity<ProductResponse> createProduct(
+        @RequestBody AdminProductRequest request
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminProductService.createProduct(request));
     }
 
+    // @formatter:off
     @PutMapping("/products/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
-            @PathVariable Long id,
-            @RequestBody AdminProductRequest request) {
+        @PathVariable Long id,
+        @RequestBody AdminProductRequest request
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminProductService.updateProduct(id, request));
     }
 

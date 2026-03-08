@@ -30,6 +30,7 @@ public class AdminVolunteerResponse {
         LocalDateTime createTime,
         LocalDateTime reviewTime
     ) {
+        // @formatter:on
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -40,7 +41,6 @@ public class AdminVolunteerResponse {
         this.createTime = createTime;
         this.reviewTime = reviewTime;
     }
-    // @formatter:on
 
     public Long getId() {
         return id;
@@ -81,7 +81,7 @@ public class AdminVolunteerResponse {
     public void setStatus(VolunteerStatus status) {
         this.status = status;
     }
-    
+
     public String getApplyReason() {
         return applyReason;
     }

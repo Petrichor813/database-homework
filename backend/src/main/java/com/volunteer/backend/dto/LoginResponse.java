@@ -23,6 +23,7 @@ public class LoginResponse {
         VolunteerStatus volunteerStatus,
         String phone
     ) {
+        // @formatter:on
         this.id = id;
         this.username = username;
         this.role = role;
@@ -30,7 +31,6 @@ public class LoginResponse {
         this.volunteerStatus = volunteerStatus;
         this.phone = phone;
     }
-    // @formatter:on
 
     public Long getId() {
         return id;

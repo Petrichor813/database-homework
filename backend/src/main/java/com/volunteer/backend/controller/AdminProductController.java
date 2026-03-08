@@ -20,8 +20,12 @@ public class AdminProductController {
         this.adminProductService = adminProductService;
     }
 
+    // @formatter:off
     @PostMapping("/import")
-    public ResponseEntity<Product> importProduct(@RequestBody AdminProductImportRequest request) {
+    public ResponseEntity<Product> importProduct(
+        @RequestBody AdminProductImportRequest request
+    ) {
+        // @formatter:on
         Product product = adminProductService.importProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }

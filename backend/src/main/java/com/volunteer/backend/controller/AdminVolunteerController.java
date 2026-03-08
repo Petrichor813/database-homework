@@ -24,25 +24,35 @@ public class AdminVolunteerController {
         this.adminVolunteerService = adminVolunteerService;
     }
 
+    // @formatter:off
     @GetMapping
     public ResponseEntity<PageResponse<AdminVolunteerResponse>> getVolunteers(
-            @RequestParam(defaultValue = "ALL") String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+        @RequestParam(defaultValue = "ALL") String status,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminVolunteerService.getVolunteers(status, page, size));
     }
 
+    // @formatter:off
     @GetMapping("/search")
     public ResponseEntity<PageResponse<AdminVolunteerResponse>> searchVolunteers(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+        @RequestParam String keyword,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        // @formatter:on
         return ResponseEntity.ok(adminVolunteerService.searchVolunteers(keyword, page, size));
     }
 
+    // @formatter:off
     @PostMapping("/{id}/review")
-    public ResponseEntity<AdminVolunteerResponse> reviewVolunteer(@PathVariable Long id,
-            @RequestBody Map<String, String> request) {
+    public ResponseEntity<AdminVolunteerResponse> reviewVolunteer(
+        @PathVariable Long id,
+        @RequestBody Map<String, String> request
+    ) {
+        // @formatter:on
         String action = request.get("action");
         String note = request.get("note");
         return ResponseEntity.ok(adminVolunteerService.reviewVolunteer(id, action, note));

@@ -10,7 +10,15 @@ public class PointChangeRecordResponse {
     public PointChangeRecordResponse() {
     }
 
-    public PointChangeRecordResponse(String time, String type, Double amount, String reason, String note) {
+    // @formatter:off
+    public PointChangeRecordResponse(
+        String time,
+        String type,
+        Double amount,
+        String reason,
+        String note
+    ) {
+        // @formatter:on
         this.time = time;
         this.type = type;
         this.amount = amount;

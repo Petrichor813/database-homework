@@ -251,7 +251,14 @@ public class StatisticsService {
             }
 
             if (participantCount > 0) {
-                bubbles.add(new ActivityParticipationBubble(activity.getTitle(), participantCount, totalHours, totalPoints));
+                // @formatter:off
+                bubbles.add(new ActivityParticipationBubble(
+                    activity.getTitle(),
+                    participantCount,
+                    totalHours,
+                    totalPoints
+                ));
+                // @formatter:on
             }
         }
 
@@ -399,6 +406,7 @@ public class StatisticsService {
         Integer continuity = Math.min(100, totalActivities * 3);
         Integer initiative = Math.min(100, (int) (totalPoints / 10));
 
+        // @formatter:off
         return new VolunteerGrowthRadarResponse(
             volunteer.getName(),
             volunteer.getPhone(),
@@ -410,5 +418,6 @@ public class StatisticsService {
             continuity,
             initiative
         );
+        // @formatter:on
     }
 }

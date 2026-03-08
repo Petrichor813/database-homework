@@ -30,50 +30,62 @@ public class StatisticsController {
         return ResponseEntity.ok(response);
     }
 
+    // @formatter:off
     @GetMapping("/volunteer-activity-heatmap")
     public ResponseEntity<VolunteerActivityHeatmapResponse> getVolunteerActivityHeatmap(
         @RequestParam(required = false) Integer year
     ) {
+        // @formatter:on
         VolunteerActivityHeatmapResponse response = statisticsService.getVolunteerActivityHeatmap(year);
         return ResponseEntity.ok(response);
     }
 
+    // @formatter:off
     @GetMapping("/point-flow-sankey")
     public ResponseEntity<PointFlowSankeyResponse> getPointFlowSankey(
         @RequestParam(required = false) Integer year
     ) {
+        // @formatter:on
         PointFlowSankeyResponse response = statisticsService.getPointFlowSankey(year);
         return ResponseEntity.ok(response);
     }
 
+    // @formatter:off
     @GetMapping("/activity-participation-bubble")
     public ResponseEntity<ActivityParticipationBubbleResponse> getActivityParticipationBubble(
         @RequestParam(required = false) Integer year
     ) {
+        // @formatter:on
         ActivityParticipationBubbleResponse response = statisticsService.getActivityParticipationBubble(year);
         return ResponseEntity.ok(response);
     }
 
+    // @formatter:off
     @GetMapping("/activity-type-trend")
     public ResponseEntity<ActivityTypeTrendResponse> getActivityTypeTrend(
         @RequestParam(required = false) Integer year
     ) {
+        // @formatter:on
         ActivityTypeTrendResponse response = statisticsService.getActivityTypeTrend(year);
         return ResponseEntity.ok(response);
     }
 
+    // @formatter:off
     @GetMapping("/volunteer-retention")
     public ResponseEntity<VolunteerRetentionResponse> getVolunteerRetention(
         @RequestParam(required = false) Integer year
     ) {
+        // @formatter:on
         VolunteerRetentionResponse response = statisticsService.getVolunteerRetention(year);
         return ResponseEntity.ok(response);
     }
 
+    // @formatter:off
     @GetMapping("/volunteer-growth-radar")
     public ResponseEntity<VolunteerGrowthRadarResponse> getVolunteerGrowthRadar(
         @RequestParam(required = false) Long volunteerId
     ) {
+        // @formatter:on
         VolunteerGrowthRadarResponse response = statisticsService.getVolunteerGrowthRadar(volunteerId);
         return ResponseEntity.ok(response);
     }

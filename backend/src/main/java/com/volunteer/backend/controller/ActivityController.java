@@ -59,10 +59,12 @@ public class ActivityController {
         return ResponseEntity.ok(activityService.cancelSignupActivity(user.getId(), request));
     }
 
+    // @formatter:off
     @GetMapping("/hot-activities")
     public ResponseEntity<List<ActivityResponse>> getHotActivities(
         @AuthenticationPrincipal User user
     ) {
+        // @formatter:on
         Long userId = user != null ? user.getId() : null;
         return ResponseEntity.ok(activityService.getHotActivities(userId));
     }

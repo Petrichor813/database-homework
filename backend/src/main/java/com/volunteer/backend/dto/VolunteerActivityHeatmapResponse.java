@@ -10,7 +10,13 @@ public class VolunteerActivityHeatmapResponse {
     public VolunteerActivityHeatmapResponse() {
     }
 
-    public VolunteerActivityHeatmapResponse(List<String> months, List<String> weekdays, List<List<Integer>> data) {
+    // @formatter:off
+    public VolunteerActivityHeatmapResponse(
+        List<String> months,
+        List<String> weekdays,
+        List<List<Integer>> data
+    ) {
+        // @formatter:on
         this.months = months;
         this.weekdays = weekdays;
         this.data = data;

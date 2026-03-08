@@ -16,9 +16,22 @@ public class AdminSignupRecordResponse {
     private String signupTime;
     private String note;
 
-    public AdminSignupRecordResponse(Long id, Long signupId, Long volunteerId, String volunteerName, String volunteerPhone,
-            SignupStatus status, String volunteerStartTime, String volunteerEndTime, Integer actualHours,
-            Double points, String signupTime, String note) {
+    // @formatter:off
+    public AdminSignupRecordResponse(
+        Long id,
+        Long signupId,
+        Long volunteerId,
+        String volunteerName,
+        String volunteerPhone,
+        SignupStatus status,
+        String volunteerStartTime,
+        String volunteerEndTime,
+        Integer actualHours,
+        Double points,
+        String signupTime,
+        String note
+    ) {
+        // @formatter:on
         this.id = id;
         this.signupId = signupId;
         this.volunteerId = volunteerId;
