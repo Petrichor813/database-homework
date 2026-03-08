@@ -888,21 +888,21 @@ onMounted(() => {
     </header>
 
     <section class="kpi-grid">
-      <div class="kpi-card">
+      <div class="kpi-card service-hours">
         <p>累计服务时长</p>
         <h3>
           {{ kpiData ? kpiData.totalServiceHours + " 小时" : "加载中..." }}
         </h3>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card activities">
         <p>累计活动场次</p>
         <h3>{{ kpiData ? kpiData.totalActivities + " 场" : "加载中..." }}</h3>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card active-volunteers">
         <p>活跃志愿者</p>
         <h3>{{ kpiData ? kpiData.activeVolunteers + " 人" : "加载中..." }}</h3>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card release-points">
         <p>积分发放</p>
         <h3>{{ kpiData ? kpiData.totalPointsIssued + " 分" : "加载中..." }}</h3>
       </div>
@@ -1246,17 +1246,33 @@ onMounted(() => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.service-hours {
+  background: #e86a6a;
+}
+
+.activities {
+  background: #5fb08c;
+}
+
+.active-volunteers {
+  background: #f9a95d;
+}
+
+.release-points {
+  background: #b26eb2;
+}
+
 .kpi-card p {
-  color: #6b7280;
+  color: white;
   margin: 0 0 8px 0;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .kpi-card h3 {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: #1f2937;
+  color: white;
 }
 
 .chart-grid {

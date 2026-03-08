@@ -259,19 +259,19 @@ onMounted(() => {
         </p>
       </div>
       <template v-else>
-        <div class="stat-content">
+        <div class="stat-content service-hours">
           <p class="stat-label">累计志愿服务时长</p>
           <p class="stat-value">{{ userProfile?.serviceHours ?? 0 }} 小时</p>
         </div>
-        <div class="stat-content">
+        <div class="stat-content points">
           <p class="stat-label">当前积分</p>
           <p class="stat-value">{{ userProfile?.points ?? 0 }} 分</p>
         </div>
-        <div class="stat-content">
+        <div class="stat-content signed-up">
           <p class="stat-label">已报名活动数</p>
           <p class="stat-value">{{ signupRecords.length }} 个</p>
         </div>
-        <div class="stat-content">
+        <div class="stat-content participated">
           <p class="stat-label">已参与活动数</p>
           <p class="stat-value">
             {{
@@ -493,22 +493,37 @@ onMounted(() => {
 }
 
 .stat-content {
-  background: white;
   padding: 18px;
   border: 1px solid #eef2f7;
   border-radius: 12px;
 }
 
+.service-hours {
+  background: #e86a6a;
+}
+
+.points {
+  background: #5fb08c;
+}
+
+.signed-up {
+  background: #f9a95d;
+}
+
+.participated {
+  background: #b26eb2;
+}
+
 .stat-label {
-  font-size: 20px;
-  font-weight: 700;
-  color: black;
+  font-size: 16px;
+  color: white;
   margin-top: 6px;
 }
 
 .stat-value {
-  font-size: 18px;
-  color: #1f2937;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
 }
 
 .activity {
