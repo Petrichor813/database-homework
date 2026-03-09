@@ -69,7 +69,7 @@ const curImageIndex = ref(0);
 const imagePlayInterval = ref<number | null>(null);
 
 const startImagePlay = () => {
-  imagePlayInterval.value = window.setInterval(() => {
+  imagePlayInterval.value = setInterval(() => {
     curImageIndex.value = (curImageIndex.value + 1) % images.length;
   }, 3000);
 };
