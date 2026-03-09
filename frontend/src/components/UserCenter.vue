@@ -78,24 +78,8 @@ const roleLabel = computed(() =>
     : "游客"
 );
 
-const maskPhone = (phone?: string) => {
-  if (!phone) {
-    return;
-  }
-
-  const trimmedPhone = phone.trim();
-
-  if (trimmedPhone.length < 7) {
-    return trimmedPhone;
-  }
-
-  const prefix = trimmedPhone.slice(0, 3);
-  const suffix = trimmedPhone.slice(-4);
-  return `${prefix}****${suffix}`;
-};
-
 const displayPhone = computed(() => {
-  const phone = maskPhone(profile.value?.phone);
+  const phone = profile.value?.phone?.trim();
   return phone || "暂无";
 });
 
@@ -349,7 +333,7 @@ const volunteerStatusLabel = computed(() => {
     case "CERTIFIED":
       return "已认证";
     case "REVIEWING":
-      return "等待管理员审核";
+      return "审核中";
     case "REJECTED":
       return "未通过审核";
     case "SUSPENDED":
@@ -570,6 +554,12 @@ const handleDeleteAccount = async () => {
               <div class="simple-info">
                 <div class="username">{{ displayUserName }}</div>
                 <div class="role">{{ roleLabel }}</div>
+                <div class="volunteer-status-row">
+                  <span class="status-label">志愿者认证状态：</span>
+                  <span class="volunteer-status" :class="volunteerStatus">
+                    {{ volunteerStatusLabel }}
+                  </span>
+                </div>
               </div>
             </div>
             <button
@@ -603,33 +593,26 @@ const handleDeleteAccount = async () => {
             </div>
           </div>
 
-          <div class="profile-card">
+          <div class="profile-card full-width">
             <h3>志愿者申请</h3>
             <p class="apply-tip">在此提交或修改志愿者申请材料。</p>
-            <button
-              type="button"
-              v-if="canApply"
-              :disabled="isApplying"
-              class="apply-volunteer-button"
-              @click="openApplyDialog"
-            >
-              {{ applyLabel }}
-            </button>
-            <button
-              type="button"
-              v-if="showModify"
-              :disabled="isModifying"
-              class="modify-button"
-              @click="openModifyDialog"
-            >
-              修改志愿者申请
-            </button>
-          </div>
-
-          <div class="profile-card">
-            <h3>志愿者认证状态</h3>
-            <div class="status-block" :class="volunteerStatus">
-              {{ volunteerStatusLabel }}
+            <div class="apply-buttons">
+              <button
+                type="button"
+                :disabled="!canApply || isApplying"
+                class="apply-volunteer-button"
+                @click="openApplyDialog"
+              >
+                {{ applyLabel }}
+              </button>
+              <button
+                type="button"
+                :disabled="!showModify || isModifying"
+                class="modify-button"
+                @click="openModifyDialog"
+              >
+                修改志愿者申请
+              </button>
             </div>
           </div>
         </section>
@@ -1075,6 +1058,10 @@ const handleDeleteAccount = async () => {
   min-height: 160px;
 }
 
+.profile-card.full-width {
+  grid-column: 1 / -1;
+}
+
 .profile-content {
   display: flex;
   align-items: center;
@@ -1112,6 +1099,55 @@ const handleDeleteAccount = async () => {
 .role {
   font-size: 20px;
   color: #6b7280;
+}
+
+.volunteer-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.status-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.volunteer-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 50px;
+  padding: 1px 8px;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.volunteer-status.admin {
+  color: #a116d4;
+  border: 1px solid #a116d4;
+}
+
+.volunteer-status.certified {
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
+.volunteer-status.reviewing {
+  color: #d97706;
+  border: 1px solid #f59e0b;
+}
+
+.volunteer-status.rejected,
+.volunteer-status.suspended {
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.volunteer-status.muted {
+  color: #6b7280;
+  border: 1px solid #9ca3af;
 }
 
 .edit-profile-button {
@@ -1161,6 +1197,11 @@ const handleDeleteAccount = async () => {
   margin-top: -15px;
 }
 
+.apply-buttons {
+  display: flex;
+  gap: 12px;
+}
+
 .modify-button {
   background: #22c55e;
   color: white;
@@ -1177,6 +1218,13 @@ const handleDeleteAccount = async () => {
   border-color: #d1d5db;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.modify-button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .apply-volunteer-button {
@@ -1199,45 +1247,8 @@ const handleDeleteAccount = async () => {
 .apply-volunteer-button:disabled {
   background: #94a3b8;
   cursor: not-allowed;
-}
-
-.status-block {
-  width: 100%;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-  padding: 14px 16px;
-  border-radius: 8px;
-}
-
-.admin {
-  background: #eef2ff;
-  color: #3730a3;
-}
-
-.certified {
-  background: #ecfdf3;
-  color: #065f46;
-}
-
-.reviewing {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.rejected {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.suspended {
-  background: #7f1d1d;
-  color: #fee2e2;
-}
-
-.muted {
-  background: #f3f4f6;
-  color: #6b7280;
+  transform: none;
+  box-shadow: none;
 }
 
 .points-change-record {

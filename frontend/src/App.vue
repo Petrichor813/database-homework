@@ -130,7 +130,7 @@ const volunteerStatusLabel = computed(() => {
     case "CERTIFIED":
       return "已认证";
     case "REVIEWING":
-      return "等待管理员审核";
+      return "审核中";
     case "REJECTED":
       return "未通过审核";
     case "SUSPENDED":
@@ -163,7 +163,7 @@ const handleLogout = () => {
   userMenuOpen.value = false;
 };
 
-const confirmLogout = () => {
+const logout = () => {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
   curUser.value = null;
@@ -179,13 +179,6 @@ const goToLogin = () => {
   userMenuOpen.value = false;
   router.push("/login");
 };
-
-// 路由跳转后，检查认证状态，并关掉已经打开的下拉菜单
-router.afterEach(() => {
-  checkAuth();
-  userMenuOpen.value = false;
-  activeMenu.value = null;
-});
 
 const refreshProfile = async (userId: number | string) => {
   try {
@@ -256,6 +249,13 @@ const handleUserProfileUpdate = (event: Event) => {
   }
   checkAuth();
 };
+
+// 路由跳转后，检查认证状态，并关掉已经打开的下拉菜单
+router.afterEach(() => {
+  checkAuth();
+  userMenuOpen.value = false;
+  activeMenu.value = null;
+});
 
 onMounted(async () => {
   await checkAuth();
@@ -457,7 +457,7 @@ onBeforeUnmount(() => {
         <div class="logout-actions">
           <button
             class="logout-buttons logout-button--confirm"
-            @click="confirmLogout"
+            @click="logout"
           >
             确认
           </button>
