@@ -50,6 +50,9 @@ const formatTime = (time?: string | null) => {
     : parsedTime.toLocaleString();
 };
 
+// 搜索
+const searchKeyword = ref("");
+
 // 过滤选项卡
 const filters: FilterTab[] = [
   { value: "ALL", label: "全部" },
@@ -67,6 +70,16 @@ const changeFilter = (value: FilterTab["value"]) => {
   fetchVolunteers(0);
 };
 
+const handleSearch = () => {
+  fetchVolunteers(0);
+};
+
+const handleKeyPress = (event: KeyboardEvent) => {
+  if (event.key === "Enter") {
+    handleSearch();
+  }
+};
+
 // 志愿者
 const curVolunteer = ref<Volunteer | null>(null);
 const volunteers = ref<Volunteer[]>([]);
@@ -74,9 +87,32 @@ const volunteers = ref<Volunteer[]>([]);
 const fetchVolunteers = async (page: number) => {
   loading.value = true;
   try {
-    const data = await getJson<PageResponse<Volunteer>>(
-      `/api/admin/volunteer?status=${curFilter.value}&page=${page}&size=${pageObject.value.pageSize}`,
-    );
+    let data;
+    if (searchKeyword.value.trim()) {
+      // 调用搜索接口
+      const searchUrl = new URL(
+        "/api/admin/volunteer/search",
+        window.location.origin
+      );
+      searchUrl.searchParams.append("keyword", searchKeyword.value.trim());
+      searchUrl.searchParams.append("page", page.toString());
+      searchUrl.searchParams.append(
+        "size",
+        pageObject.value.pageSize.toString()
+      );
+      data = await getJson<PageResponse<Volunteer>>(
+        searchUrl.pathname + searchUrl.search
+      );
+    } else {
+      // 调用普通列表接口
+      const listUrl = new URL("/api/admin/volunteer", window.location.origin);
+      listUrl.searchParams.append("status", curFilter.value);
+      listUrl.searchParams.append("page", page.toString());
+      listUrl.searchParams.append("size", pageObject.value.pageSize.toString());
+      data = await getJson<PageResponse<Volunteer>>(
+        listUrl.pathname + listUrl.search
+      );
+    }
     volunteers.value = data.content;
     updatePageState(data);
   } catch (err) {
@@ -180,6 +216,26 @@ const submitReview = async () => {
       <h2>志愿者管理</h2>
       <p>管理系统中的志愿者信息，包括审核、停用和恢复等</p>
     </header>
+
+    <div class="search-box">
+      <div class="search-input-area">
+        <input
+          type="text"
+          v-model="searchKeyword"
+          placeholder="搜索志愿者姓名"
+          @keyup="handleKeyPress"
+        />
+        <button
+          v-if="searchKeyword.trim()"
+          type="button"
+          class="clear-button"
+          @click="searchKeyword = ''"
+        >
+          ×
+        </button>
+      </div>
+      <button class="search-button" @click="handleSearch">搜索</button>
+    </div>
 
     <div class="filter-bar">
       <button
@@ -329,6 +385,83 @@ const submitReview = async () => {
 
 .page-header p {
   color: #6b7280;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  position: relative;
+}
+
+.search-input-area {
+  flex: 1;
+  position: relative;
+}
+
+.search-input-area input {
+  width: 100%;
+  height: 40px;
+  padding: 8px 40px 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.search-input-area input:hover {
+  border: 1px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input-area input:focus {
+  outline: none;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input-area .clear-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+  background: #e5e7eb;
+  color: #6b7280;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.2s ease, color 0.2s ease;
+  z-index: 1;
+}
+
+.search-input-area .clear-button:hover {
+  background: #d1d5db;
+  color: #374151;
+}
+
+.search-button {
+  min-width: 60px;
+  background: #2563eb;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
 }
 
 .filter-bar {
@@ -494,9 +627,7 @@ const submitReview = async () => {
   padding: 8px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dialog-area textarea:focus {
