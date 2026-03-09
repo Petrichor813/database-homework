@@ -106,6 +106,13 @@ interface VolunteerGrowthRadarResponse {
   initiative: number;
 }
 
+const formatPoints = (points: number): string => {
+  if (points === null || points === undefined) {
+    return "0.00";
+  }
+  return points.toFixed(2);
+};
+
 /* 顶部看板 KPI 数据 */
 const kpiData = ref<DashboardKPIResponse | null>(null);
 const fetchKPI = async () => {
@@ -255,6 +262,15 @@ const updateSankeyChart = () => {
     tooltip: {
       trigger: "item",
       triggerOn: "mousemove",
+      formatter: function (params: any) {
+        if (params.dataType === "edge") {
+          return `${params.data.source} → ${
+            params.data.target
+          }<br/>流量: ${formatPoints(params.data.value)}`;
+        } else {
+          return `${params.data.name}`;
+        }
+      },
     },
     series: [
       {
@@ -266,7 +282,7 @@ const updateSankeyChart = () => {
         data: sankeyData.value.nodes,
         links: sankeyData.value.links,
         top: "5%",
-        bottom: "0%",
+        bottom: "5%",
         // 控制连线样式
         lineStyle: {
           color: "gradient",
@@ -301,14 +317,9 @@ const exportSankeyCSV = (): string => {
     return "";
   }
 
-  let csv = "节点名称\n";
-  sankeyData.value.nodes.forEach((node) => {
-    csv += node.name + "\n";
-  });
-
-  csv += "\n来源,目标,流量\n";
+  let csv = "来源,目标,流量\n";
   sankeyData.value.links.forEach((link) => {
-    csv += `${link.source},${link.target},${link.value}\n`;
+    csv += `${link.source},${link.target},${formatPoints(link.value)}\n`;
   });
 
   return csv;
@@ -320,6 +331,17 @@ const bubbleData = ref<ActivityParticipationBubbleResponse | null>(null);
 const bubbleFigure = ref<any>(null);
 const bubbleChartRef = ref<any>(null);
 
+const activityTypeColors: Record<string, string> = {
+  社区服务: "#3b82f6",
+  环境保护: "#22c55e",
+  敬老助老: "#f59e0b",
+  儿童助学: "#ef4444",
+  助残服务: "#8b5cf6",
+  文化活动: "#ec4899",
+  健康宣传: "#14b8a6",
+  其他: "#6b7280",
+};
+
 const updateBubbleChart = () => {
   if (!bubbleData.value) {
     return;
@@ -328,20 +350,34 @@ const updateBubbleChart = () => {
   const data = bubbleData.value.data;
   const bubbleDataArray: any[] = [];
   for (let i = 0; i < data.length; i++) {
-    bubbleDataArray.push([
-      data[i].participantCount,
-      data[i].totalHours,
-      data[i].totalPoints,
-      data[i].activityTitle,
-    ]);
+    if (data[i] == null) {
+      continue;
+    }
+
+    bubbleDataArray.push({
+      value: [
+        data[i]?.participantCount ?? 0,
+        data[i]?.totalHours ?? 0,
+        data[i]?.totalPoints ?? 0,
+      ],
+      name: data[i]?.activityTitle ?? "",
+      activityType: data[i]?.activityType ?? "OTHER",
+    });
   }
 
   bubbleFigure.value = {
     tooltip: {
       trigger: "item",
       formatter: function (params: any) {
-        return `活动: ${params.data[3]}<br/>参与人数: ${params.data[0]}<br/>总时长: ${params.data[1]}小时<br/>总积分: ${params.data[2]}`;
+        return `活动: ${params.data.name}<br/>类型: ${
+          params.data.activityType
+        }<br/>参与人数: ${params.data.value[0]}<br/>总时长: ${
+          params.data.value[1]
+        }小时<br/>总积分: ${formatPoints(params.data.value[2])}`;
       },
+    },
+    legend: {
+      top: "5%",
     },
     grid: {
       left: "10%",
@@ -367,18 +403,19 @@ const updateBubbleChart = () => {
         type: "scatter",
         data: bubbleDataArray,
         symbolSize: function (data: any) {
-          // 动态计算气泡大小
           return Math.sqrt(data[2]) * 3;
         },
         itemStyle: {
-          color: "#3b82f6",
-          opacity: 0.6,
+          color: function (params: any) {
+            return activityTypeColors[params.data.activityType] || "#6b7280";
+          },
+          opacity: 0.7,
         },
         emphasis: {
           itemStyle: {
-            color: "#2563eb",
             borderColor: "#1d4ed8",
             borderWidth: 2,
+            opacity: 1,
           },
         },
       },
@@ -407,12 +444,25 @@ const exportBubbleCSV = (): string => {
     return "";
   }
 
-  let csv = "活动标题,活动日期,活动类型,参与人数,总时长(小时),人均时长(小时),总积分,人均积分\n";
+  let csv =
+    "活动标题,活动日期,活动类型,参与人数,总时长(小时),人均时长(小时),总积分,人均积分\n";
   bubbleData.value.data.forEach((item) => {
-    const avgHours = item.participantCount > 0 ? (item.totalHours / item.participantCount).toFixed(1) : "0.0";
-    const avgPoints = item.participantCount > 0 ? (item.totalPoints / item.participantCount).toFixed(1) : "0.0";
-    const dateStr = item.activityDate ? new Date(item.activityDate).toLocaleDateString('zh-CN') : '';
-    csv += `${item.activityTitle},${dateStr},${item.activityType},${item.participantCount},${item.totalHours},${avgHours},${item.totalPoints},${avgPoints}\n`;
+    const avgHours =
+      item.participantCount > 0
+        ? (item.totalHours / item.participantCount).toFixed(1)
+        : "0.0";
+    const avgPoints =
+      item.participantCount > 0
+        ? formatPoints(item.totalPoints / item.participantCount)
+        : "0.00";
+    const dateStr = item.activityDate
+      ? new Date(item.activityDate).toLocaleDateString("zh-CN")
+      : "";
+    csv += `${item.activityTitle},${dateStr},${item.activityType},${
+      item.participantCount
+    },${item.totalHours},${avgHours},${formatPoints(
+      item.totalPoints
+    )},${avgPoints}\n`;
   });
 
   return csv;
@@ -463,7 +513,7 @@ const updateTrendChart = () => {
     // 图标
     legend: {
       data: activityTypes,
-      top: "85%",
+      top: "90%",
     },
     grid: {
       left: "3%",
@@ -513,7 +563,7 @@ const exportTrendCSV = (): string => {
   for (let monthIndex = 0; monthIndex < months.length; monthIndex++) {
     const rowData = [months[monthIndex]];
     for (let typeIndex = 0; typeIndex < activityTypes.length; typeIndex++) {
-      rowData.push(String(data[typeIndex][monthIndex]));
+      rowData.push(String(data[typeIndex]?.[monthIndex] ?? 0));
     }
     csv += rowData.join(",") + "\n";
   }
@@ -776,7 +826,11 @@ const exportRadarCSV = (): string => {
   const data = radarData.value;
   let csv =
     "志愿者姓名,手机号,总活动数,总时长(小时),总积分,活动参与度,服务质量,连续性,主动性\n";
-  csv += `${data.volunteerName},${data.volunteerPhone},${data.totalActivities},${data.totalHours},${data.totalPoints},${data.activityParticipation},${data.serviceQuality},${data.continuity},${data.initiative}\n`;
+  csv += `${data.volunteerName},${data.volunteerPhone},${
+    data.totalActivities
+  },${data.totalHours},${formatPoints(data.totalPoints)},${
+    data.activityParticipation
+  },${data.serviceQuality},${data.continuity},${data.initiative}\n`;
 
   return csv;
 };
@@ -917,7 +971,13 @@ onMounted(() => {
       </div>
       <div class="kpi-card release-points">
         <p>积分发放</p>
-        <h3>{{ kpiData ? kpiData.totalPointsIssued + " 分" : "加载中..." }}</h3>
+        <h3>
+          {{
+            kpiData
+              ? formatPoints(kpiData.totalPointsIssued) + " 分"
+              : "加载中..."
+          }}
+        </h3>
       </div>
     </section>
 
@@ -1026,6 +1086,22 @@ onMounted(() => {
           ref="bubbleChartRef"
         />
         <div v-else class="chart-loading">气泡图加载中...</div>
+        <div class="chart-legend">
+          <div class="legend-title">活动类型颜色说明：</div>
+          <div class="legend-items">
+            <div
+              v-for="(color, type) in activityTypeColors"
+              :key="type"
+              class="legend-item"
+            >
+              <div
+                class="legend-color"
+                :style="{ backgroundColor: color }"
+              ></div>
+              <span class="legend-text">{{ type }}</span>
+            </div>
+          </div>
+        </div>
         <div class="chart-actions">
           <button
             class="export-pic"
@@ -1475,6 +1551,42 @@ onMounted(() => {
   background: #6b7280;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.chart-legend {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.legend-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
 }
 
 .search-box {

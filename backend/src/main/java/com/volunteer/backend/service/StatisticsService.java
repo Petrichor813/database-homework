@@ -88,8 +88,12 @@ public class StatisticsService {
 
         Double totalPointsIssued = 0.0;
         for (PointChangeRecord record : allPointRecords) {
-            if (record.getChangeType() == PointChangeType.ACTIVITY_EARN && record.getChangePoints() != null) {
-                totalPointsIssued += record.getChangePoints();
+            if (record.getChangePoints() != null && record.getChangePoints() > 0) {
+                if (record.getChangeType() == PointChangeType.ACTIVITY_EARN || 
+                    record.getChangeType() == PointChangeType.SYSTEM_BONUS || 
+                    record.getChangeType() == PointChangeType.ADMIN_ADJUST) {
+                    totalPointsIssued += record.getChangePoints();
+                }
             }
         }
 
@@ -149,22 +153,24 @@ public class StatisticsService {
     public PointFlowSankeyResponse getPointFlowSankey(Integer year) {
         List<SankeyNode> nodes = new ArrayList<>();
         nodes.add(new SankeyNode("活动服务"));
-        nodes.add(new SankeyNode("管理员调整"));
+        nodes.add(new SankeyNode("管理员添加"));
         nodes.add(new SankeyNode("系统奖励"));
         nodes.add(new SankeyNode("其他来源"));
         nodes.add(new SankeyNode("商品兑换"));
         nodes.add(new SankeyNode("积分过期"));
+        nodes.add(new SankeyNode("管理员扣除"));
         nodes.add(new SankeyNode("其他去向"));
 
         Map<String, Double> sourceMap = new HashMap<>();
         sourceMap.put("活动服务", 0.0);
-        sourceMap.put("管理员调整", 0.0);
+        sourceMap.put("管理员添加", 0.0);
         sourceMap.put("系统奖励", 0.0);
         sourceMap.put("其他来源", 0.0);
 
         Map<String, Double> targetMap = new HashMap<>();
         targetMap.put("商品兑换", 0.0);
         targetMap.put("积分过期", 0.0);
+        targetMap.put("管理员扣除", 0.0);
         targetMap.put("其他去向", 0.0);
 
         List<PointChangeRecord> allRecords = pointChangeRecordRepository.findAll();
@@ -182,9 +188,9 @@ public class StatisticsService {
                 sourceMap.put("活动服务", sourceMap.get("活动服务") + record.getChangePoints());
             } else if (record.getChangeType() == PointChangeType.ADMIN_ADJUST && record.getChangePoints() != null) {
                 if (record.getChangePoints() > 0) {
-                    sourceMap.put("管理员调整", sourceMap.get("管理员调整") + record.getChangePoints());
+                    sourceMap.put("管理员添加", sourceMap.get("管理员添加") + record.getChangePoints());
                 } else {
-                    targetMap.put("其他去向", targetMap.get("其他去向") + Math.abs(record.getChangePoints()));
+                    targetMap.put("管理员扣除", targetMap.get("管理员扣除") + Math.abs(record.getChangePoints()));
                 }
             } else if (record.getChangeType() == PointChangeType.SYSTEM_BONUS && record.getChangePoints() != null) {
                 sourceMap.put("系统奖励", sourceMap.get("系统奖励") + record.getChangePoints());
