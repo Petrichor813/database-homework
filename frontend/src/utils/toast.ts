@@ -16,6 +16,7 @@ const state = ref<ToastState>({
   detail: "",
 });
 
+// 这么定义是为了计时器类型同时在浏览器和 NodeJs 环境下都能正常工作
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
 const show = (type: ToastType, message: string, detail = "") => {

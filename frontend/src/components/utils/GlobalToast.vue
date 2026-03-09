@@ -9,7 +9,7 @@ const { state } = useToast();
     <div v-if="state.visible" class="toast" :class="`toast-${state.type}`">
       <div class="toast-icon">
         <span v-if="state.type === 'success'">✓</span>
-        <span v-else-if="state.type === 'info'">i</span>
+        <span v-else-if="state.type === 'info'"></span>
         <span v-else>×</span>
       </div>
       <div class="toast-content">

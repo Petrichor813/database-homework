@@ -282,10 +282,16 @@ const handleLogin = async () => {
   transition: all 0.2s ease;
 }
 
-.input-box:hover,
+.input-box:hover {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
 .input-box:focus {
   outline: none;
   border-color: #2563eb;
+  border-radius: 2px;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
