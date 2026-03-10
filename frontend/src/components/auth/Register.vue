@@ -326,7 +326,7 @@ form {
   width: 100%;
   font-size: 14px;
   padding: 12px 14px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
@@ -334,8 +334,8 @@ form {
 .input-box:hover,
 .input-box:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .input-box:focus {

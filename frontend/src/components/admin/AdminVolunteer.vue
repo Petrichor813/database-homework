@@ -436,7 +436,7 @@ const submitReview = async () => {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
   z-index: 1;
 }
 
@@ -627,7 +627,7 @@ const submitReview = async () => {
   padding: 8px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .dialog-area textarea:focus {

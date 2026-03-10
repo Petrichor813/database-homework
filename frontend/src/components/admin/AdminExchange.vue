@@ -761,7 +761,7 @@ const deleteProduct = async () => {
               <button
                 v-if="productSearchKeyword"
                 type="button"
-                class="clear-search"
+                class="clear-button"
                 @click="clearSearch"
               >
                 ×
@@ -1288,7 +1288,7 @@ const deleteProduct = async () => {
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .tab-button.active:hover {
@@ -1540,7 +1540,7 @@ const deleteProduct = async () => {
   border-width: 2px;
 }
 
-.clear-search {
+.clear-button {
   position: absolute;
   right: 10px;
   top: 50%;
@@ -1559,7 +1559,7 @@ const deleteProduct = async () => {
   transition: background 0.2s ease;
 }
 
-.clear-search:hover {
+.clear-button:hover {
   background: #d1d5db;
 }
 
@@ -1658,13 +1658,13 @@ const deleteProduct = async () => {
 .form-row input,
 .form-row textarea,
 .form-row select {
+  box-sizing: border-box;
+  width: 100%;
   font-size: 14px;
-  padding: 10px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
 }
 
 .form-row input:focus,

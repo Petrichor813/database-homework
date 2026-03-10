@@ -1531,7 +1531,7 @@ const handleDeleteAccount = async () => {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .clear-button:hover {

@@ -696,17 +696,21 @@ const getRelatedRecordTypeText = (type: string) => {
 .input-area input {
   width: 100%;
   padding-right: 40px;
-  border: 2px solid #d1d5db;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
-  transition: outline 0.1s ease;
+  transition: all 0.1s ease;
 }
 
 .input-area input:hover,
 .input-area input:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.input-area input:focus {
+  border-width: 2px;
 }
 
 .clear-button {
@@ -1017,12 +1021,12 @@ const getRelatedRecordTypeText = (type: string) => {
 
 .volunteer-search input:hover,
 .volunteer-search input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .volunteer-search input:focus {
+  outline: none;
   border-width: 2px;
 }
 
