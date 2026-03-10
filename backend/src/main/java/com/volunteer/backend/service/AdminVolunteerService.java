@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.volunteer.backend.dto.AdminVolunteerResponse;
 import com.volunteer.backend.dto.PageResponse;
@@ -112,13 +113,13 @@ public class AdminVolunteerService {
         // @formatter:on
     }
 
+    @Transactional
     public AdminVolunteerResponse reviewVolunteer(Long id, String action, String note) {
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(id);
-        Volunteer volunteer;
         if (v.isEmpty()) {
             throw new IllegalArgumentException("志愿者申请不存在或该志愿者账号已注销");
         }
-        volunteer = v.get();
+        Volunteer volunteer = v.get();
 
         if (action == null || action.isBlank()) {
             throw new IllegalArgumentException("审核操作不能为空");
