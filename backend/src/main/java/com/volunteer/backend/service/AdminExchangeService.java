@@ -49,10 +49,14 @@ public class AdminExchangeService {
         this.productRepository = productRepository;
         this.pointChangeRecordRepository = pointChangeRecordRepository;
     }
-
-    private AdminExchangeRecordResponse buildResponse(ExchangeRecord record, String volunteerName, String productName,
-            Double productPrice) {
-        // @formatter:off
+    
+    // @formatter:off
+    private AdminExchangeRecordResponse buildResponse(
+        ExchangeRecord record,
+        String volunteerName,
+        String productName,
+        Double productPrice
+    ) {
         return new AdminExchangeRecordResponse(
             record.getId(),
             record.getVolunteerId(),
@@ -66,8 +70,8 @@ public class AdminExchangeService {
             record.getProcessTime() != null ? record.getProcessTime().format(DATETIME_FORMATTER) : null,
             record.getNote(), record.getRecvInfo()
         );
-        // @formatter:on
     }
+    // @formatter:on
 
     public PageResponse<AdminExchangeRecordResponse> getExchangeRecords(String status, int page, int size) {
         if (page < 0) {
@@ -193,9 +197,9 @@ public class AdminExchangeService {
         pointChangeRecordRepository.save(refundRecord);
 
         // 更新志愿者积分
-        Optional<Volunteer> v = volunteerRepository.findById(record.getVolunteerId());
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(record.getVolunteerId());
         if (v.isEmpty()) {
-            throw new IllegalArgumentException("志愿者不存在");
+            throw new IllegalArgumentException("志愿者被删除或不存在");
         }
 
         Volunteer volunteer = v.get();
@@ -282,9 +286,9 @@ public class AdminExchangeService {
         if (!oldTotalPoints.equals(newTotalPoints)) {
             Double pointDiff = newTotalPoints - oldTotalPoints;
 
-            Optional<Volunteer> v = volunteerRepository.findById(record.getVolunteerId());
+            Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(record.getVolunteerId());
             if (v.isEmpty()) {
-                throw new IllegalArgumentException("志愿者不存在");
+                throw new IllegalArgumentException("志愿者被删除或不存在");
             }
 
             Volunteer volunteer = v.get();
@@ -298,7 +302,7 @@ public class AdminExchangeService {
         }
 
         String volunteerName = "";
-        Optional<Volunteer> volunteer = volunteerRepository.findById(saved.getVolunteerId());
+        Optional<Volunteer> volunteer = volunteerRepository.findByIdAndDeletedFalse(saved.getVolunteerId());
         if (volunteer.isPresent()) {
             volunteerName = volunteer.get().getName();
         }

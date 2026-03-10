@@ -67,7 +67,7 @@ public class AdminActivityController {
         @PathVariable Long activityId
     ) {
         // @formatter:on
-        List<AdminSignupRecordResponse> signups = adminActivityService.getActivitySignups(activityId);
+        List<AdminSignupRecordResponse> signups = adminActivityService.getSignupRecords(activityId);
         return ResponseEntity.ok(signups);
     }
 

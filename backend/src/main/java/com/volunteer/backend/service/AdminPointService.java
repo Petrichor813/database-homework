@@ -112,12 +112,11 @@ public class AdminPointService {
             throw new IllegalArgumentException("志愿者ID不能为空");
         }
 
-        Optional<Volunteer> volunteerOpt = volunteerRepository.findById(request.getVolunteerId());
-        if (volunteerOpt.isEmpty()) {
-            throw new IllegalArgumentException("志愿者不存在");
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(request.getVolunteerId());
+        if (v.isEmpty()) {
+            throw new IllegalArgumentException("志愿者被删除或不存在");
         }
-
-        Volunteer volunteer = volunteerOpt.get();
+        Volunteer volunteer = v.get();
 
         if (request.getChangePoints() == null) {
             throw new IllegalArgumentException("变动数量不能为空");
@@ -144,8 +143,16 @@ public class AdminPointService {
         Double currentBalance = volunteer.getPoints();
         Double newBalance = currentBalance + request.getChangePoints();
 
-        PointChangeRecord record = new PointChangeRecord(request.getVolunteerId(), request.getChangePoints(),
-                request.getChangeType(), reason, null, null);
+        // @formatter:off
+        PointChangeRecord record = new PointChangeRecord(
+            request.getVolunteerId(),
+            request.getChangePoints(),
+            request.getChangeType(),
+            reason,
+            null,
+            null
+        );
+        // @formatter:on
         record.setNote(note);
         record.setBalanceAfter(newBalance);
 
@@ -159,13 +166,17 @@ public class AdminPointService {
 
     @Transactional
     public AdminPointRecordResponse updatePointRecord(Long recordId, AdminPointUpdateRequest request) {
-        Optional<PointChangeRecord> recordOpt = pointChangeRecordRepository.findById(recordId);
-        if (recordOpt.isEmpty()) {
+        Optional<PointChangeRecord> pcr = pointChangeRecordRepository.findById(recordId);
+        if (pcr.isEmpty()) {
             throw new IllegalArgumentException("积分记录不存在");
         }
+        PointChangeRecord record = pcr.get();
 
-        PointChangeRecord record = recordOpt.get();
-        Volunteer volunteer = volunteerRepository.findById(record.getVolunteerId()).orElseThrow();
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(record.getVolunteerId());
+        if (v.isEmpty()) {
+            throw new IllegalArgumentException("志愿者被删除或不存在");
+        }
+        Volunteer volunteer = v.get();
 
         if (request.getChangePoints() != null) {
             if (request.getChangePoints().equals(record.getChangePoints())) {
@@ -212,13 +223,17 @@ public class AdminPointService {
 
     @Transactional
     public void revertPointRecord(Long recordId) {
-        Optional<PointChangeRecord> recordOpt = pointChangeRecordRepository.findById(recordId);
-        if (recordOpt.isEmpty()) {
+        Optional<PointChangeRecord> pcr = pointChangeRecordRepository.findById(recordId);
+        if (pcr.isEmpty()) {
             throw new IllegalArgumentException("积分记录不存在");
         }
 
-        PointChangeRecord originalRecord = recordOpt.get();
-        Volunteer volunteer = volunteerRepository.findById(originalRecord.getVolunteerId()).orElseThrow();
+        PointChangeRecord originalRecord = pcr.get();
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(originalRecord.getVolunteerId());
+        if (v.isEmpty()) {
+            throw new IllegalArgumentException("志愿者被删除或不存在");
+        }
+        Volunteer volunteer = v.get();
 
         Double revertAmount = -originalRecord.getChangePoints();
 

@@ -68,8 +68,15 @@ public class AdminProductService {
             content.add(buildResponse(product));
         }
 
-        return new PageResponse<>(content, productPage.getNumber(), productPage.getSize(),
-                productPage.getTotalElements(), productPage.getTotalPages());
+        // @formatter:off
+        return new PageResponse<>(
+            content,
+            productPage.getNumber(),
+            productPage.getSize(),
+            productPage.getTotalElements(),
+            productPage.getTotalPages()
+        );
+        // @formatter:on
     }
 
     @Transactional
@@ -107,12 +114,12 @@ public class AdminProductService {
 
     @Transactional
     public ProductResponse updateProduct(Long id, AdminProductRequest request) {
-        Optional<Product> productOpt = productRepository.findById(id);
-        if (productOpt.isEmpty()) {
+        Optional<Product> p = productRepository.findById(id);
+        if (p.isEmpty()) {
             throw new IllegalArgumentException("商品不存在");
         }
 
-        Product product = productOpt.get();
+        Product product = p.get();
 
         if (product.getStatus() == ProductStatus.DELETED) {
             throw new IllegalArgumentException("该商品已被删除，无法修改");

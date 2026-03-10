@@ -172,7 +172,7 @@ public class AdminActivityService {
         activityRepository.deleteById(activityId);
     }
 
-    public List<AdminSignupRecordResponse> getActivitySignups(Long activityId) {
+    public List<AdminSignupRecordResponse> getSignupRecords(Long activityId) {
         Optional<Activity> a = activityRepository.findById(activityId);
         if (a.isEmpty()) {
             throw new IllegalArgumentException("活动不存在");
