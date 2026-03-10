@@ -45,7 +45,7 @@ public class AdminVolunteerService {
         // @formatter:on
     }
 
-    public PageResponse<AdminVolunteerResponse> getVolunteers(String volunteerStatus, int page, int size) {
+    public PageResponse<AdminVolunteerResponse> getVolunteers(String volunteerStatus, int page, int size, String keyword) {
         if (page < 0) {
             throw new IllegalArgumentException("页码不能小于0");
         }
@@ -56,21 +56,42 @@ public class AdminVolunteerService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Volunteer> volunteerPage;
 
-        switch (volunteerStatus.toUpperCase()) {
-        case "ALL":
-            volunteerPage = volunteerRepository.findByDeletedFalse(pageable);
-            break;
-        case "REVIEWING":
-            volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.REVIEWING, pageable);
-            break;
-        case "CERTIFIED":
-            volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.CERTIFIED, pageable);
-            break;
-        case "SUSPENDED":
-            volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.SUSPENDED, pageable);
-            break;
-        default:
-            throw new IllegalArgumentException("未知的志愿者审核状态筛选");
+        String trimmedKeyword = (keyword != null) ? keyword.trim() : "";
+
+        if (!trimmedKeyword.isEmpty()) {
+            switch (volunteerStatus.toUpperCase()) {
+            case "ALL":
+                volunteerPage = volunteerRepository.findByKeywordAndDeletedFalse(trimmedKeyword, pageable);
+                break;
+            case "REVIEWING":
+                volunteerPage = volunteerRepository.findByKeywordAndStatusAndDeletedFalse(trimmedKeyword, VolunteerStatus.REVIEWING, pageable);
+                break;
+            case "CERTIFIED":
+                volunteerPage = volunteerRepository.findByKeywordAndStatusAndDeletedFalse(trimmedKeyword, VolunteerStatus.CERTIFIED, pageable);
+                break;
+            case "SUSPENDED":
+                volunteerPage = volunteerRepository.findByKeywordAndStatusAndDeletedFalse(trimmedKeyword, VolunteerStatus.SUSPENDED, pageable);
+                break;
+            default:
+                throw new IllegalArgumentException("未知的志愿者审核状态筛选");
+            }
+        } else {
+            switch (volunteerStatus.toUpperCase()) {
+            case "ALL":
+                volunteerPage = volunteerRepository.findByDeletedFalse(pageable);
+                break;
+            case "REVIEWING":
+                volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.REVIEWING, pageable);
+                break;
+            case "CERTIFIED":
+                volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.CERTIFIED, pageable);
+                break;
+            case "SUSPENDED":
+                volunteerPage = volunteerRepository.findByStatusAndDeletedFalse(VolunteerStatus.SUSPENDED, pageable);
+                break;
+            default:
+                throw new IllegalArgumentException("未知的志愿者审核状态筛选");
+            }
         }
 
         List<Volunteer> volunteers = volunteerPage.getContent();
@@ -161,7 +182,7 @@ public class AdminVolunteerService {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Volunteer> volunteerPage = volunteerRepository.findByKeyword(trimmedKeyword, pageable);
+        Page<Volunteer> volunteerPage = volunteerRepository.findByKeywordAndDeletedFalse(trimmedKeyword, pageable);
 
         List<Volunteer> volunteers = volunteerPage.getContent();
         List<AdminVolunteerResponse> responses = new ArrayList<>();

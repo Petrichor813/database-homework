@@ -29,10 +29,11 @@ public class AdminVolunteerController {
     public ResponseEntity<PageResponse<AdminVolunteerResponse>> getVolunteers(
         @RequestParam(defaultValue = "ALL") String status,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String keyword
     ) {
         // @formatter:on
-        return ResponseEntity.ok(adminVolunteerService.getVolunteers(status, page, size));
+        return ResponseEntity.ok(adminVolunteerService.getVolunteers(status, page, size, keyword));
     }
 
     // @formatter:off

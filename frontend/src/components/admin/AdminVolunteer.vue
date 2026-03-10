@@ -87,32 +87,19 @@ const volunteers = ref<Volunteer[]>([]);
 const fetchVolunteers = async (page: number) => {
   loading.value = true;
   try {
-    let data;
+    const query = new URLSearchParams({
+      page: String(page),
+      size: String(pageObject.value.pageSize),
+      status: curFilter.value,
+    });
+
     if (searchKeyword.value.trim()) {
-      // 调用搜索接口
-      const searchUrl = new URL(
-        "/api/admin/volunteer/search",
-        window.location.origin
-      );
-      searchUrl.searchParams.append("keyword", searchKeyword.value.trim());
-      searchUrl.searchParams.append("page", page.toString());
-      searchUrl.searchParams.append(
-        "size",
-        pageObject.value.pageSize.toString()
-      );
-      data = await getJson<PageResponse<Volunteer>>(
-        searchUrl.pathname + searchUrl.search
-      );
-    } else {
-      // 调用普通列表接口
-      const listUrl = new URL("/api/admin/volunteer", window.location.origin);
-      listUrl.searchParams.append("status", curFilter.value);
-      listUrl.searchParams.append("page", page.toString());
-      listUrl.searchParams.append("size", pageObject.value.pageSize.toString());
-      data = await getJson<PageResponse<Volunteer>>(
-        listUrl.pathname + listUrl.search
-      );
+      query.append("keyword", searchKeyword.value.trim());
     }
+
+    const data = await getJson<PageResponse<Volunteer>>(
+      `/api/admin/volunteer?${query.toString()}`
+    );
     volunteers.value = data.content;
     updatePageState(data);
   } catch (err) {
