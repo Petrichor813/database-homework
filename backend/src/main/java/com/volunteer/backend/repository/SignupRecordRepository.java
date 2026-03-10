@@ -8,10 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.enums.SignupStatus;
 
+@Repository
 public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long> {
     Page<SignupRecord> findByVolunteerIdOrderBySignupTimeDesc(Long volunteerId, Pageable pageable);
 
