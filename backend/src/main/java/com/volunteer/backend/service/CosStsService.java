@@ -43,12 +43,13 @@ public class CosStsService {
                 "name/cos:HeadObject",
                 "name/cos:PutObject",
                 "name/cos:PostObject",
+                "name/cos:DeleteObject",
                 "name/cos:InitiateMultipartUpload",
-                "name/cos:ListMultipartUploads",
-                "name/cos:ListParts",
                 "name/cos:UploadPart",
                 "name/cos:CompleteMultipartUpload",
-                "name/cos:DeleteObject"
+                "name/cos:ListMultipartUploads",
+                "name/cos:ListParts",
+                "name/cos:AbortMultipartUpload"
             });
             // @formatter:on
 
