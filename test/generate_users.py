@@ -73,11 +73,12 @@ def generate_users(num_users: int):
         users.append(
             {
                 "username": username,
-                "password": encrypt_password(password),  # 加密密码
+                "password": encrypt_password(password),
                 "phone": phone,
                 "name": name,
                 "role": role,
-                "is_volunteer": True,  # 管理员也是志愿者
+                "is_volunteer": True,
+                "volunteer_status": "CERTIFIED",
             }
         )
 
@@ -91,11 +92,12 @@ def generate_users(num_users: int):
         users.append(
             {
                 "username": username,
-                "password": encrypt_password(password),  # 加密密码
+                "password": encrypt_password(password),
                 "phone": phone,
                 "name": name,
                 "role": role,
-                "is_volunteer": True,  # 志愿者角色用户在志愿者表中有记录
+                "is_volunteer": True,
+                "volunteer_status": "CERTIFIED",
             }
         )
 
@@ -104,19 +106,31 @@ def generate_users(num_users: int):
         password = "user123"
         phone = fake.phone_number()
         name = fake.name()
-        role = "USER"
 
-        # 只有部分普通用户申请成为志愿者（约50%）
         is_volunteer = random.random() < 0.5
+
+        if is_volunteer:
+            status_options = ["REVIEWING", "CERTIFIED", "REJECTED", "SUSPENDED"]
+            status_weights = [0.2, 0.6, 0.15, 0.05]
+            volunteer_status = random.choices(status_options, weights=status_weights)[0]
+
+            if volunteer_status == "CERTIFIED" or volunteer_status == "SUSPENDED":
+                role = "VOLUNTEER"
+            else:
+                role = "USER"
+        else:
+            role = "USER"
+            volunteer_status = None
 
         users.append(
             {
                 "username": username,
-                "password": encrypt_password(password),  # 加密密码
+                "password": encrypt_password(password),
                 "phone": phone,
                 "name": name,
                 "role": role,
                 "is_volunteer": is_volunteer,
+                "volunteer_status": volunteer_status,
             }
         )
 
@@ -186,26 +200,21 @@ def insert_users(
         volunteer_count = 0
         for user_id, user in tqdm(user_ids, desc="插入志愿者数据"):
             if user["is_volunteer"]:
-                # 随机设置志愿者状态
-                status_options = ["REVIEWING", "CERTIFIED", "REJECTED", "SUSPENDED"]
-                status_weights = [0.2, 0.6, 0.15, 0.05]  # 大部分已认证
-                status = random.choices(status_options, weights=status_weights)[0]
+                status = user["volunteer_status"]
 
-                # 设置审核时间和备注
-                review_time = None  # 默认为空，只有审核通过/拒绝/停用时才设置
+                review_time = None
                 review_note = None
 
                 if status == "CERTIFIED":
                     review_note = "审核通过"
-                    review_time = current_time  # 审核通过时设置审核时间
+                    review_time = current_time
                 elif status == "REJECTED":
                     review_note = "审核不通过"
-                    review_time = current_time  # 审核拒绝时设置审核时间
+                    review_time = current_time
                 elif status == "SUSPENDED":
                     review_note = "违规停用"
-                    review_time = current_time  # 停用时设置审核时间
+                    review_time = current_time
 
-                # 设置申请原因
                 apply_reason_options = [
                     "希望为社会做出贡献",
                     "丰富个人经历",
@@ -215,7 +224,6 @@ def insert_users(
                 ]
                 apply_reason = random.choice(apply_reason_options)
 
-                # 创建时间（申请时间）使用当前时间
                 create_time = current_time
 
                 cursor.execute(
@@ -225,12 +233,12 @@ def insert_users(
                         user["name"],
                         user["phone"],
                         status,
-                        False,  # deleted字段
-                        create_time,  # 申请时间
+                        False,
+                        create_time,
                         apply_reason,
                         review_note,
-                        review_time,  # 审核时间
-                        0.0,  # 初始积分为0
+                        review_time,
+                        0.0,
                     ),
                 )
 
