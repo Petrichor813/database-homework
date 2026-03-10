@@ -166,8 +166,15 @@ public class ActivityService {
             content.add(buildResponse(activity, signupStatus));
         }
 
-        return new PageResponse<>(content, request.getPage(), request.getSize(), (int) activityPage.getTotalElements(),
-                activityPage.getTotalPages());
+        // @formatter:off
+        return new PageResponse<>(
+            content,
+            request.getPage(),
+            request.getSize(),
+            (int) activityPage.getTotalElements(),
+            activityPage.getTotalPages()
+        );
+        // @formatter:on
     }
 
     @Transactional
@@ -209,7 +216,7 @@ public class ActivityService {
             try {
                 volunteerStartTime = LocalDateTime.parse(request.getVolunteerStartTime(), DATETIME_FORMATTER);
             } catch (Exception e) {
-                throw new IllegalArgumentException("开始时间格式不正确，请使用 yyyy-MM-dd HH:mm 格式");
+                throw new IllegalArgumentException("开始时间格式不正确，请使用 yyyy-MM-dd HH:mm:ss 格式");
             }
         }
 
@@ -217,7 +224,7 @@ public class ActivityService {
             try {
                 volunteerEndTime = LocalDateTime.parse(request.getVolunteerEndTime(), DATETIME_FORMATTER);
             } catch (Exception e) {
-                throw new IllegalArgumentException("结束时间格式不正确，请使用 yyyy-MM-dd HH:mm 格式");
+                throw new IllegalArgumentException("结束时间格式不正确，请使用 yyyy-MM-dd HH:mm:ss 格式");
             }
         }
 

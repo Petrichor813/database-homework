@@ -95,7 +95,7 @@ public class AdminActivityService {
         activity.setStatus(request.getStatus() == null ? ActivityStatus.RECRUITING : request.getStatus());
 
         String desc = request.getDescription();
-        if (desc == null || desc.trim().isEmpty()) {
+        if (desc.trim().isEmpty()) {
             desc = null;
         } else {
             desc = desc.trim();

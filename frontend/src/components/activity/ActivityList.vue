@@ -94,7 +94,7 @@ const fetchActivities = async (page = 0) => {
     }
 
     const response = await getJson<PageResponse<Activity>>(
-      `/api/activity/get-activities?${query.toString()}`
+      `/api/activity/get-activities?${query.toString()}`,
     );
 
     // 设置默认报名状态为未报名
@@ -110,7 +110,7 @@ const fetchActivities = async (page = 0) => {
       totalPages: response.totalPages,
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "未知错误";
+    const msg = e instanceof Error ? e.message : "请检查网络后重试";
     error("活动加载失败", msg);
   } finally {
     loading.value = false;
@@ -167,7 +167,7 @@ const canCancel = (activity: Activity) => {
   return (
     (activity.signupStatus === "REVIEWING" ||
       activity.signupStatus === "CONFIRMED") &&
-    (activity.status === "RECRUITING" || activity.status === "CONFIRMED")
+    canSignup(activity.status)
   );
 };
 
@@ -180,7 +180,7 @@ const handleSignup = async (activity: Activity) => {
         activityId: activity.id,
         volunteerStartTime: activity.startTime,
         volunteerEndTime: activity.endTime,
-      }
+      },
     );
 
     // 更新活动报名状态
@@ -191,7 +191,7 @@ const handleSignup = async (activity: Activity) => {
 
     success("报名成功", response.message);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "报名失败";
+    const msg = e instanceof Error ? e.message : "请检查网络后重试";
     if (msg === "您已经报名了该活动") {
       info("提示", msg);
     } else {
@@ -207,7 +207,7 @@ const handleCancelSignup = async (activity: Activity) => {
       "/api/activity/cancel-signup",
       {
         activityId: activity.id,
-      }
+      },
     );
 
     // 更新活动报名状态
@@ -218,7 +218,7 @@ const handleCancelSignup = async (activity: Activity) => {
 
     success("取消报名成功", response.message);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "取消报名失败";
+    const msg = e instanceof Error ? e.message : "请检查网络后重试";
     error("取消报名失败", msg);
   }
 };
@@ -235,12 +235,22 @@ onMounted(() => {
     </header>
 
     <section class="search-box">
-      <input
-        v-model.trim="keyword"
-        type="text"
-        placeholder="搜索活动标题/描述关键词"
-        @keyup.enter="handleSearch"
-      />
+      <div class="input-area">
+        <input
+          v-model.trim="keyword"
+          type="text"
+          placeholder="搜索活动标题/描述关键词"
+          @keyup.enter="handleSearch"
+        />
+        <button
+          v-if="keyword"
+          type="button"
+          class="clear-button"
+          @click="keyword = ''"
+        >
+          ×
+        </button>
+      </div>
       <button type="button" @click="handleSearch">搜索</button>
     </section>
 
@@ -409,6 +419,36 @@ onMounted(() => {
   gap: 10px;
 }
 
+.search-box .input-area {
+  position: relative;
+}
+
+.search-box .clear-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+  background: #e5e7eb;
+  color: #6b7280;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.search-box .clear-button:hover {
+  background: #d1d5db;
+  color: #374151;
+  transform: translateY(-50%);
+}
+
 .search-box input,
 .filters select,
 .filters input {
@@ -416,6 +456,10 @@ onMounted(() => {
   border-radius: 8px;
   padding: 10px;
   transition: all 0.2s ease;
+}
+
+.search-box input {
+  width: 100%;
 }
 
 .filters select {
