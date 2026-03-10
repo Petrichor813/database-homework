@@ -79,4 +79,17 @@ public class UserController {
         userService.deleteAccount(userId);
         return ResponseEntity.ok(Map.of("message", "账号已注销"));
     }
+
+    // @formatter:off
+    @PostMapping("/{userId}/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(
+        @PathVariable Long userId,
+        @RequestBody Map<String, String> request
+    ) {
+        // @formatter:on
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+        userService.changePassword(userId, oldPassword, newPassword);
+        return ResponseEntity.ok(Map.of("message", "密码修改成功"));
+    }
 }

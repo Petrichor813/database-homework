@@ -524,6 +524,85 @@ const handleDeleteAccount = async () => {
   closeDeleteDialog();
   router.push("/login");
 };
+
+// 修改密码
+const showChangePasswordDialog = ref(false);
+const isChangingPassword = ref(false);
+
+const changePasswordForm = reactive({
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
+
+const openChangePasswordDialog = () => {
+  changePasswordForm.oldPassword = "";
+  changePasswordForm.newPassword = "";
+  changePasswordForm.confirmPassword = "";
+  showChangePasswordDialog.value = true;
+};
+
+const closeChangePasswordDialog = () => {
+  showChangePasswordDialog.value = false;
+};
+
+const changePassword = async () => {
+  if (!profile.value?.id || isChangingPassword.value) {
+    return;
+  }
+
+  const oldPassword = changePasswordForm.oldPassword.trim();
+  if (!oldPassword) {
+    error("修改失败", "旧密码不能为空");
+    return;
+  }
+
+  const newPassword = changePasswordForm.newPassword.trim();
+  if (!newPassword) {
+    error("修改失败", "新密码不能为空");
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    error("修改失败", "新密码长度不能少于6位");
+    return;
+  }
+
+  if (oldPassword === newPassword) {
+    error("修改失败", "新密码不能与旧密码相同");
+    return;
+  }
+
+  const confirmPassword = changePasswordForm.confirmPassword.trim();
+  if (newPassword !== confirmPassword) {
+    error("修改失败", "两次输入的新密码不一致");
+    return;
+  }
+
+  isChangingPassword.value = true;
+
+  try {
+    await postJson<{ message: string }>(
+      `/api/user/${profile.value.id}/change-password`,
+      {
+        oldPassword,
+        newPassword,
+      }
+    );
+    success("修改成功", "密码已修改，请重新登录");
+    showChangePasswordDialog.value = false;
+
+    // 清除本地存储，跳转到登录页
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    router.push("/login");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "修改密码失败";
+    error("修改失败", msg);
+  } finally {
+    isChangingPassword.value = false;
+  }
+};
 </script>
 
 <template>
@@ -698,8 +777,15 @@ const handleDeleteAccount = async () => {
         </section>
 
         <section v-else class="security">
-          <p class="security-tip">管理账号的退出登录与注销，请谨慎操作。</p>
+          <p class="security-tip">管理账号的密码、退出登录与注销，请谨慎操作。</p>
           <div class="account-actions">
+            <button
+              type="button"
+              class="change-password-button"
+              @click="openChangePasswordDialog"
+            >
+              修改密码
+            </button>
             <button
               type="button"
               class="logout-button"
@@ -946,6 +1032,82 @@ const handleDeleteAccount = async () => {
             type="button"
             class="cancel-button"
             @click="closeDeleteDialog"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showChangePasswordDialog" class="dialog-bg">
+      <div class="dialog-body" role="dialog" aria-modal="true">
+        <h3>修改密码</h3>
+        <div class="edit-form">
+          <label for="oldPassword" class="form-row">
+            <span>旧密码</span>
+            <input
+              v-model="changePasswordForm.oldPassword"
+              type="password"
+              placeholder="请输入旧密码"
+              maxlength="50"
+            />
+            <button
+              v-if="changePasswordForm.oldPassword"
+              type="button"
+              class="clear-button"
+              @click="changePasswordForm.oldPassword = ''"
+            >
+              ×
+            </button>
+          </label>
+          <label for="newPassword" class="form-row">
+            <span>新密码</span>
+            <input
+              v-model="changePasswordForm.newPassword"
+              type="password"
+              placeholder="请输入新密码（至少6位）"
+              maxlength="50"
+            />
+            <button
+              v-if="changePasswordForm.newPassword"
+              type="button"
+              class="clear-button"
+              @click="changePasswordForm.newPassword = ''"
+            >
+              ×
+            </button>
+          </label>
+          <label for="confirmPassword" class="form-row">
+            <span>确认新密码</span>
+            <input
+              v-model="changePasswordForm.confirmPassword"
+              type="password"
+              placeholder="请再次输入新密码"
+              maxlength="50"
+            />
+            <button
+              v-if="changePasswordForm.confirmPassword"
+              type="button"
+              class="clear-button"
+              @click="changePasswordForm.confirmPassword = ''"
+            >
+              ×
+            </button>
+          </label>
+        </div>
+        <div class="edit-buttons">
+          <button
+            type="button"
+            class="save-button"
+            :disabled="isChangingPassword"
+            @click="changePassword"
+          >
+            {{ isChangingPassword ? "修改中..." : "确认修改" }}
+          </button>
+          <button
+            type="button"
+            class="cancel-button"
+            @click="closeChangePasswordDialog"
           >
             取消
           </button>
@@ -1407,6 +1569,23 @@ const handleDeleteAccount = async () => {
 .account-actions {
   display: flex;
   gap: 16px;
+}
+
+.change-password-button {
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.change-password-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .logout-button {

@@ -2,6 +2,7 @@ package com.volunteer.backend.service;
 
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,16 +22,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final VolunteerRepository volunteerRepository;
     private final SignupRecordRepository signupRecordRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // @formatter:off
     public UserService(
         UserRepository userRepository,
         VolunteerRepository volunteerRepository,
-        SignupRecordRepository signupRecordRepository
+        SignupRecordRepository signupRecordRepository,
+        PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.volunteerRepository = volunteerRepository;
         this.signupRecordRepository = signupRecordRepository;
+        this.passwordEncoder = passwordEncoder;
     }
     // @formatter:on
 
@@ -185,5 +189,34 @@ public class UserService {
         Volunteer volunteer = v.get();
         volunteer.markDeleted();
         volunteerRepository.save(volunteer);
+    }
+
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = findActiveUser(userId);
+
+        String trimmedOldPassword = (oldPassword != null) ? oldPassword.trim() : "";
+        if (trimmedOldPassword.isEmpty()) {
+            throw new IllegalArgumentException("旧密码不能为空");
+        }
+
+        String trimmedNewPassword = (newPassword != null) ? newPassword.trim() : "";
+        if (trimmedNewPassword.isEmpty()) {
+            throw new IllegalArgumentException("新密码不能为空");
+        }
+
+        if (trimmedNewPassword.length() < 6) {
+            throw new IllegalArgumentException("新密码长度不能少于6位");
+        }
+
+        if (trimmedOldPassword.equals(trimmedNewPassword)) {
+            throw new IllegalArgumentException("新密码不能与旧密码相同");
+        }
+
+        if (!passwordEncoder.matches(trimmedOldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("旧密码错误");
+        }
+
+        user.setPassword(passwordEncoder.encode(trimmedNewPassword));
+        userRepository.save(user);
     }
 }
