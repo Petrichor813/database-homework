@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -89,9 +90,9 @@ public class StatisticsService {
         Double totalPointsIssued = 0.0;
         for (PointChangeRecord record : allPointRecords) {
             if (record.getChangePoints() != null && record.getChangePoints() > 0) {
-                if (record.getChangeType() == PointChangeType.ACTIVITY_EARN || 
-                    record.getChangeType() == PointChangeType.SYSTEM_BONUS || 
-                    record.getChangeType() == PointChangeType.ADMIN_ADJUST) {
+                if (record.getChangeType() == PointChangeType.ACTIVITY_EARN
+                        || record.getChangeType() == PointChangeType.SYSTEM_BONUS
+                        || record.getChangeType() == PointChangeType.ADMIN_ADJUST) {
                     totalPointsIssued += record.getChangePoints();
                 }
             }
@@ -284,19 +285,9 @@ public class StatisticsService {
             months.add(i + "月");
         }
 
-        Map<ActivityType, String> activityTypeMap = new HashMap<>();
-        activityTypeMap.put(ActivityType.COMMUNITY_SERVICE, "社区服务");
-        activityTypeMap.put(ActivityType.ENVIRONMENTAL_PROTECTION, "环境保护");
-        activityTypeMap.put(ActivityType.ELDERLY_CARE, "敬老助老");
-        activityTypeMap.put(ActivityType.CHILDREN_TUTORING, "儿童助学");
-        activityTypeMap.put(ActivityType.DISABILITIES_SUPPORT, "助残服务");
-        activityTypeMap.put(ActivityType.CULTURAL_EVENTS, "文化活动");
-        activityTypeMap.put(ActivityType.HEALTH_PROMOTION, "健康宣传");
-        activityTypeMap.put(ActivityType.OTHER, "其他");
-
         List<String> activityTypes = new ArrayList<>();
         for (ActivityType type : ActivityType.values()) {
-            activityTypes.add(activityTypeMap.get(type));
+            activityTypes.add(type.getDescription());
         }
 
         List<List<Integer>> data = new ArrayList<>();
@@ -320,7 +311,7 @@ public class StatisticsService {
             }
 
             int month = activity.getStartTime().getMonthValue();
-            String typeLabel = activityTypeMap.get(activity.getType());
+            String typeLabel = activity.getType() != null ? activity.getType().getDescription() : "未知";
             int typeIndex = activityTypes.indexOf(typeLabel);
             if (typeIndex >= 0) {
                 int count = data.get(typeIndex).get(month - 1);
@@ -400,14 +391,23 @@ public class StatisticsService {
             lostVolunteers.set(month - 1, lostCount);
         }
 
-        return new VolunteerRetentionResponse(months, retentionRates, activeVolunteers, retainedVolunteers, lostVolunteers);
+        // @formatter:off
+        return new VolunteerRetentionResponse(
+            months,
+            retentionRates,
+            activeVolunteers,
+            retainedVolunteers,
+            lostVolunteers
+        );
+        // @formatter:on
     }
 
     public VolunteerGrowthRadarResponse getVolunteerGrowthRadar(Long volunteerId) {
-        Volunteer volunteer = volunteerRepository.findById(volunteerId).orElse(null);
-        if (volunteer == null) {
-            throw new IllegalArgumentException("志愿者不存在");
+        Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
+        if (v.isEmpty()) {
+            throw new IllegalArgumentException("志愿者被删除或不存在");
         }
+        Volunteer volunteer = v.get();
 
         List<SignupRecord> signups = signupRecordRepository.findByVolunteerId(volunteerId);
 
