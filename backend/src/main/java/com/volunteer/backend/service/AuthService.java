@@ -7,10 +7,10 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.volunteer.backend.dto.LoginRequest;
-import com.volunteer.backend.dto.LoginResponse;
-import com.volunteer.backend.dto.RegisterRequest;
-import com.volunteer.backend.dto.RegisterResponse;
+import com.volunteer.backend.dto.request.LoginRequest;
+import com.volunteer.backend.dto.request.RegisterRequest;
+import com.volunteer.backend.dto.response.LoginResponse;
+import com.volunteer.backend.dto.response.RegisterResponse;
 import com.volunteer.backend.entity.Token;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;

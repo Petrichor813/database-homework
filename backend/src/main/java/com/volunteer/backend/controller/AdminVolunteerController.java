@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.volunteer.backend.dto.AdminVolunteerResponse;
-import com.volunteer.backend.dto.PageResponse;
+import com.volunteer.backend.dto.response.AdminVolunteerResponse;
+import com.volunteer.backend.dto.response.PageResponse;
 import com.volunteer.backend.service.AdminVolunteerService;
 
 @RestController

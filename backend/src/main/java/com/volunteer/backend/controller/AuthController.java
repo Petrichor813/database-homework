@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.volunteer.backend.dto.LoginRequest;
-import com.volunteer.backend.dto.LoginResponse;
-import com.volunteer.backend.dto.RegisterRequest;
-import com.volunteer.backend.dto.RegisterResponse;
+import com.volunteer.backend.dto.request.LoginRequest;
+import com.volunteer.backend.dto.request.RegisterRequest;
+import com.volunteer.backend.dto.response.LoginResponse;
+import com.volunteer.backend.dto.response.RegisterResponse;
 import com.volunteer.backend.service.AuthService;
 
 @RestController

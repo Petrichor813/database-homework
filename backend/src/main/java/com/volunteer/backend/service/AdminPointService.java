@@ -11,10 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.AdminPointAdjustRequest;
-import com.volunteer.backend.dto.AdminPointRecordResponse;
-import com.volunteer.backend.dto.AdminPointUpdateRequest;
-import com.volunteer.backend.dto.PageResponse;
+import com.volunteer.backend.dto.request.AdminPointAdjustRequest;
+import com.volunteer.backend.dto.request.AdminPointUpdateRequest;
+import com.volunteer.backend.dto.response.AdminPointRecordResponse;
+import com.volunteer.backend.dto.response.PageResponse;
 import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.enums.PointChangeType;

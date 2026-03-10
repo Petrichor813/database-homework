@@ -9,10 +9,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.AdminActivityImportRequest;
-import com.volunteer.backend.dto.AdminActivityUpdateRequest;
-import com.volunteer.backend.dto.AdminSignupRecordResponse;
-import com.volunteer.backend.dto.AdminSignupUpdateRequest;
+import com.volunteer.backend.dto.request.AdminActivityImportRequest;
+import com.volunteer.backend.dto.request.AdminActivityUpdateRequest;
+import com.volunteer.backend.dto.request.AdminSignupUpdateRequest;
+import com.volunteer.backend.dto.response.AdminSignupRecordResponse;
 import com.volunteer.backend.entity.Activity;
 import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.entity.Volunteer;

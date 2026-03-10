@@ -15,11 +15,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.ActivityQueryRequest;
-import com.volunteer.backend.dto.ActivityResponse;
-import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.dto.SignupRequest;
-import com.volunteer.backend.dto.SignupResponse;
+import com.volunteer.backend.dto.request.ActivityQueryRequest;
+import com.volunteer.backend.dto.request.SignupRequest;
+import com.volunteer.backend.dto.response.ActivityResponse;
+import com.volunteer.backend.dto.response.PageResponse;
+import com.volunteer.backend.dto.response.SignupResponse;
 import com.volunteer.backend.entity.Activity;
 import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.entity.Volunteer;

@@ -12,10 +12,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.ExchangeRecordResponse;
-import com.volunteer.backend.dto.PageResponse;
 import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.entity.Product;
+import com.volunteer.backend.dto.response.ExchangeRecordResponse;
+import com.volunteer.backend.dto.response.PageResponse;
 import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.enums.ExchangeStatus;

@@ -10,8 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.AdminVolunteerResponse;
-import com.volunteer.backend.dto.PageResponse;
+import com.volunteer.backend.dto.response.AdminVolunteerResponse;
+import com.volunteer.backend.dto.response.PageResponse;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.enums.UserRole;

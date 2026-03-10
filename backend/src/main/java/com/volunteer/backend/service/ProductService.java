@@ -9,10 +9,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.ExchangeRequest;
-import com.volunteer.backend.dto.ExchangeResponse;
-import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.dto.ProductResponse;
+import com.volunteer.backend.dto.request.ExchangeRequest;
+import com.volunteer.backend.dto.response.ExchangeResponse;
+import com.volunteer.backend.dto.response.PageResponse;
+import com.volunteer.backend.dto.response.ProductResponse;
 import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.entity.Product;

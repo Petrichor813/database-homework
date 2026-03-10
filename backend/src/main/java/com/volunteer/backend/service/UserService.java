@@ -6,9 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
-import com.volunteer.backend.dto.UserProfileResponse;
-import com.volunteer.backend.dto.VolunteerApplyRequest;
+import com.volunteer.backend.dto.request.ModifyVolunteerApplicationRequest;
+import com.volunteer.backend.dto.request.VolunteerApplyRequest;
+import com.volunteer.backend.dto.response.UserProfileResponse;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.entity.Volunteer;
 import com.volunteer.backend.enums.UserRole;

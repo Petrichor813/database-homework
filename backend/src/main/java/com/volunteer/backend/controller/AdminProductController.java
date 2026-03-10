@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.volunteer.backend.dto.AdminProductImportRequest;
+import com.volunteer.backend.dto.request.AdminProductImportRequest;
 import com.volunteer.backend.entity.Product;
 import com.volunteer.backend.service.AdminProductService;
 

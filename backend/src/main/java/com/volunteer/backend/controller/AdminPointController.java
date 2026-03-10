@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.volunteer.backend.dto.AdminPointAdjustRequest;
-import com.volunteer.backend.dto.AdminPointRecordResponse;
-import com.volunteer.backend.dto.AdminPointUpdateRequest;
-import com.volunteer.backend.dto.PageResponse;
+import com.volunteer.backend.dto.request.AdminPointAdjustRequest;
+import com.volunteer.backend.dto.request.AdminPointUpdateRequest;
+import com.volunteer.backend.dto.response.AdminPointRecordResponse;
+import com.volunteer.backend.dto.response.PageResponse;
 import com.volunteer.backend.service.AdminPointService;
 
 @RestController

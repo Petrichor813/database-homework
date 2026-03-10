@@ -9,8 +9,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.dto.PointChangeRecordResponse;
+import com.volunteer.backend.dto.response.PageResponse;
+import com.volunteer.backend.dto.response.PointChangeRecordResponse;
 import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.enums.PointChangeType;
 import com.volunteer.backend.repository.PointChangeRecordRepository;

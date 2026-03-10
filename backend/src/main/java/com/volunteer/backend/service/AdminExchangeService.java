@@ -13,8 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.AdminExchangeRecordResponse;
-import com.volunteer.backend.dto.PageResponse;
+import com.volunteer.backend.dto.response.AdminExchangeRecordResponse;
+import com.volunteer.backend.dto.response.PageResponse;
 import com.volunteer.backend.entity.ExchangeRecord;
 import com.volunteer.backend.entity.PointChangeRecord;
 import com.volunteer.backend.entity.Product;

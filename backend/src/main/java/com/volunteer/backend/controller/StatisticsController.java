@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.volunteer.backend.dto.ActivityParticipationBubbleResponse;
-import com.volunteer.backend.dto.ActivityTypeTrendResponse;
-import com.volunteer.backend.dto.DashboardKPIResponse;
-import com.volunteer.backend.dto.PointFlowSankeyResponse;
-import com.volunteer.backend.dto.VolunteerActivityHeatmapResponse;
-import com.volunteer.backend.dto.VolunteerGrowthRadarResponse;
-import com.volunteer.backend.dto.VolunteerRetentionResponse;
+import com.volunteer.backend.dto.response.ActivityParticipationBubbleResponse;
+import com.volunteer.backend.dto.response.ActivityTypeTrendResponse;
+import com.volunteer.backend.dto.response.DashboardKPIResponse;
+import com.volunteer.backend.dto.response.PointFlowSankeyResponse;
+import com.volunteer.backend.dto.response.VolunteerActivityHeatmapResponse;
+import com.volunteer.backend.dto.response.VolunteerGrowthRadarResponse;
+import com.volunteer.backend.dto.response.VolunteerRetentionResponse;
 import com.volunteer.backend.service.StatisticsService;
 
 @RestController

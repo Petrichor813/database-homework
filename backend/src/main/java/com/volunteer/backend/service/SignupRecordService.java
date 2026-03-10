@@ -10,8 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.dto.SignupRecordResponse;
+import com.volunteer.backend.dto.response.PageResponse;
+import com.volunteer.backend.dto.response.SignupRecordResponse;
 import com.volunteer.backend.entity.Activity;
 import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.entity.Volunteer;

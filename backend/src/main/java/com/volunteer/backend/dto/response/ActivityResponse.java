@@ -1,0 +1,102 @@
+package com.volunteer.backend.dto.response;
+
+import com.volunteer.backend.enums.ActivityStatus;
+import com.volunteer.backend.enums.ActivityType;
+import com.volunteer.backend.enums.SignupStatus;
+
+public class ActivityResponse {
+    private Long id;
+    private String title;
+    private String description;
+    private ActivityType type;
+    private String location;
+    private String startTime;
+    private String endTime;
+    private ActivityStatus status;
+    private Double pointsPerHour;
+    private Integer maxParticipants;
+    private Integer curParticipants;
+    private SignupStatus signupStatus;
+    
+    // @formatter:off
+    public ActivityResponse(
+        Long id,
+        String title,
+        String description,
+        ActivityType type,
+        String location,
+        String startTime,
+        String endTime,
+        ActivityStatus status,
+        Double pointsPerHour,
+        Integer maxParticipants,
+        Integer curParticipants,
+        SignupStatus signupStatus
+    ) {
+        // @formatter:on
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.location = location;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.status = status;
+        this.pointsPerHour = pointsPerHour;
+        this.maxParticipants = maxParticipants;
+        this.curParticipants = curParticipants;
+        this.signupStatus = signupStatus;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public ActivityType getType() {
+        return type;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public ActivityStatus getStatus() {
+        return status;
+    }
+
+    public Double getPointsPerHour() {
+        return pointsPerHour;
+    }
+
+    public Integer getMaxParticipants() {
+        return maxParticipants;
+    }
+
+    public Integer getCurParticipants() {
+        return curParticipants;
+    }
+    
+    public SignupStatus getSignupStatus() {
+        return signupStatus;
+    }
+    
+    public void setSignupStatus(SignupStatus signupStatus) {
+        this.signupStatus = signupStatus;
+    }
+}

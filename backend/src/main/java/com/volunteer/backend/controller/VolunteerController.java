@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.volunteer.backend.dto.ExchangeRecordResponse;
-import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.dto.PointChangeRecordResponse;
-import com.volunteer.backend.dto.SignupRecordResponse;
+import com.volunteer.backend.dto.response.ExchangeRecordResponse;
+import com.volunteer.backend.dto.response.PageResponse;
+import com.volunteer.backend.dto.response.PointChangeRecordResponse;
+import com.volunteer.backend.dto.response.SignupRecordResponse;
 import com.volunteer.backend.service.ExchangeRecordService;
 import com.volunteer.backend.service.SignupRecordService;
 import com.volunteer.backend.service.VolunteerService;

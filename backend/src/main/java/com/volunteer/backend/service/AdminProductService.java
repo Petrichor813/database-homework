@@ -13,9 +13,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.volunteer.backend.dto.AdminProductRequest;
-import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.dto.ProductResponse;
+import com.volunteer.backend.dto.request.AdminProductRequest;
+import com.volunteer.backend.dto.response.PageResponse;
+import com.volunteer.backend.dto.response.ProductResponse;
 import com.volunteer.backend.entity.Product;
 import com.volunteer.backend.enums.ProductStatus;
 import com.volunteer.backend.repository.ProductRepository;
@@ -193,7 +193,7 @@ public class AdminProductService {
         productRepository.save(product);
     }
 
-    public Product importProduct(com.volunteer.backend.dto.AdminProductImportRequest request)
+    public Product importProduct(com.volunteer.backend.dto.request.AdminProductImportRequest request)
             throws IllegalArgumentException {
         if (request == null) {
             throw new IllegalArgumentException("商品导入请求不能为空");

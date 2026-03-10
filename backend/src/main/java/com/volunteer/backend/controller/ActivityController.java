@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.volunteer.backend.dto.ActivityQueryRequest;
-import com.volunteer.backend.dto.ActivityResponse;
-import com.volunteer.backend.dto.PageResponse;
-import com.volunteer.backend.dto.SignupRequest;
-import com.volunteer.backend.dto.SignupResponse;
+import com.volunteer.backend.dto.request.ActivityQueryRequest;
+import com.volunteer.backend.dto.request.SignupRequest;
+import com.volunteer.backend.dto.response.ActivityResponse;
+import com.volunteer.backend.dto.response.PageResponse;
+import com.volunteer.backend.dto.response.SignupResponse;
 import com.volunteer.backend.entity.User;
 import com.volunteer.backend.service.ActivityService;
 

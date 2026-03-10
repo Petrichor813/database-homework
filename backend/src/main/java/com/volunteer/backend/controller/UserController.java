@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.volunteer.backend.dto.ModifyVolunteerApplicationRequest;
-import com.volunteer.backend.dto.UserProfileResponse;
-import com.volunteer.backend.dto.VolunteerApplyRequest;
+import com.volunteer.backend.dto.request.ModifyVolunteerApplicationRequest;
+import com.volunteer.backend.dto.request.VolunteerApplyRequest;
+import com.volunteer.backend.dto.response.UserProfileResponse;
 import com.volunteer.backend.service.UserService;
 
 import jakarta.validation.Valid;
