@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useToast } from "../utils/toast";
 import Home from "../components/Home.vue";
 import UserCenter from "../components/UserCenter.vue";
 import ActivityList from "../components/activity/ActivityList.vue";
@@ -104,6 +105,8 @@ const router = createRouter({
   routes,
 });
 
+const { error } = useToast();
+
 router.beforeEach((to, _from, next) => {
   const requiresAdmin = to.matched.some((r) =>
     Boolean(r.meta && r.meta.requiresAdmin),
@@ -127,7 +130,8 @@ router.beforeEach((to, _from, next) => {
   try {
     user = JSON.parse(userStr) as User;
   } catch (err) {
-    console.error("解析用户信息失败:", err);
+    const msg = err instanceof Error ? err.message : "未知错误";
+    error("解析用户信息失败:", msg);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     return next("/login");
