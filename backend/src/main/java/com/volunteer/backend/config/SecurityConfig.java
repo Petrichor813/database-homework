@@ -33,7 +33,7 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/product/get-products", "/api/activity/get-activities") // 公开接口
+                .requestMatchers("/api/auth/**", "/api/product/get-products", "/api/activity/get-activities", "/api/activity/hot-activities", "/api/statistics/**") // 公开接口
                 .permitAll()
                 .anyRequest()
                 .authenticated()
