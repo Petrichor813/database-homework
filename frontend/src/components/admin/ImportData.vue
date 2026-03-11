@@ -55,6 +55,10 @@ const tabs: { label: string; value: ImportTab }[] = [
   { label: "商品导入", value: "PRODUCT" },
 ];
 
+/*****************************************************
+ ********************** 活动导入 **********************
+ *****************************************************/
+
 const activityTypeOptions: { label: string; value: ActivityType }[] = [
   { label: "社区服务", value: "COMMUNITY_SERVICE" },
   { label: "环境保护", value: "ENVIRONMENTAL_PROTECTION" },
@@ -74,6 +78,89 @@ const activityStatusOptions: { label: string; value: ActivityStatus }[] = [
   { label: "已取消", value: "CANCELLED" },
 ];
 
+const activityForm = reactive({
+  title: "",
+  description: "",
+  type: "COMMUNITY_SERVICE" as ActivityType,
+  location: "",
+  startTime: "",
+  endTime: "",
+  status: "RECRUITING" as ActivityStatus,
+  pointsPerHour: 1,
+  maxParticipants: 20,
+});
+
+const validateActivityForm = () => {
+  if (!activityForm.title.trim()) {
+    error("导入失败", "请填写活动名称");
+    return false;
+  }
+  if (!activityForm.location.trim()) {
+    error("导入失败", "请填写活动地点");
+    return false;
+  }
+  if (!activityForm.startTime || !activityForm.endTime) {
+    error("导入失败", "请选择活动开始/结束时间");
+    return false;
+  }
+  if (new Date(activityForm.startTime) >= new Date(activityForm.endTime)) {
+    error("导入失败", "结束时间必须晚于开始时间");
+    return false;
+  }
+  if (activityForm.pointsPerHour <= 0) {
+    error("导入失败", "每小时积分必须大于 0");
+    return false;
+  }
+  if (activityForm.maxParticipants <= 0) {
+    error("导入失败", "活动人数上限必须大于 0");
+    return false;
+  }
+  return true;
+};
+
+const submitActivityImport = async () => {
+  if (!validateActivityForm()) {
+    return;
+  }
+
+  try {
+    const request = {
+      title: activityForm.title,
+      description: activityForm.description,
+      type: activityForm.type,
+      location: activityForm.location,
+      startTime: activityForm.startTime,
+      endTime: activityForm.endTime,
+      status: activityForm.status,
+      pointsPerHour: activityForm.pointsPerHour,
+      maxParticipants: activityForm.maxParticipants,
+    };
+
+    await postJson("/api/admin/activity/import", request);
+    success("导入活动数据成功", `已导入活动 ${activityForm.title}`);
+    resetActivityForm();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "未知错误";
+    error("导入活动数据失败", msg);
+  }
+};
+
+const resetActivityForm = () => {
+  activityForm.title = "";
+  activityForm.description = "";
+  activityForm.type = "COMMUNITY_SERVICE";
+  activityForm.location = "";
+  activityForm.startTime = "";
+  activityForm.endTime = "";
+  activityForm.status = "RECRUITING";
+  activityForm.pointsPerHour = 1;
+  activityForm.maxParticipants = 20;
+};
+
+/*****************************************************
+ ********************** 商品导入 **********************
+ *****************************************************/
+
 const productTypeOptions: { label: string; value: ProductType }[] = [
   { label: "日用品", value: "DAILY_NECESSITIES" },
   { label: "书籍", value: "BOOKS" },
@@ -88,18 +175,6 @@ const productStatusOptions: { label: string; value: ProductStatus }[] = [
   { label: "售罄", value: "SOLD_OUT" },
   { label: "已删除", value: "DELETED" },
 ];
-
-const activityForm = reactive({
-  title: "",
-  description: "",
-  type: "COMMUNITY_SERVICE" as ActivityType,
-  location: "",
-  startTime: "",
-  endTime: "",
-  status: "RECRUITING" as ActivityStatus,
-  pointsPerHour: 1,
-  maxParticipants: 20,
-});
 
 const productForm = reactive({
   name: "",
@@ -127,7 +202,7 @@ const productImageText = computed(() => {
 const uploadImageToCos = async (file: File): Promise<string> => {
   try {
     const credential = (await getJson(
-      "/api/cos-sts/credential"
+      "/api/cos-sts/credential",
     )) as StsCredentialResponse;
 
     const cosClient = new COS({
@@ -161,7 +236,7 @@ const uploadImageToCos = async (file: File): Promise<string> => {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
 
@@ -210,32 +285,32 @@ const pickImage = async (event: Event) => {
   }
 };
 
-const validateActivityForm = () => {
-  if (!activityForm.title.trim()) {
-    error("导入失败", "请填写活动名称");
-    return false;
+const deleteImageFromCos = async (fileUrl: string): Promise<void> => {
+  try {
+    await deleteJson("/api/cos-sts/object", { fileUrl });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "删除文件失败";
+    throw new Error(msg);
   }
-  if (!activityForm.location.trim()) {
-    error("导入失败", "请填写活动地点");
-    return false;
+};
+
+const removeImage = async () => {
+  if (productImageUrl.value) {
+    try {
+      await deleteImageFromCos(productImageUrl.value);
+    } catch (err) {
+      error("删除失败", "图片删除失败，但已清除本地选择");
+    }
   }
-  if (!activityForm.startTime || !activityForm.endTime) {
-    error("导入失败", "请选择活动开始/结束时间");
-    return false;
+  productImage.value = null;
+  productImageUrl.value = "";
+
+  const fileInput = document.querySelector(
+    'input[type="file"]',
+  ) as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = "";
   }
-  if (new Date(activityForm.startTime) >= new Date(activityForm.endTime)) {
-    error("导入失败", "结束时间必须晚于开始时间");
-    return false;
-  }
-  if (activityForm.pointsPerHour <= 0) {
-    error("导入失败", "每小时积分必须大于 0");
-    return false;
-  }
-  if (activityForm.maxParticipants <= 0) {
-    error("导入失败", "活动人数上限必须大于 0");
-    return false;
-  }
-  return true;
 };
 
 const validateProductForm = () => {
@@ -256,45 +331,6 @@ const validateProductForm = () => {
     return false;
   }
   return true;
-};
-
-const submitActivityImport = async () => {
-  if (!validateActivityForm()) {
-    return;
-  }
-
-  try {
-    const request = {
-      title: activityForm.title,
-      description: activityForm.description,
-      type: activityForm.type,
-      location: activityForm.location,
-      startTime: activityForm.startTime,
-      endTime: activityForm.endTime,
-      status: activityForm.status,
-      pointsPerHour: activityForm.pointsPerHour,
-      maxParticipants: activityForm.maxParticipants,
-    };
-
-    await postJson("/api/admin/activity/import", request);
-    success("导入活动数据成功", `已导入活动 ${activityForm.title}`);
-    resetActivityForm();
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "未知错误";
-    error("导入活动数据失败", msg);
-  }
-};
-
-const resetActivityForm = () => {
-  activityForm.title = "";
-  activityForm.description = "";
-  activityForm.type = "COMMUNITY_SERVICE";
-  activityForm.location = "";
-  activityForm.startTime = "";
-  activityForm.endTime = "";
-  activityForm.status = "RECRUITING";
-  activityForm.pointsPerHour = 1;
-  activityForm.maxParticipants = 20;
 };
 
 const submitProductImport = async () => {
@@ -323,34 +359,6 @@ const submitProductImport = async () => {
   }
 };
 
-const deleteImageFromCos = async (fileUrl: string): Promise<void> => {
-  try {
-    await deleteJson("/api/cos-sts/object", { fileUrl });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "删除文件失败";
-    throw new Error(msg);
-  }
-};
-
-const removeImage = async () => {
-  if (productImageUrl.value) {
-    try {
-      await deleteImageFromCos(productImageUrl.value);
-    } catch (err) {
-      error("删除失败", "图片删除失败，但已清除本地选择");
-    }
-  }
-  productImage.value = null;
-  productImageUrl.value = "";
-
-  const fileInput = document.querySelector(
-    'input[type="file"]'
-  ) as HTMLInputElement;
-  if (fileInput) {
-    fileInput.value = "";
-  }
-};
-
 const resetProductForm = () => {
   productForm.name = "";
   productForm.description = "";
@@ -363,7 +371,7 @@ const resetProductForm = () => {
   productImageUrl.value = "";
 
   const fileInput = document.querySelector(
-    'input[type="file"]'
+    'input[type="file"]',
   ) as HTMLInputElement;
   if (fileInput) {
     fileInput.value = "";

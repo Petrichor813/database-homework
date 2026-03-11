@@ -9,11 +9,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         // @formatter:off
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:20000")
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+        registry.addMapping("/api/**") // 匹配路径（接口）
+                .allowedOrigins("http://localhost:20000") // 配置允许的前端域名
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS") // 配置允许的 HTTP 方法
+                .allowedHeaders("*") // 配置允许的请求头
+                .allowCredentials(true); // 允许携带凭证
         // @formatter:on
     }
 }

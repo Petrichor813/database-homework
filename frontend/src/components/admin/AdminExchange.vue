@@ -74,14 +74,13 @@ const tabs: { label: string; value: AdminExchangeTab }[] = [
   { label: "商品管理", value: "PRODUCTS" },
 ];
 
+/*****************************************************
+ ******************** 兑换记录管理 *******************
+ ****************************************************/
+
 const exchangePagination = usePagination(8);
-const productPagination = usePagination(8);
-
 const exchangeLoading = ref(false);
-const productLoading = ref(false);
-
 const exchangeRecords = ref<ExchangeRecord[]>([]);
-const products = ref<Product[]>([]);
 
 const exchangeStatusFilter = ref<string>("ALL");
 const exchangeStatusOptions = [
@@ -93,8 +92,6 @@ const exchangeStatusOptions = [
   { label: "已取消", value: "CANCELLED" },
 ];
 
-const productSearchKeyword = ref("");
-
 const statusLabelMap: Record<ExchangeStatus, string> = {
   REVIEWING: "待处理",
   PROCESSING: "处理中",
@@ -102,6 +99,36 @@ const statusLabelMap: Record<ExchangeStatus, string> = {
   CANCELLED: "已取消",
   REJECTED: "已拒绝",
 };
+
+const changeExchangeStatusFilter = (value: string) => {
+  if (exchangeStatusFilter.value === value) return;
+  exchangeStatusFilter.value = value;
+};
+
+const fetchExchangeRecords = async (page: number) => {
+  exchangeLoading.value = true;
+  try {
+    const data = await getJson<PageResponse<ExchangeRecord>>(
+      `/api/admin/exchange-records?status=${exchangeStatusFilter.value}&page=${page}&size=${exchangePagination.pageObject.value.pageSize}`,
+    );
+    exchangeRecords.value = data.content;
+    exchangePagination.updatePageState(data);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "获取兑换记录失败";
+    error("加载失败", msg);
+  } finally {
+    exchangeLoading.value = false;
+  }
+};
+
+/*****************************************************
+ ********************** 商品管理 *********************
+ ****************************************************/
+
+const productPagination = usePagination(8);
+const productLoading = ref(false);
+const products = ref<Product[]>([]);
+const productSearchKeyword = ref("");
 
 const productStatusMap: Record<ProductStatus, string> = {
   AVAILABLE: "可兑换",
@@ -118,29 +145,13 @@ const productTypeMap: Record<ProductType, string> = {
   OTHER: "其他",
 };
 
-const fetchExchangeRecords = async (page: number) => {
-  exchangeLoading.value = true;
-  try {
-    const data = await getJson<PageResponse<ExchangeRecord>>(
-      `/api/admin/exchange-records?status=${exchangeStatusFilter.value}&page=${page}&size=${exchangePagination.pageObject.value.pageSize}`
-    );
-    exchangeRecords.value = data.content;
-    exchangePagination.updatePageState(data);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "获取兑换记录失败";
-    error("加载失败", msg);
-  } finally {
-    exchangeLoading.value = false;
-  }
-};
-
 const fetchProducts = async (page: number) => {
   productLoading.value = true;
   try {
     const keyword = productSearchKeyword.value.trim();
     const url = keyword
       ? `/api/admin/products?keyword=${encodeURIComponent(
-          keyword
+          keyword,
         )}&page=${page}&size=${productPagination.pageObject.value.pageSize}`
       : `/api/admin/products?page=${page}&size=${productPagination.pageObject.value.pageSize}`;
     const data = await getJson<PageResponse<Product>>(url);
@@ -154,25 +165,6 @@ const fetchProducts = async (page: number) => {
   }
 };
 
-watch(activeTab, (newTab) => {
-  if (newTab === "EXCHANGE_RECORDS" && exchangeRecords.value.length === 0) {
-    fetchExchangeRecords(0);
-  } else if (newTab === "PRODUCTS" && products.value.length === 0) {
-    fetchProducts(0);
-  }
-});
-
-watch(exchangeStatusFilter, () => {
-  fetchExchangeRecords(0);
-});
-
-onMounted(() => fetchExchangeRecords(0));
-
-const changeExchangeStatusFilter = (value: string) => {
-  if (exchangeStatusFilter.value === value) return;
-  exchangeStatusFilter.value = value;
-};
-
 const searchProducts = () => {
   fetchProducts(0);
 };
@@ -181,6 +173,10 @@ const clearSearch = () => {
   productSearchKeyword.value = "";
   fetchProducts(0);
 };
+
+/*****************************************************
+ ********************** 弹窗逻辑 *********************
+ ****************************************************/
 
 const showApproveDialog = ref(false);
 const showRejectDialog = ref(false);
@@ -202,14 +198,6 @@ const isAnyDialogOpen = computed(() => {
     showProductDialog.value ||
     showDeleteProductDialog.value
   );
-});
-
-watch(isAnyDialogOpen, (isOpen) => {
-  if (isOpen) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
-  }
 });
 
 const editForm = reactive({
@@ -261,7 +249,7 @@ const updateExchange = async () => {
       {
         number: editForm.number,
         status: editForm.status,
-      }
+      },
     );
     success("保存成功", "兑换记录已更新");
     closeEditDialog();
@@ -307,7 +295,7 @@ const approveExchange = async () => {
       `/api/admin/exchange-records/${currentExchangeRecord.value.id}/approve`,
       {
         note: processNote.value.trim() || "管理员批准兑换",
-      }
+      },
     );
     success("批准成功", "兑换申请已批准");
     closeApproveDialog();
@@ -329,7 +317,7 @@ const rejectExchange = async () => {
       `/api/admin/exchange-records/${currentExchangeRecord.value.id}/reject`,
       {
         note: processNote.value.trim() || "管理员拒绝兑换",
-      }
+      },
     );
     success("拒绝成功", "兑换申请已拒绝，积分已退还");
     closeRejectDialog();
@@ -375,7 +363,7 @@ const productImageText = computed(() => {
 const uploadImageToCos = async (file: File): Promise<string> => {
   try {
     const credential = (await getJson(
-      "/api/cos-sts/credential"
+      "/api/cos-sts/credential",
     )) as StsCredentialResponse;
 
     const cosClient = new COS({
@@ -409,7 +397,7 @@ const uploadImageToCos = async (file: File): Promise<string> => {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
 
@@ -482,7 +470,7 @@ const removeImage = async () => {
   productForm.imageUrl = "";
 
   const fileInput = document.querySelector(
-    '.product-form input[type="file"]'
+    '.product-form input[type="file"]',
   ) as HTMLInputElement;
   if (fileInput) {
     fileInput.value = "";
@@ -502,22 +490,6 @@ const productStatusOptions: { label: string; value: ProductStatus }[] = [
   { label: "可兑换", value: "AVAILABLE" },
   { label: "已售罄", value: "SOLD_OUT" },
 ];
-
-const openAddProductDialog = () => {
-  isEditMode.value = false;
-  currentProduct.value = null;
-  productForm.name = "";
-  productForm.description = "";
-  productForm.price = 0;
-  productForm.stock = 0;
-  productForm.category = "DAILY_NECESSITIES";
-  productForm.status = "AVAILABLE";
-  productForm.sortWeight = 0;
-  productForm.imageUrl = "";
-  productImage.value = null;
-  productImageUrl.value = "";
-  showProductDialog.value = true;
-};
 
 const openEditProductDialog = (product: Product) => {
   isEditMode.value = true;
@@ -579,13 +551,12 @@ const saveProduct = async () => {
       imageUrl: productForm.imageUrl.trim() || null,
     };
 
-    if (isEditMode.value && currentProduct.value) {
-      await putJson(`/api/admin/products/${currentProduct.value.id}`, payload);
-      success("保存成功", "商品信息已更新");
-    } else {
-      await postJson("/api/admin/products", payload);
-      success("创建成功", "新商品已添加");
+    if (!currentProduct.value) {
+      error("保存失败", "未找到当前商品");
+      return;
     }
+    await putJson(`/api/admin/products/${currentProduct.value.id}`, payload);
+    success("保存成功", "商品信息已更新");
 
     closeProductDialog();
     await fetchProducts(productPagination.pageObject.value.curPage);
@@ -623,6 +594,32 @@ const deleteProduct = async () => {
     isProductDeleting.value = false;
   }
 };
+
+/*****************************************************
+ ********************** 全局事件 **********************
+ *****************************************************/
+
+watch(activeTab, (newTab) => {
+  if (newTab === "EXCHANGE_RECORDS" && exchangeRecords.value.length === 0) {
+    fetchExchangeRecords(0);
+  } else if (newTab === "PRODUCTS" && products.value.length === 0) {
+    fetchProducts(0);
+  }
+});
+
+watch(exchangeStatusFilter, () => {
+  fetchExchangeRecords(0);
+});
+
+onMounted(() => fetchExchangeRecords(0));
+
+watch(isAnyDialogOpen, (isOpen) => {
+  if (isOpen) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+});
 </script>
 
 <template>
@@ -738,7 +735,10 @@ const deleteProduct = async () => {
               :items="exchangeRecords"
               :loading="exchangeLoading"
               :page-ranges="exchangePagination.pageRanges.value"
-              :go-to-page="(page: number) => exchangePagination.goToPage(page, fetchExchangeRecords)"
+              :go-to-page="
+                (page: number) =>
+                  exchangePagination.goToPage(page, fetchExchangeRecords)
+              "
               :prev-page="
                 () => exchangePagination.prevPage(fetchExchangeRecords)
               "
@@ -769,13 +769,6 @@ const deleteProduct = async () => {
             </div>
             <button type="button" class="search-button" @click="searchProducts">
               搜索
-            </button>
-            <button
-              type="button"
-              class="add-button"
-              @click="openAddProductDialog"
-            >
-              新增商品
             </button>
           </div>
 
@@ -848,7 +841,10 @@ const deleteProduct = async () => {
               :items="products"
               :loading="productLoading"
               :page-ranges="productPagination.pageRanges.value"
-              :go-to-page="(page: number) => productPagination.goToPage(page, fetchProducts)"
+              :go-to-page="
+                (page: number) =>
+                  productPagination.goToPage(page, fetchProducts)
+              "
               :prev-page="() => productPagination.prevPage(fetchProducts)"
               :next-page="() => productPagination.nextPage(fetchProducts)"
             />
@@ -1001,11 +997,7 @@ const deleteProduct = async () => {
           </div>
         </div>
         <div class="dialog-actions">
-          <button
-            type="button"
-            class="close-button"
-            @click="closeDetailDialog"
-          >
+          <button type="button" class="close-button" @click="closeDetailDialog">
             关闭
           </button>
         </div>
@@ -1092,7 +1084,7 @@ const deleteProduct = async () => {
 
     <div v-if="showProductDialog" class="dialog-bg">
       <div class="dialog-body product-dialog" role="dialog" aria-modal="true">
-        <h3>{{ isEditMode ? "编辑商品" : "新增商品" }}</h3>
+        <h3>编辑商品</h3>
         <div class="product-form">
           <div class="form-row">
             <label>商品名称 <span class="required">*</span></label>
@@ -1200,7 +1192,7 @@ const deleteProduct = async () => {
             :disabled="isProductSaving"
             @click="saveProduct"
           >
-            {{ isEditMode ? "保存修改" : "创建商品" }}
+            保存修改
           </button>
           <button
             type="button"
@@ -1517,7 +1509,7 @@ const deleteProduct = async () => {
 .search-box {
   position: relative;
   flex: 1;
-  max-width: 500px;
+  min-width: 0;
 }
 
 .search-box input {
@@ -1564,23 +1556,6 @@ const deleteProduct = async () => {
 }
 
 .search-button {
-  background: white;
-  color: #374151;
-  font-weight: 500;
-  padding: 10px 20px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.search-button:hover {
-  background: #f8fafc;
-  border-color: #d1d5db;
-  transform: translateY(-1px);
-}
-
-.add-button {
   background: #2563eb;
   color: white;
   font-weight: 600;
@@ -1589,9 +1564,10 @@ const deleteProduct = async () => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.add-button:hover {
+.search-button:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
