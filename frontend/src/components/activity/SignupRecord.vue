@@ -285,11 +285,12 @@ th {
   font-size: 13px;
   font-weight: 600;
   color: #6b7280;
-  text-align: left;
+  text-align: center;
   padding: 14px 16px;
 }
 
 td {
+  text-align: center;
   padding: 14px 16px;
   border-top: 1px solid #e5e7eb;
 }
@@ -329,32 +330,34 @@ tr:hover {
 .info-button,
 .cancel-button {
   cursor: pointer;
-  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+  border: none;
   padding: 6px 12px;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .info-button {
-  background: white;
-  color: #374151;
-  border: 1px solid #e5e7eb;
+  background: #2563eb;
   margin-right: 8px;
 }
 
 .info-button:hover {
-  background: #f8fafc;
-  border-color: #d1d5db;
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3)
 }
 
 .cancel-button {
   background: #ef4444;
-  color: white;
-  border: none;
   margin-right: 0;
 }
 
 .cancel-button:hover {
   background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .dialog-bg {
