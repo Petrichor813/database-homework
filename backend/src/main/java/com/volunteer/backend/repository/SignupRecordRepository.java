@@ -17,7 +17,11 @@ import com.volunteer.backend.enums.SignupStatus;
 public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long> {
     Page<SignupRecord> findByVolunteerIdOrderBySignupTimeDesc(Long volunteerId, Pageable pageable);
 
+    Page<SignupRecord> findByVolunteerIdAndStatusNotOrderBySignupTimeDesc(Long volunteerId, SignupStatus status, Pageable pageable);
+
     List<SignupRecord> findByVolunteerId(Long volunteerId);
+
+    List<SignupRecord> findByVolunteerIdAndStatusNot(Long volunteerId, SignupStatus status);
 
     List<SignupRecord> findByActivityIdOrderBySignupTimeDesc(Long activityId);
 

@@ -63,10 +63,9 @@ const handleCancelSignup = async (record: SignupRecord) => {
       },
     );
 
-    // 更新报名记录状态
-    record.status = "CANCELLED";
-
     success("取消报名成功", response.message);
+
+    await fetchSignupRecords();
   } catch (e) {
     const msg = e instanceof Error ? e.message : "取消报名失败";
     error("取消报名失败", msg);

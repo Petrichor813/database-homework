@@ -15,6 +15,7 @@ import com.volunteer.backend.dto.response.SignupRecordResponse;
 import com.volunteer.backend.entity.Activity;
 import com.volunteer.backend.entity.SignupRecord;
 import com.volunteer.backend.entity.Volunteer;
+import com.volunteer.backend.enums.SignupStatus;
 import com.volunteer.backend.repository.ActivityRepository;
 import com.volunteer.backend.repository.SignupRecordRepository;
 import com.volunteer.backend.repository.VolunteerRepository;
@@ -46,8 +47,8 @@ public class SignupRecordService {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<SignupRecord> recordPage = signupRecordRepository.findByVolunteerIdOrderBySignupTimeDesc(volunteerId,
-                pageable);
+        Page<SignupRecord> recordPage = signupRecordRepository.findByVolunteerIdAndStatusNotOrderBySignupTimeDesc(volunteerId,
+                SignupStatus.CANCELLED, pageable);
 
         List<SignupRecord> records = recordPage.getContent();
         List<SignupRecordResponse> content = new ArrayList<>();
@@ -95,7 +96,7 @@ public class SignupRecordService {
             throw new IllegalArgumentException("未找到志愿者信息");
         }
 
-        List<SignupRecord> records = signupRecordRepository.findByVolunteerId(volunteerId);
+        List<SignupRecord> records = signupRecordRepository.findByVolunteerIdAndStatusNot(volunteerId, SignupStatus.CANCELLED);
         List<SignupRecordResponse> content = new ArrayList<>();
 
         for (SignupRecord r : records) {
