@@ -761,7 +761,7 @@ const updateRadarChart = () => {
         ];
         
         let tooltip = `${params.name}<br/><br/>`;
-        indicators.forEach((indicator, index) => {
+        indicators.forEach((indicator) => {
           tooltip += `${indicator.name}: ${formatScore(indicator.value)}<br/>`;
         });
         

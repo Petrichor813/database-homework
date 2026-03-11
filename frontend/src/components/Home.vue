@@ -217,7 +217,7 @@ onMounted(() => {
         <p class="header-tag">社区志愿服务平台</p>
         <h2>让公益更加高效，让志愿更有温度</h2>
         <p class="header-desc">
-          统一入口、活动管理、积分激励与数据看板，帮助社区更好组织志愿服务。
+          汇聚爱心力量，连接邻里温暖。参与志愿活动，收获成长与认可，让每一份善意都有回响。
         </p>
         <div class="activity-actions">
           <button type="button" class="join-button" @click="handleJoin">
