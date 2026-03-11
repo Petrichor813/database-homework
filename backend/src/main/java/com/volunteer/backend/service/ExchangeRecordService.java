@@ -56,8 +56,8 @@ public class ExchangeRecordService {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ExchangeRecord> recordPage = exchangeRecordRepository.findByVolunteerIdOrderByOrderTimeDesc(volunteerId,
-                pageable);
+        Page<ExchangeRecord> recordPage = exchangeRecordRepository.findByVolunteerIdAndStatusNotOrderByOrderTimeDesc(volunteerId,
+                ExchangeStatus.CANCELLED, pageable);
 
         List<ExchangeRecordResponse> content = new ArrayList<>();
         List<ExchangeRecord> records = recordPage.getContent();

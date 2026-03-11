@@ -15,9 +15,13 @@ import com.volunteer.backend.enums.SignupStatus;
 
 @Repository
 public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long> {
-    Page<SignupRecord> findByVolunteerIdOrderBySignupTimeDesc(Long volunteerId, Pageable pageable);
-
-    Page<SignupRecord> findByVolunteerIdAndStatusNotOrderBySignupTimeDesc(Long volunteerId, SignupStatus status, Pageable pageable);
+    // @formatter:off
+    Page<SignupRecord> findByVolunteerIdAndStatusNotOrderBySignupTimeDesc(
+        Long volunteerId,
+        SignupStatus status,
+        Pageable pageable
+    );
+    // @formatter:on
 
     List<SignupRecord> findByVolunteerId(Long volunteerId);
 
@@ -27,8 +31,6 @@ public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long
 
     @Query("SELECT COALESCE(SUM(s.actualHours), 0) FROM SignupRecord s WHERE s.volunteerId = :volunteerId")
     Integer sumHoursByVolunteerId(@Param("volunteerId") Long volunteerId);
-
-    boolean existsByVolunteerIdAndActivityId(Long volunteerId, Long activityId);
 
     Optional<SignupRecord> findByVolunteerIdAndActivityId(Long volunteerId, Long activityId);
 
@@ -40,7 +42,8 @@ public interface SignupRecordRepository extends JpaRepository<SignupRecord, Long
     );
     // @formatter:on
 
-    @Query("SELECT COUNT(s) > 0 FROM SignupRecord s WHERE s.volunteerId = :volunteerId AND s.activityId = :activityId AND s.status != :status")
+    @Query("SELECT COUNT(s) > 0 FROM SignupRecord s WHERE s.volunteerId = :volunteerId AND s.activityId = :activityId"
+            + " AND s.status != :status")
     // @formatter:off
     boolean existsByVolunteerIdAndActivityIdAndStatusNot(
         @Param("volunteerId") Long volunteerId,

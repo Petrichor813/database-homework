@@ -11,5 +11,8 @@ import com.volunteer.backend.enums.ExchangeStatus;
 @Repository
 public interface ExchangeRecordRepository extends JpaRepository<ExchangeRecord, Long> {
     Page<ExchangeRecord> findByVolunteerIdOrderByOrderTimeDesc(Long volunteerId, Pageable pageable);
+
+    Page<ExchangeRecord> findByVolunteerIdAndStatusNotOrderByOrderTimeDesc(Long volunteerId, ExchangeStatus status, Pageable pageable);
+
     Page<ExchangeRecord> findByStatus(ExchangeStatus status, Pageable pageable);
 }

@@ -22,8 +22,6 @@ public interface VolunteerRepository extends JpaRepository<Volunteer, Long> {
 
     Page<Volunteer> findByStatusAndDeletedFalse(VolunteerStatus status, Pageable pageable);
 
-    Page<Volunteer> findByStatusNotAndDeletedFalse(VolunteerStatus status, Pageable pageable);
-
     @Query("SELECT v FROM Volunteer v WHERE v.deleted = false AND v.name LIKE %:keyword%")
     Page<Volunteer> findByKeywordAndDeletedFalse(@Param("keyword") String keyword, Pageable pageable);
 
