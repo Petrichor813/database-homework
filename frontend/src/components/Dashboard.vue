@@ -104,7 +104,22 @@ interface VolunteerGrowthRadarResponse {
   serviceQuality: number;
   continuity: number;
   initiative: number;
+  completedActivities: number;
+  distinctActivityTypes: number;
+  monthsParticipated: number;
+  consecutiveActiveMonths: number;
+  activityCompletionRate: number;
+  onTimeCompletionRate: number;
+  earlySignupRate: number;
+  pointsPerHour: number;
 }
+
+const formatScore = (score: number): string => {
+  if (score === null || score === undefined) {
+    return "0.00";
+  }
+  return score.toFixed(2);
+};
 
 const formatPoints = (points: number): string => {
   if (points === null || points === undefined) {
@@ -734,6 +749,34 @@ const updateRadarChart = () => {
   radarFigure.value = {
     tooltip: {
       trigger: "item",
+      formatter: function (params: any) {
+        const data = radarData.value;
+        if (!data) return "";
+        
+        const indicators = [
+          { name: "活动参与", value: data.activityParticipation },
+          { name: "服务质量", value: data.serviceQuality },
+          { name: "连续性", value: data.continuity },
+          { name: "主动性", value: data.initiative },
+        ];
+        
+        let tooltip = `${params.name}<br/><br/>`;
+        indicators.forEach((indicator, index) => {
+          tooltip += `${indicator.name}: ${formatScore(indicator.value)}<br/>`;
+        });
+        
+        tooltip += `<br/>详细信息:<br/>`;
+        tooltip += `已完成活动: ${data.completedActivities}/${data.totalActivities}<br/>`;
+        tooltip += `活动完成率: ${data.activityCompletionRate}%<br/>`;
+        tooltip += `按时完成率: ${data.onTimeCompletionRate}%<br/>`;
+        tooltip += `早期报名率: ${data.earlySignupRate}%<br/>`;
+        tooltip += `积分效率: ${formatPoints(data.pointsPerHour)}/小时<br/>`;
+        tooltip += `活动类型: ${data.distinctActivityTypes}种<br/>`;
+        tooltip += `参与月份: ${data.monthsParticipated}个月<br/>`;
+        tooltip += `连续活跃: ${data.consecutiveActiveMonths}个月`;
+        
+        return tooltip;
+      },
     },
     legend: {
       data: ["志愿者成长"],
@@ -825,12 +868,24 @@ const exportRadarCSV = (): string => {
 
   const data = radarData.value;
   let csv =
-    "志愿者姓名,手机号,总活动数,总时长(小时),总积分,活动参与度,服务质量,连续性,主动性\n";
+    "志愿者姓名,手机号,总活动数,已完成活动数,总时长(小时),总积分,活动参与度,服务质量,连续性,主动性\n";
   csv += `${data.volunteerName},${data.volunteerPhone},${
     data.totalActivities
-  },${data.totalHours},${formatPoints(data.totalPoints)},${
-    data.activityParticipation
-  },${data.serviceQuality},${data.continuity},${data.initiative}\n`;
+  },${data.completedActivities},${data.totalHours},${formatPoints(
+    data.totalPoints
+  )},${formatScore(data.activityParticipation)},${formatScore(
+    data.serviceQuality
+  )},${formatScore(data.continuity)},${formatScore(data.initiative)}\n`;
+  
+  csv += "\n详细指标数据\n";
+  csv += "指标名称,数值\n";
+  csv += `活动完成率,${data.activityCompletionRate}%\n`;
+  csv += `按时完成率,${data.onTimeCompletionRate}%\n`;
+  csv += `早期报名率,${data.earlySignupRate}%\n`;
+  csv += `积分效率,${formatPoints(data.pointsPerHour)}积分/小时\n`;
+  csv += `参与活动类型数,${data.distinctActivityTypes}种\n`;
+  csv += `参与月份数,${data.monthsParticipated}个月\n`;
+  csv += `连续活跃月数,${data.consecutiveActiveMonths}个月`;
 
   return csv;
 };

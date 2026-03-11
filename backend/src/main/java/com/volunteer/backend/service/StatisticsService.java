@@ -2,11 +2,13 @@ package com.volunteer.backend.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.volunteer.backend.dto.ActivityParticipationBubble;
@@ -87,18 +89,19 @@ public class StatisticsService {
             }
         }
 
-        Double totalPointsIssued = 0.0;
+        // 总积分发放包括活动发放、系统奖励以及管理员调整的正积分
+        Double totalPointsReleased = 0.0;
         for (PointChangeRecord record : allPointRecords) {
             if (record.getChangePoints() != null && record.getChangePoints() > 0) {
                 if (record.getChangeType() == PointChangeType.ACTIVITY_EARN
                         || record.getChangeType() == PointChangeType.SYSTEM_BONUS
                         || record.getChangeType() == PointChangeType.ADMIN_ADJUST) {
-                    totalPointsIssued += record.getChangePoints();
+                    totalPointsReleased += record.getChangePoints();
                 }
             }
         }
 
-        return new DashboardKPIResponse(totalServiceHours, totalActivities, activeVolunteers, totalPointsIssued);
+        return new DashboardKPIResponse(totalServiceHours, totalActivities, activeVolunteers, totalPointsReleased);
     }
 
     public VolunteerActivityHeatmapResponse getVolunteerActivityHeatmap(Integer year) {
@@ -125,8 +128,8 @@ public class StatisticsService {
             data.add(row);
         }
 
-        List<SignupRecord> allSignups = signupRecordRepository.findAll();
-        for (SignupRecord record : allSignups) {
+        List<SignupRecord> allRecords = signupRecordRepository.findAll();
+        for (SignupRecord record : allRecords) {
             if (record.getSignupTime() == null) {
                 continue;
             }
@@ -138,11 +141,7 @@ public class StatisticsService {
             }
 
             int month = signupTime.getMonthValue();
-            int weekday = signupTime.getDayOfWeek().getValue();
-            int weekdayIndex = weekday - 1;
-            if (weekdayIndex < 0) {
-                weekdayIndex = 6;
-            }
+            int weekdayIndex = signupTime.getDayOfWeek().ordinal();
 
             int count = data.get(month - 1).get(weekdayIndex);
             data.get(month - 1).set(weekdayIndex, count + 1);
@@ -232,7 +231,7 @@ public class StatisticsService {
 
     public ActivityParticipationBubbleResponse getActivityParticipationBubble(Integer year) {
         List<Activity> activities = activityRepository.findAll();
-        List<SignupRecord> allSignups = signupRecordRepository.findAll();
+        List<SignupRecord> allRecords = signupRecordRepository.findAll();
 
         List<ActivityParticipationBubble> bubbles = new ArrayList<>();
         for (Activity activity : activities) {
@@ -249,14 +248,14 @@ public class StatisticsService {
             Integer totalHours = 0;
             Double totalPoints = 0.0;
 
-            for (SignupRecord signup : allSignups) {
-                if (signup.getActivityId().equals(activity.getId())) {
+            for (SignupRecord record : allRecords) {
+                if (record.getActivityId().equals(activity.getId())) {
                     participantCount++;
-                    if (signup.getActualHours() != null) {
-                        totalHours += signup.getActualHours();
+                    if (record.getActualHours() != null) {
+                        totalHours += record.getActualHours();
                     }
-                    if (signup.getPoints() != null) {
-                        totalPoints += signup.getPoints();
+                    if (record.getPoints() != null) {
+                        totalPoints += record.getPoints();
                     }
                 }
             }
@@ -340,10 +339,10 @@ public class StatisticsService {
             lostVolunteers.add(0);
         }
 
-        List<SignupRecord> allSignups = signupRecordRepository.findAll();
+        List<SignupRecord> allRecords = signupRecordRepository.findAll();
         Map<Long, List<Integer>> volunteerMonthsMap = new HashMap<>();
 
-        for (SignupRecord record : allSignups) {
+        for (SignupRecord record : allRecords) {
             if (record.getSignupTime() == null) {
                 continue;
             }
@@ -363,13 +362,13 @@ public class StatisticsService {
         }
 
         for (int month = 1; month <= 12; month++) {
-            int totalVolunteers = 0;
-            int retainedCount = 0;
+            int active = 0;
+            int retained = 0;
 
             for (Map.Entry<Long, List<Integer>> entry : volunteerMonthsMap.entrySet()) {
                 List<Integer> monthsParticipated = entry.getValue();
                 if (monthsParticipated.contains(month)) {
-                    totalVolunteers++;
+                    active++;
                     boolean hasFutureActivity = false;
                     for (int futureMonth = month + 1; futureMonth <= 12; futureMonth++) {
                         if (monthsParticipated.contains(futureMonth)) {
@@ -378,17 +377,17 @@ public class StatisticsService {
                         }
                     }
                     if (hasFutureActivity) {
-                        retainedCount++;
+                        retained++;
                     }
                 }
             }
 
-            int lostCount = totalVolunteers - retainedCount;
-            double retentionRate = totalVolunteers > 0 ? (retainedCount * 100.0 / totalVolunteers) : 0.0;
+            int lost = active - retained;
+            double retentionRate = active > 0 ? (retained * 100.0 / active) : 0.0;
             retentionRates.set(month - 1, Math.round(retentionRate * 10.0) / 10.0);
-            activeVolunteers.set(month - 1, totalVolunteers);
-            retainedVolunteers.set(month - 1, retainedCount);
-            lostVolunteers.set(month - 1, lostCount);
+            activeVolunteers.set(month - 1, active);
+            retainedVolunteers.set(month - 1, retained);
+            lostVolunteers.set(month - 1, lost);
         }
 
         // @formatter:off
@@ -402,6 +401,135 @@ public class StatisticsService {
         // @formatter:on
     }
 
+    private Integer calculateConsecutiveActiveMonths(Set<Integer> months) {
+        if (months.isEmpty()) {
+            return 0;
+        }
+
+        List<Integer> sortedMonths = new ArrayList<>(months);
+        Collections.sort(sortedMonths);
+
+        int maxConsecutive = 1;
+        int curConsecutive = 1;
+
+        for (int i = 1; i < sortedMonths.size(); i++) {
+            int prev = sortedMonths.get(i - 1);
+            int cur = sortedMonths.get(i);
+
+            int prevYear = prev / 100;
+            int prevMonth = prev % 100;
+            int curYear = cur / 100;
+            int curMonth = cur % 100;
+
+            int monthDiff = (curYear - prevYear) * 12 + (curMonth - prevMonth);
+
+            if (monthDiff == 1) {
+                curConsecutive++;
+                maxConsecutive = Math.max(maxConsecutive, curConsecutive);
+            } else {
+                curConsecutive = 1;
+            }
+        }
+
+        return maxConsecutive;
+    }
+
+    private Double calculateStandardDeviation(List<Double> values, Double mean) {
+        if (values.isEmpty()) {
+            return 0.0;
+        }
+
+        double sumSquared = 0.0;
+        for (double v : values) {
+            double diff = v - mean;
+            sumSquared += diff * diff;
+        }
+
+        return Math.sqrt(sumSquared / values.size());
+    }
+
+    private Integer countImportantActivities(List<SignupRecord> records, ActivityRepository activityRepo) {
+        int count = 0;
+        for (SignupRecord record : records) {
+            Activity activity = activityRepo.findById(record.getActivityId()).orElse(null);
+            if (activity != null && activity.getPointsPerHour() != null && activity.getPointsPerHour() >= 5) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private Double calculateActivityStability(Map<Integer, Integer> monthlyActivityCount) {
+        if (monthlyActivityCount.isEmpty()) {
+            return 0.0;
+        }
+
+        List<Integer> counts = new ArrayList<>(monthlyActivityCount.values());
+        double mean = 0.0;
+        if (counts != null && !counts.isEmpty()) {
+            int sum = 0;
+            for (Integer count : counts) {
+                sum += count;
+            }
+            mean = (double) sum / counts.size();
+        }
+
+        if (mean == 0) {
+            return 0.0;
+        }
+
+        double variance = 0.0;
+        if (counts != null && !counts.isEmpty()) {
+            double sumSquaredDiff = 0.0;
+            for (Integer count : counts) {
+                double diff = count - mean;
+                sumSquaredDiff += diff * diff;
+            }
+            variance = sumSquaredDiff / counts.size();
+        }
+
+        double stdDev = Math.sqrt(variance);
+        double cv = stdDev / mean;
+
+        return Math.max(0, 1 - cv) * 100;
+    }
+
+    private Double calculateRecentActivityRatio(Map<Integer, Integer> monthlyActivityCount) {
+        if (monthlyActivityCount.isEmpty()) {
+            return 0.0;
+        }
+
+        int curYear = LocalDateTime.now().getYear();
+        int curMonth = LocalDateTime.now().getMonthValue();
+
+        int recentThreeMonths = 0; // 最近三个月活动次数
+        int recentSixMonths = 0; // 最近六个月活动次数
+
+        for (int i = 0; i < 3; i++) {
+            int month = curMonth - i;
+            int year = curYear;
+            if (month <= 0) {
+                month += 12;
+                year--;
+            }
+            int monthKey = year * 100 + month;
+            recentThreeMonths += monthlyActivityCount.getOrDefault(monthKey, 0);
+        }
+
+        for (int i = 0; i < 6; i++) {
+            int month = curMonth - i;
+            int year = curYear;
+            if (month <= 0) {
+                month += 12;
+                year--;
+            }
+            int monthKey = year * 100 + month;
+            recentSixMonths += monthlyActivityCount.getOrDefault(monthKey, 0);
+        }
+
+        return recentSixMonths > 0 ? (recentThreeMonths * 100.0 / recentSixMonths) : 0.0;
+    }
+
     public VolunteerGrowthRadarResponse getVolunteerGrowthRadar(Long volunteerId) {
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
         if (v.isEmpty()) {
@@ -409,25 +537,117 @@ public class StatisticsService {
         }
         Volunteer volunteer = v.get();
 
-        List<SignupRecord> signups = signupRecordRepository.findByVolunteerId(volunteerId);
+        List<SignupRecord> records = signupRecordRepository.findByVolunteerId(volunteerId);
 
-        Integer totalActivities = signups.size();
+        Integer totalActivities = records.size();
         Integer totalHours = 0;
         Double totalPoints = 0.0;
+        Integer completedActivities = 0;
+        Set<String> activityTypes = new HashSet<>();
+        Set<Integer> monthsParticipated = new HashSet<>();
+        Map<Integer, Integer> monthlyActivityCount = new HashMap<>();
+        Integer onTimeCompleted = 0;
+        Integer earlySignup = 0;
+        List<Double> serviceHoursList = new ArrayList<>();
 
-        for (SignupRecord signup : signups) {
-            if (signup.getActualHours() != null) {
-                totalHours += signup.getActualHours();
+        for (SignupRecord record : records) {
+            if (record.getActualHours() != null && record.getActualHours() > 0) {
+                totalHours += record.getActualHours();
+                completedActivities++;
+                serviceHoursList.add(record.getActualHours().doubleValue());
             }
-            if (signup.getPoints() != null) {
-                totalPoints += signup.getPoints();
+            if (record.getPoints() != null) {
+                totalPoints += record.getPoints();
+            }
+
+            Optional<Activity> a = activityRepository.findById(record.getActivityId());
+            Activity activity = a != null ? a.get() : null;
+
+            if (activity != null) {
+                if (activity.getType() != null) {
+                    activityTypes.add(activity.getType().getDescription());
+                }
+
+                if (record.getActualHours() != null && record.getActualHours() > 0) {
+                    if (record.getVolunteerEndTime() != null && activity.getEndTime() != null) {
+                        if (!record.getVolunteerEndTime().isAfter(activity.getEndTime())) {
+                            onTimeCompleted++;
+                        }
+                    }
+                }
+
+                if (record.getSignupTime() != null && activity.getStartTime() != null) {
+                    if (record.getSignupTime().isBefore(activity.getStartTime().minusDays(7))) {
+                        earlySignup++;
+                    }
+                }
+            }
+
+            if (record.getSignupTime() != null) {
+                int month = record.getSignupTime().getYear() * 100 + record.getSignupTime().getMonthValue(); // 这个数值表示年月，例如202308表示2023年8月
+                monthsParticipated.add(month);
+                monthlyActivityCount.put(month, monthlyActivityCount.getOrDefault(month, 0) + 1);
             }
         }
 
-        Integer activityParticipation = Math.min(100, totalActivities * 5);
-        Integer serviceQuality = Math.min(100, totalHours * 2);
-        Integer continuity = Math.min(100, totalActivities * 3);
-        Integer initiative = Math.min(100, (int) (totalPoints / 10));
+        Integer distinctActivityTypes = activityTypes.size();
+        Integer totalActivityTypes = ActivityType.values().length;
+        Integer monthsParticipatedCount = monthsParticipated.size();
+
+        Integer consecutiveActiveMonths = calculateConsecutiveActiveMonths(monthsParticipated);
+
+        Double activityCompletionRate = totalActivities > 0 ? (completedActivities * 100.0 / totalActivities) : 0.0;
+        Double onTimeCompletionRate = completedActivities > 0 ? (onTimeCompleted * 100.0 / completedActivities) : 0.0;
+        Double earlySignupRate = totalActivities > 0 ? (earlySignup * 100.0 / totalActivities) : 0.0;
+        Double pointsPerHour = totalHours > 0 ? (totalPoints / totalHours) : 0.0;
+
+        Double avgServiceHours = 0.0;
+        if (!serviceHoursList.isEmpty()) {
+            double sum = 0.0;
+            for (Double hour : serviceHoursList) {
+                sum += hour;
+            }
+            avgServiceHours = sum / serviceHoursList.size();
+        }
+
+        Double serviceHoursStdDev = calculateStandardDeviation(serviceHoursList, avgServiceHours);
+        Double serviceStability = avgServiceHours > 0 ? Math.max(0, 1 - (serviceHoursStdDev / avgServiceHours)) * 100
+                : 0.0;
+
+        Integer importantActivities = countImportantActivities(records, activityRepository);
+        Double importantActivityRatio = totalActivities > 0 ? (importantActivities * 100.0 / totalActivities) : 0.0;
+
+        Double activityTypeDiversity = totalActivityTypes > 0 ? (distinctActivityTypes * 100.0 / totalActivityTypes)
+                : 0.0;
+        Double monthlyAvgActivity = monthsParticipatedCount > 0 ? (totalActivities * 1.0 / monthsParticipatedCount)
+                : 0.0;
+
+        Double activityStability = calculateActivityStability(monthlyActivityCount);
+        Double recentActivityRatio = calculateRecentActivityRatio(monthlyActivityCount);
+
+        Double activityParticipation = Math.min(100.0, 
+            (completedActivities * 15.0) + 
+            (activityTypeDiversity * 0.2) + 
+            (monthlyAvgActivity * 10.0) + 
+            (importantActivityRatio * 0.15));
+        
+        Double serviceQuality = Math.min(100.0,
+            (totalHours * 1.5) + 
+            (activityCompletionRate * 0.3) + 
+            (onTimeCompletionRate * 0.2) + 
+            (serviceStability * 0.1));
+        
+        Double continuity = Math.min(100.0,
+            (monthsParticipatedCount * 8.0) + 
+            (consecutiveActiveMonths * 15.0) + 
+            (activityStability * 0.2) + 
+            (recentActivityRatio * 0.25));
+        
+        Double initiative = Math.min(100.0,
+            (earlySignupRate * 0.25) + 
+            Math.min(100.0, pointsPerHour * 2.0) + 
+            (activityCompletionRate * 0.25) + 
+            (activityTypeDiversity * 0.15));
 
         // @formatter:off
         return new VolunteerGrowthRadarResponse(
@@ -439,7 +659,15 @@ public class StatisticsService {
             activityParticipation,
             serviceQuality,
             continuity,
-            initiative
+            initiative,
+            completedActivities,
+            distinctActivityTypes,
+            monthsParticipatedCount,
+            consecutiveActiveMonths,
+            Math.round(activityCompletionRate * 10.0) / 10.0,
+            Math.round(onTimeCompletionRate * 10.0) / 10.0,
+            Math.round(earlySignupRate * 10.0) / 10.0,
+            Math.round(pointsPerHour * 100.0) / 100.0
         );
         // @formatter:on
     }

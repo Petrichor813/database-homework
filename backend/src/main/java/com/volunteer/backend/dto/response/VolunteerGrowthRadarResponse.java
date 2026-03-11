@@ -6,10 +6,19 @@ public class VolunteerGrowthRadarResponse {
     private Integer totalActivities;
     private Integer totalHours;
     private Double totalPoints;
-    private Integer activityParticipation;
-    private Integer serviceQuality;
-    private Integer continuity;
-    private Integer initiative;
+    private Double activityParticipation;
+    private Double serviceQuality;
+    private Double continuity;
+    private Double initiative;
+    
+    private Integer completedActivities;
+    private Integer distinctActivityTypes;
+    private Integer monthsParticipated;
+    private Integer consecutiveActiveMonths;
+    private Double activityCompletionRate;
+    private Double onTimeCompletionRate;
+    private Double earlySignupRate;
+    private Double pointsPerHour;
 
     public VolunteerGrowthRadarResponse() {
     }
@@ -21,10 +30,18 @@ public class VolunteerGrowthRadarResponse {
         Integer totalActivities,
         Integer totalHours,
         Double totalPoints,
-        Integer activityParticipation,
-        Integer serviceQuality,
-        Integer continuity,
-        Integer initiative
+        Double activityParticipation,
+        Double serviceQuality,
+        Double continuity,
+        Double initiative,
+        Integer completedActivities,
+        Integer distinctActivityTypes,
+        Integer monthsParticipated,
+        Integer consecutiveActiveMonths,
+        Double activityCompletionRate,
+        Double onTimeCompletionRate,
+        Double earlySignupRate,
+        Double pointsPerHour
     ) {
         // @formatter:on
         this.volunteerName = volunteerName;
@@ -36,6 +53,14 @@ public class VolunteerGrowthRadarResponse {
         this.serviceQuality = serviceQuality;
         this.continuity = continuity;
         this.initiative = initiative;
+        this.completedActivities = completedActivities;
+        this.distinctActivityTypes = distinctActivityTypes;
+        this.monthsParticipated = monthsParticipated;
+        this.consecutiveActiveMonths = consecutiveActiveMonths;
+        this.activityCompletionRate = activityCompletionRate;
+        this.onTimeCompletionRate = onTimeCompletionRate;
+        this.earlySignupRate = earlySignupRate;
+        this.pointsPerHour = pointsPerHour;
     }
 
     public String getVolunteerName() {
@@ -78,35 +103,99 @@ public class VolunteerGrowthRadarResponse {
         this.totalPoints = totalPoints;
     }
 
-    public Integer getActivityParticipation() {
+    public Double getActivityParticipation() {
         return activityParticipation;
     }
 
-    public void setActivityParticipation(Integer activityParticipation) {
+    public void setActivityParticipation(Double activityParticipation) {
         this.activityParticipation = activityParticipation;
     }
 
-    public Integer getServiceQuality() {
+    public Double getServiceQuality() {
         return serviceQuality;
     }
 
-    public void setServiceQuality(Integer serviceQuality) {
+    public void setServiceQuality(Double serviceQuality) {
         this.serviceQuality = serviceQuality;
     }
 
-    public Integer getContinuity() {
+    public Double getContinuity() {
         return continuity;
     }
 
-    public void setContinuity(Integer continuity) {
+    public void setContinuity(Double continuity) {
         this.continuity = continuity;
     }
 
-    public Integer getInitiative() {
+    public Double getInitiative() {
         return initiative;
     }
 
-    public void setInitiative(Integer initiative) {
+    public void setInitiative(Double initiative) {
         this.initiative = initiative;
+    }
+
+    public Integer getCompletedActivities() {
+        return completedActivities;
+    }
+
+    public void setCompletedActivities(Integer completedActivities) {
+        this.completedActivities = completedActivities;
+    }
+
+    public Integer getDistinctActivityTypes() {
+        return distinctActivityTypes;
+    }
+
+    public void setDistinctActivityTypes(Integer distinctActivityTypes) {
+        this.distinctActivityTypes = distinctActivityTypes;
+    }
+
+    public Integer getMonthsParticipated() {
+        return monthsParticipated;
+    }
+
+    public void setMonthsParticipated(Integer monthsParticipated) {
+        this.monthsParticipated = monthsParticipated;
+    }
+
+    public Integer getConsecutiveActiveMonths() {
+        return consecutiveActiveMonths;
+    }
+
+    public void setConsecutiveActiveMonths(Integer consecutiveActiveMonths) {
+        this.consecutiveActiveMonths = consecutiveActiveMonths;
+    }
+
+    public Double getActivityCompletionRate() {
+        return activityCompletionRate;
+    }
+
+    public void setActivityCompletionRate(Double activityCompletionRate) {
+        this.activityCompletionRate = activityCompletionRate;
+    }
+
+    public Double getOnTimeCompletionRate() {
+        return onTimeCompletionRate;
+    }
+
+    public void setOnTimeCompletionRate(Double onTimeCompletionRate) {
+        this.onTimeCompletionRate = onTimeCompletionRate;
+    }
+
+    public Double getEarlySignupRate() {
+        return earlySignupRate;
+    }
+
+    public void setEarlySignupRate(Double earlySignupRate) {
+        this.earlySignupRate = earlySignupRate;
+    }
+
+    public Double getPointsPerHour() {
+        return pointsPerHour;
+    }
+
+    public void setPointsPerHour(Double pointsPerHour) {
+        this.pointsPerHour = pointsPerHour;
     }
 }
