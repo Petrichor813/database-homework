@@ -35,6 +35,48 @@ const loading = ref(false);
 const showDetailDialog = ref(false);
 const curRecord = ref<SignupRecord | null>(null);
 
+const fetchSignupRecords = async (page: number = pageObject.value.curPage) => {
+  const userStr = localStorage.getItem("user");
+  if (!userStr) {
+    error("用户未登录");
+    return;
+  }
+
+  let user: { volunteerId?: number | string };
+  try {
+    user = JSON.parse(userStr);
+  } catch (err) {
+    error("用户信息解析失败");
+    return;
+  }
+
+  if (!user.volunteerId) {
+    error("您还未申请成为志愿者");
+    return;
+  }
+
+  try {
+    loading.value = true;
+
+    const data = await getJson<PageResponse<SignupRecord>>(
+      `/api/volunteer/${user.volunteerId}/signup-records?page=${page}&size=${pageObject.value.pageSize}`
+    );
+
+    records.value = data.content;
+    updatePageState({
+      curPage: data.curPage,
+      pageSize: data.pageSize,
+      totalElements: data.totalElements,
+      totalPages: data.totalPages,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "获取报名记录失败";
+    error("获取报名记录失败", msg);
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 打开详情弹窗
 const openDetailDialog = (record: SignupRecord) => {
   curRecord.value = record;
@@ -60,7 +102,7 @@ const handleCancelSignup = async (record: SignupRecord) => {
       "/api/activity/cancel-signup",
       {
         activityId: record.activityId,
-      },
+      }
     );
 
     success("取消报名成功", response.message);
@@ -104,48 +146,6 @@ const getStatusText = (status: string) => {
       return "未到场";
     default:
       return status;
-  }
-};
-
-const fetchSignupRecords = async (page: number = pageObject.value.curPage) => {
-  const userStr = localStorage.getItem("user");
-  if (!userStr) {
-    error("用户未登录");
-    return;
-  }
-
-  let user: { volunteerId?: number | string };
-  try {
-    user = JSON.parse(userStr);
-  } catch (err) {
-    error("用户信息解析失败");
-    return;
-  }
-
-  if (!user.volunteerId) {
-    error("您还未申请成为志愿者");
-    return;
-  }
-
-  try {
-    loading.value = true;
-
-    const data = await getJson<PageResponse<SignupRecord>>(
-      `/api/volunteer/${user.volunteerId}/signup-records?page=${page}&size=${pageObject.value.pageSize}`,
-    );
-
-    records.value = data.content;
-    updatePageState({
-      curPage: data.curPage,
-      pageSize: data.pageSize,
-      totalElements: data.totalElements,
-      totalPages: data.totalPages,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "获取报名记录失败";
-    error("获取报名记录失败", msg);
-  } finally {
-    loading.value = false;
   }
 };
 
@@ -345,7 +345,7 @@ tr:hover {
 .info-button:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3)
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .cancel-button {

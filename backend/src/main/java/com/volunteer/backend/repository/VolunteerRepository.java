@@ -22,11 +22,11 @@ public interface VolunteerRepository extends JpaRepository<Volunteer, Long> {
 
     Page<Volunteer> findByStatusAndDeletedFalse(VolunteerStatus status, Pageable pageable);
 
-    @Query("SELECT v FROM Volunteer v WHERE v.deleted = false AND v.name LIKE %:keyword%")
+    @Query("SELECT v FROM Volunteer v WHERE v.deleted = false AND v.name LIKE CONCAT('%', :keyword, '%')")
     Page<Volunteer> findByKeywordAndDeletedFalse(@Param("keyword") String keyword, Pageable pageable);
 
     // @formatter:off
-    @Query("SELECT v FROM Volunteer v WHERE v.deleted = false AND v.name LIKE %:keyword% AND v.status = :status")
+    @Query("SELECT v FROM Volunteer v WHERE v.deleted = false AND v.name LIKE CONCAT('%', :keyword, '%') AND v.status = :status")
     Page<Volunteer> findByKeywordAndStatusAndDeletedFalse(
         @Param("keyword") String keyword,
         @Param("status") VolunteerStatus status,
