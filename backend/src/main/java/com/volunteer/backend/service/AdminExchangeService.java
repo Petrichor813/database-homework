@@ -272,11 +272,13 @@ public class AdminExchangeService {
             product.setStock(product.getStock() + oldNumber - newNumber);
         }
 
+        ExchangeStatus oldStatus = record.getStatus();
+
         record.setNumber(newNumber);
         record.setTotalPoints(newTotalPoints);
         record.setStatus(exchangeStatus);
 
-        if (exchangeStatus == ExchangeStatus.COMPLETED && record.getStatus() != ExchangeStatus.COMPLETED) {
+        if (exchangeStatus == ExchangeStatus.COMPLETED && oldStatus != ExchangeStatus.COMPLETED) {
             record.setProcessTime(LocalDateTime.now());
         }
 
