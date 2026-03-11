@@ -152,7 +152,11 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         if (request.isRequestVolunteer() && role == UserRole.USER) {
-            Volunteer volunteer = new Volunteer(request.getUsername(), request.getPhone(), savedUser.getId());
+            String realName = request.getRealName() != null ? request.getRealName().trim() : "";
+            if (realName.isEmpty()) {
+                throw new IllegalArgumentException("申请成为志愿者时，真实姓名不能为空");
+            }
+            Volunteer volunteer = new Volunteer(realName, request.getPhone(), savedUser.getId());
             volunteerRepository.save(volunteer);
         }
 
