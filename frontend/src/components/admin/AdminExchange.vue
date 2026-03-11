@@ -181,26 +181,26 @@ const clearSearch = () => {
 const showApproveDialog = ref(false);
 const showRejectDialog = ref(false);
 const showDetailDialog = ref(false);
-const showEditDialog = ref(false);
-const showProductDialog = ref(false);
+const showEditExchangeRecordDialog = ref(false);
+const showEditProductDialog = ref(false);
 const showDeleteProductDialog = ref(false);
-const currentExchangeRecord = ref<ExchangeRecord | null>(null);
+const curExchangeRecord = ref<ExchangeRecord | null>(null);
 const processNote = ref("");
 const isProcessing = ref(false);
-const isEditing = ref(false);
+const isExchangeRecordEditing = ref(false);
 
 const isAnyDialogOpen = computed(() => {
   return (
     showApproveDialog.value ||
     showRejectDialog.value ||
     showDetailDialog.value ||
-    showEditDialog.value ||
-    showProductDialog.value ||
+    showEditExchangeRecordDialog.value ||
+    showEditProductDialog.value ||
     showDeleteProductDialog.value
   );
 });
 
-const editForm = reactive({
+const exchangeRecordForm = reactive({
   number: 0,
   status: "PROCESSING" as ExchangeStatus,
 });
@@ -211,88 +211,85 @@ const editStatusOptions: { label: string; value: ExchangeStatus }[] = [
 ];
 
 const openDetailDialog = (record: ExchangeRecord) => {
-  currentExchangeRecord.value = record;
+  curExchangeRecord.value = record;
   showDetailDialog.value = true;
 };
 
 const closeDetailDialog = () => {
-  currentExchangeRecord.value = null;
+  curExchangeRecord.value = null;
   showDetailDialog.value = false;
 };
 
-const openEditDialog = (record: ExchangeRecord) => {
-  currentExchangeRecord.value = record;
-  editForm.number = record.number;
-  editForm.status = record.status;
-  showEditDialog.value = true;
+const openEditExchangeRecordDialog = (record: ExchangeRecord) => {
+  curExchangeRecord.value = record;
+  exchangeRecordForm.number = record.number;
+  exchangeRecordForm.status = record.status;
+  showEditExchangeRecordDialog.value = true;
 };
 
-const closeEditDialog = () => {
-  currentExchangeRecord.value = null;
-  editForm.number = 0;
-  editForm.status = "PROCESSING";
-  showEditDialog.value = false;
+const closeEditExchangeRecordDialog = () => {
+  curExchangeRecord.value = null;
+  exchangeRecordForm.number = 0;
+  exchangeRecordForm.status = "PROCESSING";
+  showEditExchangeRecordDialog.value = false;
 };
 
 const updateExchange = async () => {
-  if (!currentExchangeRecord.value || isEditing.value) return;
+  if (!curExchangeRecord.value || isExchangeRecordEditing.value) return;
 
-  if (editForm.number <= 0) {
+  if (exchangeRecordForm.number <= 0) {
     error("保存失败", "兑换数量必须大于0");
     return;
   }
 
-  isEditing.value = true;
+  isExchangeRecordEditing.value = true;
   try {
-    await putJson(
-      `/api/admin/exchange-records/${currentExchangeRecord.value.id}`,
-      {
-        number: editForm.number,
-        status: editForm.status,
-      },
-    );
+    await putJson(`/api/admin/exchange-records/${curExchangeRecord.value.id}`, {
+      number: exchangeRecordForm.number,
+      status: exchangeRecordForm.status,
+    });
     success("保存成功", "兑换记录已更新");
-    closeEditDialog();
+    closeEditExchangeRecordDialog();
     await fetchExchangeRecords(exchangePagination.pageObject.value.curPage);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "更新兑换记录失败";
     error("操作失败", msg);
   } finally {
-    isEditing.value = false;
+    isExchangeRecordEditing.value = false;
   }
 };
 
 const openApproveDialog = (record: ExchangeRecord) => {
-  currentExchangeRecord.value = record;
+  curExchangeRecord.value = record;
   processNote.value = "";
   showApproveDialog.value = true;
 };
 
 const closeApproveDialog = () => {
-  currentExchangeRecord.value = null;
+  curExchangeRecord.value = null;
   processNote.value = "";
   showApproveDialog.value = false;
 };
 
 const openRejectDialog = (record: ExchangeRecord) => {
-  currentExchangeRecord.value = record;
+  curExchangeRecord.value = record;
   processNote.value = "";
   showRejectDialog.value = true;
 };
 
 const closeRejectDialog = () => {
-  currentExchangeRecord.value = null;
+  curExchangeRecord.value = null;
   processNote.value = "";
   showRejectDialog.value = false;
 };
 
 const approveExchange = async () => {
-  if (!currentExchangeRecord.value || isProcessing.value) return;
+  if (!curExchangeRecord.value || isProcessing.value) return;
 
   isProcessing.value = true;
   try {
     await postJson(
-      `/api/admin/exchange-records/${currentExchangeRecord.value.id}/approve`,
+      `/api/admin/exchange-records/${curExchangeRecord.value.id}/approve`,
       {
         note: processNote.value.trim() || "管理员批准兑换",
       },
@@ -309,12 +306,12 @@ const approveExchange = async () => {
 };
 
 const rejectExchange = async () => {
-  if (!currentExchangeRecord.value || isProcessing.value) return;
+  if (!curExchangeRecord.value || isProcessing.value) return;
 
   isProcessing.value = true;
   try {
     await postJson(
-      `/api/admin/exchange-records/${currentExchangeRecord.value.id}/reject`,
+      `/api/admin/exchange-records/${curExchangeRecord.value.id}/reject`,
       {
         note: processNote.value.trim() || "管理员拒绝兑换",
       },
@@ -332,8 +329,7 @@ const rejectExchange = async () => {
 
 const isProductSaving = ref(false);
 const isProductDeleting = ref(false);
-const isEditMode = ref(false);
-const currentProduct = ref<Product | null>(null);
+const curProduct = ref<Product | null>(null);
 
 const productForm = reactive({
   name: "",
@@ -492,8 +488,7 @@ const productStatusOptions: { label: string; value: ProductStatus }[] = [
 ];
 
 const openEditProductDialog = (product: Product) => {
-  isEditMode.value = true;
-  currentProduct.value = product;
+  curProduct.value = product;
   productForm.name = product.name;
   productForm.description = product.description || "";
   productForm.price = product.price;
@@ -504,12 +499,12 @@ const openEditProductDialog = (product: Product) => {
   productForm.imageUrl = product.imageUrl || "";
   productImageUrl.value = product.imageUrl || "";
   productImage.value = null;
-  showProductDialog.value = true;
+  showEditProductDialog.value = true;
 };
 
-const closeProductDialog = () => {
-  showProductDialog.value = false;
-  currentProduct.value = null;
+const closeEditProductDialog = () => {
+  showEditProductDialog.value = false;
+  curProduct.value = null;
 };
 
 const validateProductForm = (): string | null => {
@@ -551,14 +546,14 @@ const saveProduct = async () => {
       imageUrl: productForm.imageUrl.trim() || null,
     };
 
-    if (!currentProduct.value) {
+    if (!curProduct.value) {
       error("保存失败", "未找到当前商品");
       return;
     }
-    await putJson(`/api/admin/products/${currentProduct.value.id}`, payload);
+    await putJson(`/api/admin/products/${curProduct.value.id}`, payload);
     success("保存成功", "商品信息已更新");
 
-    closeProductDialog();
+    closeEditProductDialog();
     await fetchProducts(productPagination.pageObject.value.curPage);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "保存商品失败";
@@ -569,21 +564,21 @@ const saveProduct = async () => {
 };
 
 const openDeleteProductDialog = (product: Product) => {
-  currentProduct.value = product;
+  curProduct.value = product;
   showDeleteProductDialog.value = true;
 };
 
 const closeDeleteProductDialog = () => {
   showDeleteProductDialog.value = false;
-  currentProduct.value = null;
+  curProduct.value = null;
 };
 
 const deleteProduct = async () => {
-  if (!currentProduct.value || isProductDeleting.value) return;
+  if (!curProduct.value || isProductDeleting.value) return;
 
   isProductDeleting.value = true;
   try {
-    await deleteJson(`/api/admin/products/${currentProduct.value.id}`);
+    await deleteJson(`/api/admin/products/${curProduct.value.id}`);
     success("删除成功", "商品已删除");
     closeDeleteProductDialog();
     await fetchProducts(productPagination.pageObject.value.curPage);
@@ -704,7 +699,7 @@ watch(isAnyDialogOpen, (isOpen) => {
                         "
                         type="button"
                         class="edit-button"
-                        @click="openEditDialog(record)"
+                        @click="openEditExchangeRecordDialog(record)"
                       >
                         编辑
                       </button>
@@ -924,76 +919,72 @@ watch(isAnyDialogOpen, (isOpen) => {
     <div v-if="showDetailDialog" class="dialog-bg">
       <div class="dialog-body" role="dialog" aria-modal="true">
         <h3>兑换记录详细信息</h3>
-        <div v-if="currentExchangeRecord" class="detail-content">
+        <div v-if="curExchangeRecord" class="detail-content">
           <div class="detail-row">
             <span class="detail-label">志愿者姓名</span>
             <span class="detail-value">{{
-              currentExchangeRecord.volunteerName
+              curExchangeRecord.volunteerName
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">志愿者ID</span>
             <span class="detail-value">{{
-              currentExchangeRecord.volunteerId
+              curExchangeRecord.volunteerId
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品名称</span>
             <span class="detail-value">{{
-              currentExchangeRecord.productName
+              curExchangeRecord.productName
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品单价</span>
             <span class="detail-value"
-              >{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span
+              >{{ curExchangeRecord.productPrice.toFixed(2) }} 积分/个</span
             >
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换数量</span>
-            <span class="detail-value">{{ currentExchangeRecord.number }}</span>
+            <span class="detail-value">{{ curExchangeRecord.number }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">积分消耗</span>
             <span class="detail-value">{{
-              currentExchangeRecord.totalPoints
+              curExchangeRecord.totalPoints
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换时间</span>
-            <span class="detail-value">{{
-              currentExchangeRecord.orderTime
-            }}</span>
+            <span class="detail-value">{{ curExchangeRecord.orderTime }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换状态</span>
             <span class="detail-value">
               <span
                 class="status-badge"
-                :class="currentExchangeRecord.status.toLowerCase()"
+                :class="curExchangeRecord.status.toLowerCase()"
               >
                 {{
-                  statusLabelMap[currentExchangeRecord.status] ||
-                  currentExchangeRecord.status
+                  statusLabelMap[curExchangeRecord.status] ||
+                  curExchangeRecord.status
                 }}
               </span>
             </span>
           </div>
-          <div v-if="currentExchangeRecord.processTime" class="detail-row">
+          <div v-if="curExchangeRecord.processTime" class="detail-row">
             <span class="detail-label">处理时间</span>
             <span class="detail-value">{{
-              currentExchangeRecord.processTime
+              curExchangeRecord.processTime
             }}</span>
           </div>
-          <div v-if="currentExchangeRecord.note" class="detail-row">
+          <div v-if="curExchangeRecord.note" class="detail-row">
             <span class="detail-label">备注</span>
-            <span class="detail-value">{{ currentExchangeRecord.note }}</span>
+            <span class="detail-value">{{ curExchangeRecord.note }}</span>
           </div>
-          <div v-if="currentExchangeRecord.recvInfo" class="detail-row-block">
+          <div v-if="curExchangeRecord.recvInfo" class="detail-row-block">
             <span class="detail-label">收货信息</span>
-            <span class="detail-value">{{
-              currentExchangeRecord.recvInfo
-            }}</span>
+            <span class="detail-value">{{ curExchangeRecord.recvInfo }}</span>
           </div>
         </div>
         <div class="dialog-actions">
@@ -1004,38 +995,38 @@ watch(isAnyDialogOpen, (isOpen) => {
       </div>
     </div>
 
-    <div v-if="showEditDialog" class="dialog-bg">
+    <div v-if="showEditExchangeRecordDialog" class="dialog-bg">
       <div class="dialog-body" role="dialog" aria-modal="true">
         <h3>编辑兑换记录</h3>
-        <div v-if="currentExchangeRecord" class="detail-content">
+        <div v-if="curExchangeRecord" class="detail-content">
           <div class="detail-row">
             <span class="detail-label">志愿者姓名</span>
             <span class="detail-value">{{
-              currentExchangeRecord.volunteerName
+              curExchangeRecord.volunteerName
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">志愿者ID</span>
             <span class="detail-value">{{
-              currentExchangeRecord.volunteerId
+              curExchangeRecord.volunteerId
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品名称</span>
             <span class="detail-value">{{
-              currentExchangeRecord.productName
+              curExchangeRecord.productName
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">商品单价</span>
             <span class="detail-value"
-              >{{ currentExchangeRecord.productPrice.toFixed(2) }} 积分/个</span
+              >{{ curExchangeRecord.productPrice.toFixed(2) }} 积分/个</span
             >
           </div>
           <div class="form-row">
             <label>兑换数量 <span class="required">*</span></label>
             <input
-              v-model.number="editForm.number"
+              v-model.number="exchangeRecordForm.number"
               type="number"
               min="1"
               placeholder="请输入兑换数量"
@@ -1044,18 +1035,18 @@ watch(isAnyDialogOpen, (isOpen) => {
           <div class="detail-row">
             <span class="detail-label">积分消耗</span>
             <span class="detail-value">{{
-              (currentExchangeRecord.productPrice * editForm.number).toFixed(2)
+              (
+                curExchangeRecord.productPrice * exchangeRecordForm.number
+              ).toFixed(2)
             }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">兑换时间</span>
-            <span class="detail-value">{{
-              currentExchangeRecord.orderTime
-            }}</span>
+            <span class="detail-value">{{ curExchangeRecord.orderTime }}</span>
           </div>
           <div class="form-row">
             <label>兑换状态 <span class="required">*</span></label>
-            <select v-model="editForm.status">
+            <select v-model="exchangeRecordForm.status">
               <option
                 v-for="option in editStatusOptions"
                 :key="option.value"
@@ -1070,19 +1061,23 @@ watch(isAnyDialogOpen, (isOpen) => {
           <button
             type="button"
             class="confirm-button"
-            :disabled="isEditing"
+            :disabled="isExchangeRecordEditing"
             @click="updateExchange"
           >
             确认保存
           </button>
-          <button type="button" class="cancel-button" @click="closeEditDialog">
+          <button
+            type="button"
+            class="cancel-button"
+            @click="closeEditExchangeRecordDialog"
+          >
             取消
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="showProductDialog" class="dialog-bg">
+    <div v-if="showEditProductDialog" class="dialog-bg">
       <div class="dialog-body product-dialog" role="dialog" aria-modal="true">
         <h3>编辑商品</h3>
         <div class="product-form">
@@ -1197,7 +1192,7 @@ watch(isAnyDialogOpen, (isOpen) => {
           <button
             type="button"
             class="cancel-button"
-            @click="closeProductDialog"
+            @click="closeEditProductDialog"
           >
             取消
           </button>
@@ -1209,7 +1204,7 @@ watch(isAnyDialogOpen, (isOpen) => {
       <div class="dialog-body" role="dialog" aria-modal="true">
         <h3>确认删除商品</h3>
         <p class="dialog-tip">
-          确定要删除商品「{{ currentProduct?.name }}」吗？此操作不可恢复。
+          确定要删除商品「{{ curProduct?.name }}」吗？此操作不可恢复。
         </p>
         <div class="dialog-actions">
           <button
@@ -1869,13 +1864,19 @@ watch(isAnyDialogOpen, (isOpen) => {
 }
 
 .close-button {
+  min-width: 80px;
+  min-height: 44px;
   background: #9ca3af;
   color: white;
   border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .close-button:hover {
   background: #6b7280;
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 

@@ -222,7 +222,7 @@ public class AdminPointService {
     }
 
     @Transactional
-    public void revertPointRecord(Long recordId) {
+    public void deletePointRecord(Long recordId) {
         Optional<PointChangeRecord> pcr = pointChangeRecordRepository.findById(recordId);
         if (pcr.isEmpty()) {
             throw new IllegalArgumentException("积分记录不存在");

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, reactive } from "vue";
+import { onMounted, ref, reactive, watch } from "vue";
 import { usePagination } from "../../utils/page";
 import { useToast } from "../../utils/toast";
 import { getJson, postJson } from "../../utils/api";
@@ -177,6 +177,14 @@ const handleImageError = (event: Event) => {
 onMounted(() => {
   fetchProducts(0);
 });
+
+watch(showExchangeDialog, (isOpen) => {
+  if (isOpen) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+});
 </script>
 
 <template>
@@ -266,42 +274,56 @@ onMounted(() => {
     <div class="dialog-body" role="dialog" aria-modal="true">
       <h3>商品兑换</h3>
       <p class="dialog-tip">确定要兑换此商品吗？兑换后将消耗相应积分。</p>
-      <div v-if="currentProduct" class="product-summary">
-        <div class="summary-item">
-          <span class="label">商品名称</span>
-          <span class="value">{{ currentProduct.name }}</span>
+      <div class="dialog-content">
+        <div v-if="currentProduct" class="product-summary">
+          <div class="summary-item">
+            <span class="label">商品名称</span>
+            <span class="value">{{ currentProduct.name }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">所需积分</span>
+            <span class="value">{{ currentProduct.price }} 积分</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">库存数量</span>
+            <span class="value">{{ currentProduct.stock }} 件</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">商品分类</span>
+            <span class="value">{{ getCategoryLabel(currentProduct.category) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">商品描述</span>
+            <span class="value">{{ currentProduct.description }}</span>
+          </div>
         </div>
-        <div class="summary-item">
-          <span class="label">所需积分</span>
-          <span class="value">{{ currentProduct.price }} 积分</span>
+        <div class="form-row">
+          <label>收货人姓名</label>
+          <input
+            v-model="recvInfoForm.name"
+            type="text"
+            placeholder="请输入收货人姓名"
+            maxlength="20"
+          />
         </div>
-      </div>
-      <div class="form-row">
-        <label>收货人姓名</label>
-        <input
-          v-model="recvInfoForm.name"
-          type="text"
-          placeholder="请输入收货人姓名"
-          maxlength="20"
-        />
-      </div>
-      <div class="form-row">
-        <label>收货人手机号</label>
-        <input
-          v-model="recvInfoForm.phone"
-          type="text"
-          placeholder="请输入收货人手机号"
-          maxlength="11"
-        />
-      </div>
-      <div class="form-row">
-        <label>收货地址</label>
-        <textarea
-          v-model="recvInfoForm.address"
-          placeholder="请输入详细收货地址"
-          rows="3"
-          maxlength="200"
-        ></textarea>
+        <div class="form-row">
+          <label>收货人手机号</label>
+          <input
+            v-model="recvInfoForm.phone"
+            type="text"
+            placeholder="请输入收货人手机号"
+            maxlength="11"
+          />
+        </div>
+        <div class="form-row">
+          <label>收货地址</label>
+          <textarea
+            v-model="recvInfoForm.address"
+            placeholder="请输入详细收货地址"
+            rows="3"
+            maxlength="200"
+          ></textarea>
+        </div>
       </div>
       <div class="dialog-actions">
         <button
@@ -558,35 +580,70 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
+  overflow: hidden;
 }
 
 .dialog-body {
+  display: flex;
+  flex-direction: column;
   background: white;
   border-radius: 12px;
   padding: 24px;
   max-width: 480px;
   width: 90%;
   max-height: 90vh;
-  overflow-y: auto;
+  gap: 16px;
+  overflow: hidden;
 }
 
 .dialog-body h3 {
-  margin: 0 0 12px 0;
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .dialog-tip {
-  margin: 0 0 16px 0;
+  margin: 0;
   color: #6b7280;
   font-size: 14px;
+  flex-shrink: 0;
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.dialog-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .product-summary {
   background: #f9fafb;
   border-radius: 8px;
   padding: 12px;
-  margin-bottom: 16px;
 }
 
 .summary-item {
@@ -616,7 +673,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 16px;
 }
 
 .form-row label {
@@ -657,7 +713,7 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 20px;
+  flex-shrink: 0;
 }
 
 .dialog-actions button {
@@ -677,6 +733,7 @@ onMounted(() => {
 
 .confirm-button:hover:not(:disabled) {
   background: #1d4ed8;
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
@@ -686,14 +743,15 @@ onMounted(() => {
 }
 
 .cancel-button {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: #9ca3af;
+  color: white;
+  border: none;
 }
 
 .cancel-button:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #6b7280;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 
 .empty {

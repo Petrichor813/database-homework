@@ -27,7 +27,7 @@ public class AdminPointController {
     }
 
     // @formatter:off
-    @GetMapping
+    @GetMapping("/search")
     public ResponseEntity<PageResponse<AdminPointRecordResponse>> getPointRecords(
         @RequestParam(defaultValue = "ALL") String type,
         @RequestParam(required = false) String keyword,
@@ -39,7 +39,7 @@ public class AdminPointController {
     }
 
     // @formatter:off
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<AdminPointRecordResponse> addPointRecord(
         @RequestBody AdminPointAdjustRequest request
     ) {
@@ -48,7 +48,7 @@ public class AdminPointController {
     }
 
     // @formatter:off
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/update")
     public ResponseEntity<AdminPointRecordResponse> updatePointRecord(
         @PathVariable Long id,
         @RequestBody AdminPointUpdateRequest request
@@ -57,9 +57,9 @@ public class AdminPointController {
         return ResponseEntity.ok(adminPointService.updatePointRecord(id, request));
     }
 
-    @DeleteMapping("/{id}/revert")
-    public ResponseEntity<Void> revertPointRecord(@PathVariable Long id) {
-        adminPointService.revertPointRecord(id);
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<Void> deletePointRecord(@PathVariable Long id) {
+        adminPointService.deletePointRecord(id);
         return ResponseEntity.ok().build();
     }
 }

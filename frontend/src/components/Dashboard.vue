@@ -868,7 +868,7 @@ const exportRadarCSV = (): string => {
 
   const data = radarData.value;
   let csv =
-    "志愿者姓名,手机号,总活动数,已完成活动数,总时长(小时),总积分,活动参与度,服务质量,连续性,主动性\n";
+    "志愿者姓名,手机号,总参加活动数,已完成活动数,总服务时长(小时),总积分,活动参与度,服务质量,连续性,主动性\n";
   csv += `${data.volunteerName},${data.volunteerPhone},${
     data.totalActivities
   },${data.completedActivities},${data.totalHours},${formatPoints(
@@ -886,6 +886,12 @@ const exportRadarCSV = (): string => {
   csv += `参与活动类型数,${data.distinctActivityTypes}种\n`;
   csv += `参与月份数,${data.monthsParticipated}个月\n`;
   csv += `连续活跃月数,${data.consecutiveActiveMonths}个月`;
+
+  csv += "\n\n四个指标计算公式：\n";
+  csv += "1. 活动参与度 = min(100, 已完成活动数 × 15 + 活动类型多样性 × 0.2 + 月均活动数 × 10 + 重要活动占比 × 0.15)\n";
+  csv += "2. 服务质量 = min(100, 总服务时长 × 1.5 + 活动完成率 × 0.3 + 按时完成率 × 0.2 + 服务稳定性 × 0.1)\n";
+  csv += "3. 连续性 = min(100, 参与月份数 × 8 + 连续活跃月数 × 15 + 活动稳定性 × 0.2 + 近期活跃度 × 0.25)\n";
+  csv += "4. 主动性 = min(100, 早期报名率 × 0.25 + min(100, 积分效率 × 2) + 活动完成率 × 0.25 + 活动类型多样性 × 0.15)";
 
   return csv;
 };
@@ -977,6 +983,7 @@ const exportChartCSV = (chartName: string) => {
     return;
   }
 
+  // \ufeff: BOM (字节顺序标记)，用于正确显示中文
   const blob = new Blob(["\ufeff" + csvContent], {
     type: "text/csv;charset=utf-8;",
   });

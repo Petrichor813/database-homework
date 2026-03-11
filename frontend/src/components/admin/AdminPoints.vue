@@ -67,18 +67,18 @@ const getChangeTypeLabel = (
 const fetchPointChangeRecords = async (page: number) => {
   loading.value = true;
   try {
-    const params = new URLSearchParams({
+    const query = new URLSearchParams({
       page: String(page),
       size: String(pagination.pageObject.value.pageSize),
       type: typeFilter.value,
     });
 
     if (keyword.value.trim()) {
-      params.append("keyword", keyword.value.trim());
+      query.append("keyword", keyword.value.trim());
     }
 
     const data = await getJson<PageResponse<PointRecord>>(
-      `/api/admin/point-records?${params.toString()}`
+      `/api/admin/point-records/search?${query.toString()}`
     );
     records.value = data.content;
     pagination.updatePageState(data);
@@ -171,7 +171,7 @@ const saveEdit = async () => {
 
   isEditing.value = true;
   try {
-    await putJson(`/api/admin/point-records/${currentRecord.value?.id}`, {
+    await putJson(`/api/admin/point-records/${currentRecord.value?.id}/update`, {
       changePoints: editForm.changePoints,
       reason: editForm.reason.trim(),
       note: editForm.note.trim() || null,
@@ -206,7 +206,7 @@ const deleteRecord = async () => {
   isDeleting.value = true;
   try {
     await deleteJson(
-      `/api/admin/point-records/${currentRecord.value?.id}/revert`
+      `/api/admin/point-records/${currentRecord.value?.id}/delete`
     );
     success("撤销成功", "积分记录已撤销");
     closeDeleteDialog();
@@ -321,7 +321,7 @@ const addRecord = async () => {
 
   isAdding.value = true;
   try {
-    await postJson("/api/admin/point-records", {
+    await postJson("/api/admin/point-records/add", {
       volunteerId: addForm.volunteerId,
       changePoints: addForm.changePoints,
       changeType: addForm.changeType,

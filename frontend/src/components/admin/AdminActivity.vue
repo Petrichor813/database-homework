@@ -165,7 +165,7 @@ const canDelete = (status: ActivityStatus) => {
   return status === "RECRUITING" || status === "CONFIRMED";
 };
 
-const handleDelete = async (activity: Activity) => {
+const deleteActivity = async (activity: Activity) => {
   if (!confirm(`确定要删除活动"${activity.title}"吗？此操作不可恢复。`)) {
     return;
   }
@@ -503,7 +503,7 @@ const handleReviewAction = async (
             type="button"
             class="delete-button"
             :disabled="!canDelete(item.status)"
-            @click="handleDelete(item)"
+            @click="deleteActivity(item)"
           >
             删除
           </button>

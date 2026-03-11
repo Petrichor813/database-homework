@@ -530,6 +530,12 @@ public class StatisticsService {
     }
 
     public VolunteerGrowthRadarResponse getVolunteerGrowthRadar(Long volunteerId) {
+        // 四个指标计算公式：
+        // 1. 活动参与度 = min(100, 已完成活动数 × 15 + 活动类型多样性 × 0.2 + 月均活动数 × 10 + 重要活动占比 × 0.15)
+        // 2. 服务质量 = min(100, 总服务时长 × 1.5 + 活动完成率 × 0.3 + 按时完成率 × 0.2 + 服务稳定性 × 0.1)
+        // 3. 连续性 = min(100, 参与月份数 × 8 + 连续活跃月数 × 15 + 活动稳定性 × 0.2 + 近期活跃度 × 0.25)
+        // 4. 主动性 = min(100, 早期报名率 × 0.25 + min(100, 积分效率 × 2) + 活动完成率 × 0.25 + 活动类型多样性 × 0.15)
+        
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
         if (v.isEmpty()) {
             throw new IllegalArgumentException("志愿者被删除或不存在");
