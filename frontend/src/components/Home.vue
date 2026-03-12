@@ -265,7 +265,7 @@ onMounted(() => {
         </div>
         <div class="stat-content points">
           <p class="stat-label">当前积分</p>
-          <p class="stat-value">{{ userProfile?.points ?? 0 }} 分</p>
+          <p class="stat-value">{{ userProfile?.points?.toFixed(1) ?? 0 }} 分</p>
         </div>
         <div class="stat-content signed-up">
           <p class="stat-label">已报名活动数</p>

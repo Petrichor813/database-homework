@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
-import { useToast } from "../../utils/toast";
+import { useRouter } from "vue-router";
 import { postJson } from "../../utils/api";
+import { useToast } from "../../utils/toast";
 
 const { success, error } = useToast();
+const router = useRouter();
 
 const account_info = reactive({
   username: "",
@@ -58,6 +60,8 @@ const handleRegister = async () => {
       ...(account_info.isVolunteer ? { realName: account_info.realName } : {}),
     }, false);
     success("注册成功");
+    // 注册成功后跳转到登录页面
+    router.push({ name: "Login" });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "请检查您的注册信息";
     error("注册失败", msg);

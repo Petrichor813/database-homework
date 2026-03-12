@@ -123,9 +123,9 @@ const formatScore = (score: number): string => {
 
 const formatPoints = (points: number): string => {
   if (points === null || points === undefined) {
-    return "0.00";
+    return "0.0";
   }
-  return points.toFixed(2);
+  return points.toFixed(1);
 };
 
 /* 顶部看板 KPI 数据 */

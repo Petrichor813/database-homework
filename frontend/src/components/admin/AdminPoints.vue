@@ -478,7 +478,7 @@ const getRelatedRecordTypeText = (type: string) => {
           }}{{ currentRecord?.changePoints || 0 }}
         </p>
         <p>
-          <strong>变动后余额：</strong>{{ currentRecord?.balanceAfter || 0 }}
+          <strong>变动后余额：</strong>{{ currentRecord?.balanceAfter.toFixed(1) || 0 }}
         </p>
         <p><strong>变动时间：</strong>{{ currentRecord?.changeTime }}</p>
         <p><strong>变动原因：</strong>{{ currentRecord?.reason || "暂无" }}</p>
