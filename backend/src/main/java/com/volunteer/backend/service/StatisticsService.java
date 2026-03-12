@@ -184,9 +184,7 @@ public class StatisticsService {
         nodes.add(new SankeyNode("系统奖励"));
         nodes.add(new SankeyNode("其他来源"));
         nodes.add(new SankeyNode("商品兑换"));
-        nodes.add(new SankeyNode("积分过期"));
         nodes.add(new SankeyNode("管理员扣除"));
-        nodes.add(new SankeyNode("其他去向"));
 
         Map<String, Double> sourceMap = new HashMap<>();
         sourceMap.put("活动服务", 0.0);
@@ -196,9 +194,7 @@ public class StatisticsService {
 
         Map<String, Double> targetMap = new HashMap<>();
         targetMap.put("商品兑换", 0.0);
-        targetMap.put("积分过期", 0.0);
         targetMap.put("管理员扣除", 0.0);
-        targetMap.put("其他去向", 0.0);
 
         List<PointChangeRecord> allRecords = pointChangeRecordRepository.findAll();
         for (PointChangeRecord record : allRecords) {
@@ -548,7 +544,7 @@ public class StatisticsService {
         Integer totalHours = 0;
         Double totalPoints = 0.0;
         Integer completedActivities = 0;
-        Set<String> activityTypes = new HashSet<>();
+        Set<ActivityType> activityTypes = new HashSet<>();
         Set<Integer> monthsParticipated = new HashSet<>();
         Map<Integer, Integer> monthlyActivityCount = new HashMap<>();
         Integer onTimeCompleted = 0;
@@ -570,7 +566,7 @@ public class StatisticsService {
 
             if (activity != null) {
                 if (activity.getType() != null) {
-                    activityTypes.add(activity.getType().getDescription());
+                    activityTypes.add(activity.getType());
                 }
 
                 if (record.getActualHours() != null && record.getActualHours() > 0) {
