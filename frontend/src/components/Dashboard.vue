@@ -879,9 +879,9 @@ const exportRadarCSV = (): string => {
   
   csv += "\n详细指标数据\n";
   csv += "指标名称,数值\n";
-  csv += `活动完成率,${data.activityCompletionRate}%\n`;
-  csv += `按时完成率,${data.onTimeCompletionRate}%\n`;
-  csv += `早期报名率,${data.earlySignupRate}%\n`;
+  csv += `活动完成率,${data.activityCompletionRate.toFixed(2)}%\n`;
+  csv += `按时完成率,${data.onTimeCompletionRate.toFixed(2)}%\n`;
+  csv += `早期报名率,${data.earlySignupRate.toFixed(2)}%\n`;
   csv += `积分效率,${formatPoints(data.pointsPerHour)}积分/小时\n`;
   csv += `参与活动类型数,${data.distinctActivityTypes}种\n`;
   csv += `参与月份数,${data.monthsParticipated}个月\n`;

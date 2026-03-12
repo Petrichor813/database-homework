@@ -36,13 +36,13 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/product/get-products", "/api/activity/get-activities", "/api/activity/hot-activities", "/api/statistics/**") // 公开接口
-                .permitAll()
-                .anyRequest()
+                .permitAll() // 允许所有请求（包括未认证用户），匹配.requestMatchers
+                .anyRequest() // 所有其他请求，需要认证
                 .authenticated()
             )
             // 添加 token 过滤器
             .addFilterBefore(
-                tokenAuthenticationFilter,
+                tokenAuthenticationFilter, // 在用户名密码认证过滤器之前添加 token 认证自定义过滤器
                 UsernamePasswordAuthenticationFilter.class
         );
         // @formatter:on

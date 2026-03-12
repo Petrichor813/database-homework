@@ -552,7 +552,7 @@ public class StatisticsService {
         Set<Integer> monthsParticipated = new HashSet<>();
         Map<Integer, Integer> monthlyActivityCount = new HashMap<>();
         Integer onTimeCompleted = 0;
-        Integer earlySignup = 0;
+        Integer earlySignup = 0; // 早期报名次数，即报名时间在活动开始前7天之前
         List<Double> serviceHoursList = new ArrayList<>();
 
         for (SignupRecord record : records) {
@@ -649,10 +649,10 @@ public class StatisticsService {
             distinctActivityTypes,
             monthsParticipatedCount,
             consecutiveActiveMonths,
-            Math.round(activityCompletionRate * 10.0) / 10.0,
-            Math.round(onTimeCompletionRate * 10.0) / 10.0,
-            Math.round(earlySignupRate * 10.0) / 10.0,
-            Math.round(pointsPerHour * 100.0) / 100.0
+            activityCompletionRate,
+            onTimeCompletionRate,
+            earlySignupRate,
+            pointsPerHour
         );
         // @formatter:on
     }
