@@ -139,6 +139,7 @@ public class ActivityService {
         LocalDateTime now = LocalDateTime.now();
         List<ActivityResponse> content = new ArrayList<>();
 
+        // 构建志愿者用户报名状态映射
         Map<Long, SignupStatus> signupStatusMap = new HashMap<>();
         if (userId != null) {
             Optional<Volunteer> v = volunteerRepository.findByUserIdAndDeletedFalse(userId);
