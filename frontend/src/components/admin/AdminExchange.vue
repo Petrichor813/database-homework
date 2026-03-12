@@ -109,7 +109,7 @@ const fetchExchangeRecords = async (page: number) => {
   exchangeLoading.value = true;
   try {
     const data = await getJson<PageResponse<ExchangeRecord>>(
-      `/api/admin/exchange-records?status=${exchangeStatusFilter.value}&page=${page}&size=${exchangePagination.pageObject.value.pageSize}`,
+      `/api/admin/exchange-record/get?status=${exchangeStatusFilter.value}&page=${page}&size=${exchangePagination.pageObject.value.pageSize}`,
     );
     exchangeRecords.value = data.content;
     exchangePagination.updatePageState(data);
@@ -148,13 +148,17 @@ const productTypeMap: Record<ProductType, string> = {
 const fetchProducts = async (page: number) => {
   productLoading.value = true;
   try {
+    const query = new URLSearchParams({
+      page: String(page),
+      size: String(productPagination.pageObject.value.pageSize)
+    });
+
     const keyword = productSearchKeyword.value.trim();
-    const url = keyword
-      ? `/api/admin/products?keyword=${encodeURIComponent(
-          keyword,
-        )}&page=${page}&size=${productPagination.pageObject.value.pageSize}`
-      : `/api/admin/products?page=${page}&size=${productPagination.pageObject.value.pageSize}`;
-    const data = await getJson<PageResponse<Product>>(url);
+    if (keyword) {
+      query.append("keyword", keyword);
+    }
+
+    const data = await getJson<PageResponse<Product>>(`/api/admin/product/search?${query}`);
     products.value = data.content;
     productPagination.updatePageState(data);
   } catch (err) {
@@ -244,7 +248,7 @@ const updateExchange = async () => {
 
   isExchangeRecordEditing.value = true;
   try {
-    await putJson(`/api/admin/exchange-records/${curExchangeRecord.value.id}`, {
+    await putJson(`/api/admin/exchange-record/${curExchangeRecord.value.id}/update`, {
       number: exchangeRecordForm.number,
       status: exchangeRecordForm.status,
     });
@@ -289,7 +293,7 @@ const approveExchange = async () => {
   isProcessing.value = true;
   try {
     await postJson(
-      `/api/admin/exchange-records/${curExchangeRecord.value.id}/approve`,
+      `/api/admin/exchange-record/${curExchangeRecord.value.id}/approve`,
       {
         note: processNote.value.trim() || "管理员批准兑换",
       },
@@ -311,7 +315,7 @@ const rejectExchange = async () => {
   isProcessing.value = true;
   try {
     await postJson(
-      `/api/admin/exchange-records/${curExchangeRecord.value.id}/reject`,
+      `/api/admin/exchange-record/${curExchangeRecord.value.id}/reject`,
       {
         note: processNote.value.trim() || "管理员拒绝兑换",
       },
@@ -550,7 +554,7 @@ const saveProduct = async () => {
       error("保存失败", "未找到当前商品");
       return;
     }
-    await putJson(`/api/admin/products/${curProduct.value.id}`, payload);
+    await putJson(`/api/admin/product/${curProduct.value.id}/update`, payload);
     success("保存成功", "商品信息已更新");
 
     closeEditProductDialog();
@@ -578,7 +582,7 @@ const deleteProduct = async () => {
 
   isProductDeleting.value = true;
   try {
-    await deleteJson(`/api/admin/products/${curProduct.value.id}`);
+    await deleteJson(`/api/admin/product/${curProduct.value.id}/delete`);
     success("删除成功", "商品已删除");
     closeDeleteProductDialog();
     await fetchProducts(productPagination.pageObject.value.curPage);

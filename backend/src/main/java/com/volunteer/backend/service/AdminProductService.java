@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.volunteer.backend.dto.request.AdminProductImportRequest;
 import com.volunteer.backend.dto.request.AdminProductRequest;
 import com.volunteer.backend.dto.response.PageResponse;
 import com.volunteer.backend.dto.response.ProductResponse;
@@ -77,39 +78,6 @@ public class AdminProductService {
             productPage.getTotalPages()
         );
         // @formatter:on
-    }
-
-    @Transactional
-    public ProductResponse createProduct(AdminProductRequest request) {
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("商品名称不能为空");
-        }
-        if (request.getName().trim().length() > 50) {
-            throw new IllegalArgumentException("商品名称长度不能超过50个字符");
-        }
-        if (request.getPrice() == null || request.getPrice() <= 0) {
-            throw new IllegalArgumentException("商品价格必须大于0");
-        }
-        if (request.getStock() == null || request.getStock() < 0) {
-            throw new IllegalArgumentException("库存数量不能为负数");
-        }
-        if (request.getCategory() == null) {
-            throw new IllegalArgumentException("商品分类不能为空");
-        }
-        if (request.getStatus() == null) {
-            throw new IllegalArgumentException("商品状态不能为空");
-        }
-
-        Product product = new Product(request.getName().trim(), request.getPrice(), request.getStock());
-        product.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
-        product.setCategory(request.getCategory());
-        product.setStatus(request.getStatus());
-        product.setSortWeight(request.getSortWeight() != null ? request.getSortWeight() : 0);
-        product.setImageUrl(request.getImageUrl() != null ? request.getImageUrl().trim() : null);
-        product.setCreateTime(LocalDateTime.now());
-
-        Product saved = productRepository.save(product);
-        return buildResponse(saved);
     }
 
     @Transactional
@@ -193,7 +161,7 @@ public class AdminProductService {
         productRepository.save(product);
     }
 
-    public Product importProduct(com.volunteer.backend.dto.request.AdminProductImportRequest request)
+    public Product importProduct(AdminProductImportRequest request)
             throws IllegalArgumentException {
         if (request == null) {
             throw new IllegalArgumentException("商品导入请求不能为空");
