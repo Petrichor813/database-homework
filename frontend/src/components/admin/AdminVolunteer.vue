@@ -98,7 +98,7 @@ const fetchVolunteers = async (page: number) => {
     }
 
     const data = await getJson<PageResponse<Volunteer>>(
-      `/api/admin/volunteer?${query.toString()}`
+      `/api/admin/volunteer/search?${query.toString()}`
     );
     volunteers.value = data.content;
     updatePageState(data);

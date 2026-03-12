@@ -268,7 +268,7 @@ const searchVolunteers = async () => {
   isSearchingVolunteer.value = true;
   try {
     const data = await getJson<PageResponse<Volunteer>>(
-      `/api/admin/volunteer/search?keyword=${encodeURIComponent(
+      `/api/admin/volunteer/search?status=ALL&keyword=${encodeURIComponent(
         keyword
       )}&page=0&size=10`
     );
