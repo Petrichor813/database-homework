@@ -199,7 +199,7 @@ public class AdminExchangeService {
         // 更新志愿者积分
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(record.getVolunteerId());
         if (v.isEmpty()) {
-            throw new IllegalArgumentException("志愿者被删除或不存在");
+            throw new IllegalArgumentException("志愿者账号已注销或不存在");
         }
 
         Volunteer volunteer = v.get();
@@ -290,7 +290,7 @@ public class AdminExchangeService {
 
             Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(record.getVolunteerId());
             if (v.isEmpty()) {
-                throw new IllegalArgumentException("志愿者被删除或不存在");
+                throw new IllegalArgumentException("志愿者账号已注销或不存在");
             }
 
             Volunteer volunteer = v.get();

@@ -82,12 +82,12 @@ public class StatisticsService {
     }
 
     public DashboardKPIResponse getDashboardKPI() {
-        List<SignupRecord> allSignups = signupRecordRepository.findAll();
+        List<SignupRecord> allSignupRecords = signupRecordRepository.findAll();
         List<Activity> allActivities = activityRepository.findAll();
         List<PointChangeRecord> allPointRecords = pointChangeRecordRepository.findAll();
 
         Double totalServiceHours = 0.0;
-        for (SignupRecord record : allSignups) {
+        for (SignupRecord record : allSignupRecords) {
             if (record.getActualHours() != null) {
                 totalServiceHours += record.getActualHours();
             }
@@ -103,7 +103,7 @@ public class StatisticsService {
         LocalDateTime sixMonthsAgo = LocalDateTime.now().minusMonths(6);
         Integer activeVolunteers = 0;
         Map<Long, Boolean> volunteerActivityMap = new HashMap<>();
-        for (SignupRecord record : allSignups) {
+        for (SignupRecord record : allSignupRecords) {
             // 用 actualHours 判断志愿者是否真正完成了活动
             if (record.getActualHours() != null && record.getActualHours() > 0) {
                 // 检查活动完成时间是否在6个月内
@@ -538,7 +538,7 @@ public class StatisticsService {
         
         Optional<Volunteer> v = volunteerRepository.findByIdAndDeletedFalse(volunteerId);
         if (v.isEmpty()) {
-            throw new IllegalArgumentException("志愿者被删除或不存在");
+            throw new IllegalArgumentException("志愿者账号已注销或不存在");
         }
         Volunteer volunteer = v.get();
 

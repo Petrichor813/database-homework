@@ -41,7 +41,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 // 创建认证对象
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null,
                         null);
+                // 设置认证详情：将当前请求的 IP、SessionId 等信息绑定到认证对象上
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                // 将认证对象设置到 SecurityContext 中，后续请求中可以通过 SecurityContext 获取当前认证信息（@AuthenticationPrincipal）
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
                 // token无效，不做处理，继续过滤器链

@@ -61,10 +61,10 @@ const profile = ref<UserProfile | null>(null);
 
 const displayUserName = computed(() => profile.value?.username || "游客");
 const userCircleText = computed(() =>
-  displayUserName.value ? displayUserName.value.slice(0, 1) : "游"
+  displayUserName.value ? displayUserName.value.slice(0, 1) : "游",
 );
 const displayRealName = computed(
-  () => profile.value?.realName?.trim() || "未填写"
+  () => profile.value?.realName?.trim() || "未填写",
 );
 
 const roleMap: Record<UserRole, string> = {
@@ -74,8 +74,8 @@ const roleMap: Record<UserRole, string> = {
 };
 const roleLabel = computed(() =>
   profile.value?.role
-    ? roleMap[profile.value.role] ?? profile.value.role
-    : "游客"
+    ? (roleMap[profile.value.role] ?? profile.value.role)
+    : "游客",
 );
 
 const displayPhone = computed(() => {
@@ -149,14 +149,14 @@ const saveProfile = async () => {
       {
         username,
         phone: editForm.phone.trim(),
-      }
+      },
     );
     profile.value = updated;
     updateLocalUser(updated);
     dispatchEvent(
       new CustomEvent("user-updated", {
         detail: { username: updated.username ?? username },
-      })
+      }),
     );
     success("保存成功", "用户资料已更新");
     showEditDialog.value = false;
@@ -168,19 +168,11 @@ const saveProfile = async () => {
   }
 };
 
-// 申请志愿者、补充材料
+// 申请志愿者
 const showApplyDialog = ref(false);
-const showModifyDialog = ref(false);
 const isApplying = ref(false);
-const isModifying = ref(false);
 
 const applyForm = reactive({
-  realName: "",
-  phone: "",
-  applyReason: "",
-});
-
-const modifyForm = reactive({
   realName: "",
   phone: "",
   applyReason: "",
@@ -197,7 +189,7 @@ const canApply = computed(() => {
 const applyLabel = computed(() =>
   profile.value?.volunteerStatus === "REJECTED"
     ? "重新提交申请"
-    : "申请认证为志愿者"
+    : "申请认证为志愿者",
 );
 
 const openApplyDialog = () => {
@@ -242,7 +234,7 @@ const applyVolunteer = async () => {
         realName,
         phone,
         applyReason: applyForm.applyReason.trim(),
-      }
+      },
     );
     profile.value = updated;
     updateLocalUser(updated);
@@ -254,10 +246,20 @@ const applyVolunteer = async () => {
   }
 };
 
+// 修改志愿者申请
+const showModifyDialog = ref(false);
+const isModifying = ref(false);
+
+const modifyForm = reactive({
+  realName: "",
+  phone: "",
+  applyReason: "",
+});
+
 const showModify = computed(
   () =>
     profile.value?.role === "USER" &&
-    profile.value?.volunteerStatus === "REVIEWING"
+    profile.value?.volunteerStatus === "REVIEWING",
 );
 
 const openModifyDialog = () => {
@@ -305,7 +307,7 @@ const modifyApply = async () => {
         realName,
         phone,
         applyReason: modifyForm.applyReason.trim(),
-      }
+      },
     );
     profile.value = updated;
     updateLocalUser(updated);
@@ -379,7 +381,7 @@ const fetchPointsRecords = async (page: number) => {
 
     recordLoading.value = true;
     const data = await getJson<PageResponse<PointChangeRecord>>(
-      `/api/volunteer/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`
+      `/api/volunteer/${parsedUser.volunteerId}/point-change-records?page=${page}&size=${pageObject.value.pageSize}`,
     );
     records.value = data.content;
     updatePageState(data);
@@ -456,7 +458,7 @@ const loadProfile = async () => {
     }
 
     const data = await getJson<UserProfile>(
-      `/api/user/${parsedUser.id}/profile`
+      `/api/user/${parsedUser.id}/profile`,
     );
     profile.value = data;
   } catch (err) {
@@ -472,58 +474,6 @@ const loadProfile = async () => {
 
 // 加载页面时即获取用户信息
 onMounted(() => loadProfile());
-
-// 退出登录与账号注销
-const showLogoutDialog = ref(false);
-const showDeleteDialog = ref(false);
-
-const openLogoutDialog = () => {
-  showLogoutDialog.value = true;
-};
-
-const closeLogoutDialog = () => {
-  showLogoutDialog.value = false;
-};
-
-const handleLogout = async () => {
-  try {
-    await postJson<{ message: string }>("/api/auth/logout", {});
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "退出登录失败";
-    error("退出失败", msg);
-    return;
-  }
-
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-  success("已退出登录", "期待您的再次访问");
-  closeLogoutDialog();
-  router.push("/login");
-};
-
-const openDeleteDialog = () => {
-  showDeleteDialog.value = true;
-};
-
-const closeDeleteDialog = () => {
-  showDeleteDialog.value = false;
-};
-
-const handleDeleteAccount = async () => {
-  try {
-    await deleteJson<{ message: string }>(`/api/user/${profile.value?.id}`, {});
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "注销账号失败";
-    error("注销失败", msg);
-    return;
-  }
-
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-  success("账号已注销", "如需继续使用，请重新注册账号");
-  closeDeleteDialog();
-  router.push("/login");
-};
 
 // 修改密码
 const showChangePasswordDialog = ref(false);
@@ -587,7 +537,7 @@ const changePassword = async () => {
       {
         oldPassword,
         newPassword,
-      }
+      },
     );
     success("修改成功", "密码已修改，请重新登录");
     showChangePasswordDialog.value = false;
@@ -602,6 +552,60 @@ const changePassword = async () => {
   } finally {
     isChangingPassword.value = false;
   }
+};
+
+// 退出登录
+const showLogoutDialog = ref(false);
+
+const openLogoutDialog = () => {
+  showLogoutDialog.value = true;
+};
+
+const closeLogoutDialog = () => {
+  showLogoutDialog.value = false;
+};
+
+const handleLogout = async () => {
+  try {
+    await postJson<{ message: string }>("/api/auth/logout", {});
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "退出登录失败";
+    error("退出失败", msg);
+    return;
+  }
+
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  success("已退出登录", "期待您的再次访问");
+  closeLogoutDialog();
+  router.push("/login");
+};
+
+// 注销
+const showDeleteDialog = ref(false);
+
+const openDeleteDialog = () => {
+  showDeleteDialog.value = true;
+};
+
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false;
+};
+
+const handleDeleteAccount = async () => {
+  try {
+    await deleteJson<{ message: string }>(`/api/user/${profile.value?.id}`, {});
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "注销账号失败";
+    error("注销失败", msg);
+    return;
+  }
+
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  success("账号已注销", "如需继续使用，请重新注册账号");
+  closeDeleteDialog();
+  router.push("/login");
 };
 </script>
 
@@ -777,7 +781,9 @@ const changePassword = async () => {
         </section>
 
         <section v-else class="security">
-          <p class="security-tip">管理账号的密码、退出登录与注销，请谨慎操作。</p>
+          <p class="security-tip">
+            管理账号的密码、退出登录与注销，请谨慎操作。
+          </p>
           <div class="account-actions">
             <button
               type="button"
@@ -1187,7 +1193,9 @@ const changePassword = async () => {
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .tab-button.active:hover {

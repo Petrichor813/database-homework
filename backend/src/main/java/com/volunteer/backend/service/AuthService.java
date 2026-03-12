@@ -134,6 +134,7 @@ public class AuthService {
         // @formatter:on
     }
 
+    @Transactional
     public RegisterResponse register(RegisterRequest request) {
         UserRole role = (request.getRole() != null) ? request.getRole() : UserRole.USER;
 

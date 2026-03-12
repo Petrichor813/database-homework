@@ -245,13 +245,13 @@ onMounted(() => {
       <div v-if="loading" class="loading-state">加载中...</div>
       <div
         v-else-if="!getUserStatus().isLoggedIn"
-        class="stat-card login-prompt"
+        class="stat-card"
       >
         <p class="login-text">请登录后查看数据</p>
       </div>
       <div
         v-else-if="getUserStatus().volunteerStatus !== 'CERTIFIED'"
-        class="stat-card volunteer-prompt"
+        class="stat-card"
       >
         <p class="volunteer-title">您暂时还不是志愿者</p>
         <p class="volunteer-desc">

@@ -30,6 +30,8 @@ public class SecurityConfig {
             throws Exception {
         // @formatter:off
         // 使用 JWT token 代替 CSRF token 防御
+        // CSRF 攻击是利用用户在已登录状态下的浏览器发送恶意请求，
+        // 而 JWT 是无状态的，不依赖于服务器端的会话状态，因此不需要 CSRF 防御。
         http.csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
