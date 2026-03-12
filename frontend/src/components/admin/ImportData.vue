@@ -287,7 +287,7 @@ const pickImage = async (event: Event) => {
 
 const deleteImageFromCos = async (fileUrl: string): Promise<void> => {
   try {
-    await deleteJson("/api/cos-sts/object", { fileUrl });
+    await deleteJson("/api/cos-sts/delete", { fileUrl });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "删除文件失败";
     throw new Error(msg);

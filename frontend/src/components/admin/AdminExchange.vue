@@ -393,9 +393,9 @@ const uploadImageToCos = async (file: File): Promise<string> => {
         },
         function (err, _data) {
           if (err) {
-            reject(err);
+            reject(err); // 上传失败，直接抛出错误
           } else {
-            resolve();
+            resolve(); // 上传成功，继续执行
           }
         },
       );
@@ -412,7 +412,7 @@ const uploadImageToCos = async (file: File): Promise<string> => {
 
 const deleteImageFromCos = async (fileUrl: string): Promise<void> => {
   try {
-    await deleteJson("/api/cos-sts/object", { fileUrl });
+    await deleteJson("/api/cos-sts/delete", { fileUrl });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "删除文件失败";
     throw new Error(msg);

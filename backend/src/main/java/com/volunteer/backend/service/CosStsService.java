@@ -36,22 +36,10 @@ public class CosStsService {
             // 只允许上传到images目录
             config.put("allowPrefixes", new String[] { "images/*" });
 
-            // 策略配置（限制上传权限）
-            // @formatter:off
+            // 策略配置（仅授予上传权限）
             config.put("allowActions", new String[] {
-                "name/cos:GetObject",
-                "name/cos:HeadObject",
-                "name/cos:PutObject",
-                "name/cos:PostObject",
-                "name/cos:DeleteObject",
-                "name/cos:InitiateMultipartUpload",
-                "name/cos:UploadPart",
-                "name/cos:CompleteMultipartUpload",
-                "name/cos:ListMultipartUploads",
-                "name/cos:ListParts",
-                "name/cos:AbortMultipartUpload"
+                "name/cos:PutObject"
             });
-            // @formatter:on
 
             return CosStsClient.getCredential(config);
         } catch (Exception e) {

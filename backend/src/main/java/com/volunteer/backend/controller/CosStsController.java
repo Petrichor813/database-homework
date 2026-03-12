@@ -49,7 +49,7 @@ public class CosStsController {
     }
 
     // @formatter:off
-    @DeleteMapping("/object")
+    @DeleteMapping("/delete")
     public ResponseEntity<?> deleteObject(
         @RequestBody Map<String, String> request
     ) {
